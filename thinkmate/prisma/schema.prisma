@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  student       Student?
+  teacherGroups Group[] @relation("TeacherGroups")
+  
+  @@map("users")
+}
+
+model Student {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  interests    Interest[]
+  groupMembers GroupMember[]
+  
+  @@map("students")
+}
+
+model Interest {
+  id           Int          @id @default(autoincrement())
+  studentId    Int
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  field        String       // "AI", "환경보호", "게임개발"
+  level        Int          // 1-10
+  socialImpact SocialImpact
+  
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  
+  @@map("interests")
+}
+
+model Group {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  inviteCode  String        @unique
+  teacherId   Int?
+  teacher     User?         @relation("TeacherGroups", fields: [teacherId], references: [id])
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  members     GroupMember[]
+  projects    Project[]
+  
+  @@map("groups")
+}
+
+model GroupMember {
+  id        Int       @id @default(autoincrement())
+  groupId   Int
+  studentId Int
+  role      GroupRole @default(MEMBER)
+  
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  joinedAt  DateTime  @default(now())
+  
+  @@unique([groupId, studentId])
+  @@map("group_members")
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  groupId     Int
+  group       Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?
+  status      ProjectStatus @default(IDEA)
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@map("projects")
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum SocialImpact {
+  LOW
+  MODERATE  
+  HIGH
+}
+
+enum GroupRole {
+  LEADER
+  MEMBER
+}
+
+enum ProjectStatus {
+  IDEA
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+}
