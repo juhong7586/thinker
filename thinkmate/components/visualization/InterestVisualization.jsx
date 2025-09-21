@@ -210,7 +210,7 @@ const InterestVisualization = () => {
         
         // Z축은 사회적 영향도에 따라
         let zOffset = 0;
-        if (interest.socialImpact === 'HIGH') zOffset = 80;
+        if (interest.socialImpact === 'HIGH') zOffset = 40;
         else if (interest.socialImpact === 'MODERATE') zOffset = 0;
         else zOffset = -80;
         
@@ -248,7 +248,7 @@ const InterestVisualization = () => {
         context.fillStyle = 'rgba(255, 255, 255, 0.95)';
         context.fillRect(0, 0, canvas.width, canvas.height);
         context.fillStyle = '#333';
-        context.font = '64px Arial';
+        context.font = ' bold 64px Arial';
         context.textAlign = 'center';
         context.fillText(interest.field, canvas.width/2, 45);
         context.fillText(`${student ? student.user.name : 'Unknown'}`, canvas.width / 2, 105);
@@ -256,7 +256,7 @@ const InterestVisualization = () => {
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
         const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(x, y + sphereRadius + 15, z);
+        sprite.position.set(x, y + sphereRadius + 5, z);
         sprite.scale.set(40, 10, 1);
         sprite.userData.type = 'interest';
         scene.add(sprite);
@@ -325,7 +325,7 @@ const InterestVisualization = () => {
 
   const handleAddInterest = async () => {
     if (!selectedStudentId || !currentInterest.trim()) {
-      alert('학생을 선택하고 관심 분야를 입력해주세요.');
+      alert('Select student first.');
       return;
     }
 
@@ -369,10 +369,10 @@ const InterestVisualization = () => {
     <>
       {/* 학생 등록 패널 */}
       <div className={styles.formPanel}>
-        <h2 className={styles.formTitle}>1. 학생 등록</h2>
+        <h2 className={styles.formTitle}>1. Register</h2>
         
         <div className={styles.formGroup}>
-          <label className={styles.label}>학생 이름</label>
+          <label className={styles.label}>NAME</label>
           <input
             type="text"
             value={currentStudent}
@@ -384,13 +384,13 @@ const InterestVisualization = () => {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>이메일</label>
+          <label className={styles.label}>EMAIL</label>
           <input
             type="email"
             value={currentEmail}
             onChange={(e) => setCurrentEmail(e.target.value)}
             className={styles.input}
-            placeholder="Write your email"
+            placeholder="abcd@example.com"
             disabled={loading}
           />
         </div>
@@ -405,7 +405,7 @@ const InterestVisualization = () => {
 
         <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
 
-        <h2 className={styles.formTitle}>2. Add interests</h2>
+        <h2 className={styles.formTitle}>2. Add Interest</h2>
         
         <div className={styles.formGroup}>
           <label className={styles.label}>select student</label>
@@ -431,7 +431,7 @@ const InterestVisualization = () => {
             value={currentInterest}
             onChange={(e) => setCurrentInterest(e.target.value)}
             className={styles.input}
-            placeholder="ex) AI, environment, healthcare..."
+            placeholder="ex) AI, environment, healthcare, animals..."
             disabled={loading}
           />
         </div>
@@ -518,7 +518,7 @@ const InterestVisualization = () => {
           <p>⚫ Sphere Size: Interest Level | 🎨 Color: Each Student</p>
         </div>
 
-        {/* 클러스터 분석 결과 */}
+        {/* Cluster Analysis Result */}
         {getClusterAnalysis().length > 0 && (
           <div style={{ 
             marginTop: '1.5rem', 
@@ -526,7 +526,7 @@ const InterestVisualization = () => {
             background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 20%)',
             borderRadius: '0.5rem'
           }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#92400e' }}>🎯 클러스터 분석 결과</h3>
+            <h3 style={{ margin: '0 0 1rem 0', color: '#92400e' }}>🎯 Cluster Analysis Result</h3>
             <div style={{ display: 'grid', gap: '0.75rem' }}>
               {getClusterAnalysis().map((cluster, index) => (
                 <div key={index} style={{ 
@@ -536,13 +536,13 @@ const InterestVisualization = () => {
                   boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
                 }}>
                   <div style={{ fontWeight: '600', color: '#d97706', marginBottom: '0.25rem' }}>
-                    {cluster.field} 클러스터 ({cluster.memberCount}명)
+                    Cluster: {cluster.field} ({cluster.memberCount})
                   </div>
                   <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-                    참여자: {cluster.students.join(', ')}
+                    Members: {cluster.students.join(', ')}
                   </div>
                   <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                    평균 관심도: {cluster.avgLevel}/10
+                    Average Interest: {cluster.avgLevel}/10
                   </div>
                 </div>
               ))}

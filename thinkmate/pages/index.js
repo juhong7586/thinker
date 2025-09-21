@@ -16,7 +16,7 @@ export default function Home() {
       <div className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>🧠 ThinkMate</h1>
-          <p className={styles.subtitle}>협업적 아이디어 발굴 플랫폼</p>
+          <p className={styles.subtitle}>Group Project Topic Refinement Platform</p>
         </header>
         
         <main className={styles.mainContent}>
