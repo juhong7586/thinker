@@ -210,7 +210,7 @@ const InterestVisualization = () => {
         
         // Z축은 사회적 영향도에 따라
         let zOffset = 0;
-        if (interest.socialImpact === 'HIGH') zOffset = 40;
+        if (interest.socialImpact === 'HIGH') zOffset = 80;
         else if (interest.socialImpact === 'MODERATE') zOffset = 0;
         else zOffset = -80;
         
