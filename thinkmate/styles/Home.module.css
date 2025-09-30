@@ -11,6 +11,7 @@
   .transparentBox {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     width: 90%;
+    height: 1000px;
     margin: px auto 10px auto;
     padding: 10px;
     background: rgba(255, 255, 255, 0.1);

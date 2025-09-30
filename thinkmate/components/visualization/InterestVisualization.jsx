@@ -3,6 +3,7 @@ import styles from '../../styles/InterestForm.module.css';
 import homeStyles from '../../styles/Home.module.css';
 import { api } from '../../utils/api';
 import * as d3 from 'd3';
+import {computeVisualizationNodes, interestStats} from '../../utils/visualizationData';
 
 
 const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
@@ -20,9 +21,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
   const [socialImpact, setSocialImpact] = useState('moderate');
   
   const svgRef = useRef();
-
-  const width = propWidth || 900;
-  const height = propHeight || 900;
 
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FFB347'];
   
@@ -66,40 +64,10 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
     const svg = d3.select(svgNode);
     svg.attr('width', width).attr('height', height);
 
-    // map socialImpact strings to numeric values
-    const impactToNum = v => {
-      const s = (v || '').toString().toLowerCase();
-      if (s.includes('high')) return 10;
-      if (s.includes('moderate') || s.includes('middle') || s.includes('med')) return 5;
-      return 1;
-    };
+    const groupResults = interestStats(interests);
 
-  // Use level (1-10) for x axis and impact (0-10) for y axis
-  const xScale = d3.scaleLinear().domain([1, 10]).range([padding, width - padding]);
-  const yScale = d3.scaleLinear().domain([0, 10]).range([height - padding, padding]);
-
-  // small random jitter to spread nodes across the plain
-  const jitter = (mag = 20) => (Math.random() - 0.5) * mag;
-
-    const computeRadius = d => {
-      const impact = impactToNum(d.socialImpact);
-      const level = Number(d.level) || 1;
-      return Math.max(10, Math.min(50, Math.round(level + impact)*2));
-    };
-
-    // Precompute temporary positions so circles and labels use the same coords
-    const nodes = interests.map(d => {
-      const level = Number(d.level) || 1;
-      const impact = impactToNum(d.socialImpact);
-      // small per-node jitter; you can replace with a deterministic hash if you prefer stability
-      const jx = jitter(300);
-      const jy = jitter(300);
-      return Object.assign({}, d, {
-        _x: Math.max(padding, Math.min(width - padding, xScale(level) + jx)),
-        _y: Math.max(padding, Math.min(height - padding, yScale(impact) + jy)),
-        _r: computeRadius(d)
-      });
-    });
+    // compute nodes (positions, radius, color) from helper
+    const nodes = computeVisualizationNodes(groupResults, students, { width, height, padding, colors });
 
     // Data join with stable keys using precomputed node positions
     const groups = svg.selectAll('g.circle-group').data(nodes, d => d.id);
@@ -126,8 +94,8 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
     // MERGE + UPDATE
     const merged = enter.merge(groups);
 
-    merged.select('circle').transition().duration(250)
-      .style('opacity', 1)
+    merged.select('circle').transition().duration(350)
+      .style('opacity', 0.6)
       .attr('cx', d => d._x)
       .attr('cy', d => d._y)
       .attr('r', d => d._r * 1.3)
@@ -138,8 +106,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
       .attr('class', 'label')
       .attr('x', d => d._x)
       .attr('y', d => d._y)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#222')
       .text(d => d.field || '');
 
     // update text positions
@@ -147,6 +113,9 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
       .attr('x', d => d._x)
       .attr('y', d => d._y)
       .attr('font-size', 17)
+
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#222')
       .text(d => d.field || '');
 
   }

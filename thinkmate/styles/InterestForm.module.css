@@ -21,8 +21,8 @@
 
   }
   .formPanel:hover {
-      transform: translateY(-10px) scale(1.01);
-      box-shadow: 0 10px 80px rgba(0, 0, 0, 0.4);
+      transform: translateY(-3px) scale(1);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
     }
 
   .transparentBox {
