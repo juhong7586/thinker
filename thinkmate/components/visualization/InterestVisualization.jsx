@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
 import styles from '../../styles/InterestForm.module.css';
 import homeStyles from '../../styles/Home.module.css';
 import { api } from '../../utils/api';
+import * as d3 from 'd3';
 
 
-const InterestVisualization = () => {
+const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
   const [students, setStudents] = useState([]);
   const [interests, setInterests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,21 +19,21 @@ const InterestVisualization = () => {
   const [currentLevel, setCurrentLevel] = useState(5);
   const [socialImpact, setSocialImpact] = useState('moderate');
   
-  const mountRef = useRef();
-  const sceneRef = useRef();
-  const rendererRef = useRef();
-  const cameraRef = useRef();
+  const svgRef = useRef();
+
+  const width = propWidth || 900;
+  const height = propHeight || 900;
 
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FFB347'];
-
+  
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadData();
   }, []);
 
-   // 관심사 데이터가 변경될 때마다 3D 시각화 업데이트
+   // 관심사 데이터가 변경될 때마다 시각화 업데이트
   useEffect(() => {
-    if (!sceneRef.current || interests.length === 0) return;
+    if (!svgRef.current || interests.length === 0) return;
     updateVisualization();
   }, [interests, students]);
 
@@ -54,154 +54,102 @@ const InterestVisualization = () => {
     }
   };
 
-  // 클러스터링 및 3D 시각화 업데이트
-  const updateVisualization = () => {
+  // 클러스터링 및 시각화 업데이트
+  const updateVisualization = (width = propWidth, height = propHeight) => {    
+    if (!svgRef.current) return;
+    if (!interests || interests.length === 0) return;
+    
+    const svgNode = svgRef.current;
+    const padding = 40;
 
-    const scene = sceneRef.current;
-    if (!scene) return;
 
-    console.log('Updating visualization with interests:', interests);
-    console.log('Current students:', students);
+    const svg = d3.select(svgNode);
+    svg.attr('width', width).attr('height', height);
 
-    if (interests.length === 0) {
-        console.log('No interests to visualize.');
-        return;
-    }
+    // map socialImpact strings to numeric values
+    const impactToNum = v => {
+      const s = (v || '').toString().toLowerCase();
+      if (s.includes('high')) return 10;
+      if (s.includes('moderate') || s.includes('middle') || s.includes('med')) return 5;
+      return 1;
+    };
 
-    // 기존 객체들 제거
-    const objectsToRemove = [];
-    scene.traverse((child) => {
-      if (child.userData.type === 'interest') {
-        objectsToRemove.push(child);
-      }
-    });
-    objectsToRemove.forEach(obj => scene.remove(obj));
+  // Use level (1-10) for x axis and impact (0-10) for y axis
+  const xScale = d3.scaleLinear().domain([1, 10]).range([padding, width - padding]);
+  const yScale = d3.scaleLinear().domain([0, 10]).range([height - padding, padding]);
 
-    // 관심사별 클러스터 생성
-    const clusterMap = {};
-    interests.forEach(interest => {
-      const field = interest.field.toLowerCase();
-      if (!clusterMap[field]) {
-        clusterMap[field] = {
-          field: interest.field,
-          items: [],
-          center: {
-            x: (Math.random() - 0.5) * 200,
-            y: (Math.random() - 0.5) * 200,
-            z: (Math.random() - 0.5) * 200
-          }
-        };
-      }
-      clusterMap[field].items.push(interest);
-    });
+  // small random jitter to spread nodes across the plain
+  const jitter = (mag = 20) => (Math.random() - 0.5) * mag;
 
-    const newClusters = Object.values(clusterMap);
-    setClusters(newClusters);
+    const computeRadius = d => {
+      const impact = impactToNum(d.socialImpact);
+      const level = Number(d.level) || 1;
+      return Math.max(10, Math.min(50, Math.round(level + impact)*2));
+    };
 
-    // 각 클러스터 시각화
-    newClusters.forEach((cluster, clusterIndex) => {
-      // 클러스터별로 원형 배치
-      cluster.items.forEach((interest, index) => {
-        const angle = (index / cluster.items.length) * Math.PI * 2;
-        const radius = Math.min(cluster.items.length * 15, 60);
-        
-        // 위치 계산
-        const x = cluster.center.x + Math.cos(angle) * radius + (Math.random() - 0.5) * 20;
-        const y = cluster.center.y + Math.sin(angle) * radius + (Math.random() - 0.5) * 20;
-        
-        // Z축은 사회적 영향도에 따라
-        let zOffset = 0;
-        if (interest.socialImpact === 'HIGH') zOffset = 80;
-        else if (interest.socialImpact === 'MODERATE') zOffset = 0;
-        else zOffset = -80;
-        
-        const z = cluster.center.z + zOffset + (Math.random() - 0.5) * 30;
-
-        // 학생 색상 찾기
-        const student = students.find(s => s.id === interest.studentId);
-        const studentColor = student ? colors[student.id % colors.length] : '#999';
-
-        // 구 생성
-        const sphereRadius = Math.max(interest.level * 1.5, 2);
-        const geometry = new THREE.SphereGeometry(sphereRadius, 16, 16);
-        const material = new THREE.MeshPhongMaterial({
-          color: new THREE.Color(studentColor),
-          shininess: 400
-        });
-
-        const sphere = new THREE.Mesh(geometry, material);
-        sphere.position.set(x, y, z);
-        sphere.userData = {
-          type: 'interest',
-          studentName: student ? student.user.name : 'Unknown',
-          field: interest.field,
-          level: interest.level,
-          socialImpact: interest.socialImpact
-        };
-        
-        scene.add(sphere);
-
-        // 텍스트 라벨
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = 512;
-        canvas.height = 128;
-        context.fillStyle = 'rgba(255, 255, 255, 0.95)';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = '#333';
-        context.font = ' bold 64px Arial';
-        context.textAlign = 'center';
-        context.fillText(interest.field, canvas.width/2, 45);
-        context.fillText(`${student ? student.user.name : 'Unknown'}`, canvas.width / 2, 105);
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(x, y + sphereRadius + 5, z);
-        sprite.scale.set(40, 10, 1);
-        sprite.userData.type = 'interest';
-        scene.add(sprite);
+    // Precompute temporary positions so circles and labels use the same coords
+    const nodes = interests.map(d => {
+      const level = Number(d.level) || 1;
+      const impact = impactToNum(d.socialImpact);
+      // small per-node jitter; you can replace with a deterministic hash if you prefer stability
+      const jx = jitter(300);
+      const jy = jitter(300);
+      return Object.assign({}, d, {
+        _x: Math.max(padding, Math.min(width - padding, xScale(level) + jx)),
+        _y: Math.max(padding, Math.min(height - padding, yScale(impact) + jy)),
+        _r: computeRadius(d)
       });
-
-      // 클러스터 경계 (2개 이상일 때만)
-      if (cluster.items.length > 1) {
-        const boundingRadius = Math.max(cluster.items.length * 12, 60);
-        const boundingGeometry = new THREE.SphereGeometry(boundingRadius, 16, 16);
-        const boundingMaterial = new THREE.MeshBasicMaterial({
-          color: 0x87CEEB,
-          transparent: true,
-          opacity: 0.1,
-          wireframe: true
-        });
-        const boundingSphere = new THREE.Mesh(boundingGeometry, boundingMaterial);
-        boundingSphere.position.set(cluster.center.x, cluster.center.y, cluster.center.z);
-        boundingSphere.userData.type = 'interest';
-        scene.add(boundingSphere);
-
-        // 클러스터 라벨
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = 512;
-        canvas.height = 128;
-        context.fillStyle = 'rgba(255, 215, 0, 0.9)';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = '#8B4513';
-        context.font = 'bold 48px Arial';
-        context.textAlign = 'center';
-        context.fillText(`${cluster.field}`, canvas.width / 2, 60);
-        context.font = '40px Arial';
-        context.fillText(`Number: ${cluster.items.length}`, canvas.width / 2, 100);
-        
-        const texture = new THREE.CanvasTexture(canvas);
-        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.position.set(cluster.center.x, cluster.center.y + boundingRadius + 40, cluster.center.z);
-        sprite.scale.set(80, 20, 1);
-        sprite.userData.type = 'interest';
-        scene.add(sprite);
-      }
     });
-  };
+
+    // Data join with stable keys using precomputed node positions
+    const groups = svg.selectAll('g.circle-group').data(nodes, d => d.id);
+
+    // EXIT
+    groups.exit().transition().duration(300).style('opacity', 0).remove();
+
+    // ENTER
+    const enter = groups.enter()
+      .append('g')
+      .attr('class', 'circle-group');
+
+    // create circle and label using the precomputed positions
+    enter.append('circle')
+      .attr('class', 'circle')
+      .attr('cx', d => d._x)
+      .attr('cy', d => d._y)
+      .attr('r', 0)
+      .attr('fill', 'purple')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 1)
+      .style('opacity', 0);
+
+    // MERGE + UPDATE
+    const merged = enter.merge(groups);
+
+    merged.select('circle').transition().duration(250)
+      .style('opacity', 1)
+      .attr('cx', d => d._x)
+      .attr('cy', d => d._y)
+      .attr('r', d => d._r * 1.3)
+      .attr('fill', d => colors[d.id % colors.length] || 'purple');
+
+    // optional: add labels on enter
+    enter.append('text')
+      .attr('class', 'label')
+      .attr('x', d => d._x)
+      .attr('y', d => d._y)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#222')
+      .text(d => d.field || '');
+
+    // update text positions
+    merged.select('text.label').transition().duration(350)
+      .attr('x', d => d._x)
+      .attr('y', d => d._y)
+      .attr('font-size', 17)
+      .text(d => d.field || '');
+
+  }
 
   const handleCreateStudent = async () => {
     if (!currentStudent.trim() || !currentEmail.trim()) {
@@ -249,6 +197,7 @@ const InterestVisualization = () => {
     }
   };
 
+
   const getClusterAnalysis = () => {
     return clusters.filter(cluster => cluster.items.length > 1).map(cluster => {
       const avgLevel = (cluster.items.reduce((sum, item) => sum + item.level, 0) / cluster.items.length).toFixed(1);
@@ -266,13 +215,13 @@ const InterestVisualization = () => {
     });
   };
 
+
   return (
     <>
-      {/* 3D 시각화 패널 */}
+      
       <div className={homeStyles.fullScreenBox}>
       
-      <h1 className={homeStyles.title}>3D Interest Cluster 🚀</h1>
-        
+      <svg id="graph" ref={svgRef} style={{ width: '100%', height: '100%'}} />
 
       {/* 학생 등록 패널 */}
       <div id="register" className={styles.formPanel} >
@@ -404,9 +353,6 @@ const InterestVisualization = () => {
           </div>
         )}
       </div>
-
-
-      
 
       {/* Cluster Analysis Result */}
       {getClusterAnalysis().length > 0 && (

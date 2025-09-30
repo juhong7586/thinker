@@ -1,10 +1,30 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import InterestVisualization from '../components/visualization/InterestVisualization'
 
 
 export default function Home() {
+    const containerRef = useRef();
+  const [size, setSize] = useState({ width: 800, height: 600 });
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const set = () => {
+      const bb = node.getBoundingClientRect();
+      setSize({
+        width: Math.max(200, Math.round(bb.width)),
+        height: Math.max(200, Math.round(bb.height)),
+      });
+    };
+    set();
+
+    const ro = new ResizeObserver(set);
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, []);
+
     return (
         <>
          <Head>
@@ -14,11 +34,11 @@ export default function Home() {
       </Head>
       
       <div className={styles.container}>
-        
-        
         <main className={styles.mainContent}>
-          <InterestVisualization />
+          <InterestVisualization width={size.width} height={size.height} />
+ 
         </main>
+        
       </div>
         </>
     )
