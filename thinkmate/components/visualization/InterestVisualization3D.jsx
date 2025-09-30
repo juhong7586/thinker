@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import styles from '../../styles/InterestForm.module.css';
-import homeStyles from '../../styles/Home.module.css';
 import { api } from '../../utils/api';
 
 
@@ -31,7 +30,107 @@ const InterestVisualization = () => {
     loadData();
   }, []);
 
-   // 관심사 데이터가 변경될 때마다 3D 시각화 업데이트
+  // 3D 시각화 초기화
+  useEffect(() => {
+    if (!mountRef.current) return;
+
+    // Scene 설정
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f8ff);
+    sceneRef.current = scene;
+
+    // Camera 설정
+    const camera = new THREE.PerspectiveCamera(40, 800 / 400, 0.1, 1000);
+    camera.position.set(150,150,150);
+    cameraRef.current = camera;
+
+    // Renderer 설정
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(800, 400);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    rendererRef.current = renderer;
+
+    // 기존 canvas 제거 후 새로 추가
+    if (mountRef.current.firstChild) {
+      mountRef.current.removeChild(mountRef.current.firstChild);
+    }
+    mountRef.current.appendChild(renderer.domElement);
+
+    // 조명 설정
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(100, 100, 100);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+
+    // 마우스 컨트롤
+    let isMouseDown = false;
+    let mouseX = 0, mouseY = 0;
+    let targetX = 0, targetY = 0;
+    let cameraDistance = 300;
+
+    const onMouseDown = (event) => {
+      isMouseDown = true;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    };
+
+    const onMouseUp = () => {
+      isMouseDown = false;
+    };
+
+    const onMouseMove = (event) => {
+      if (!isMouseDown) return;
+      
+      const deltaX = event.clientX - mouseX;
+      const deltaY = event.clientY - mouseY;
+      
+      targetX += deltaX * 0.01;
+      targetY += deltaY * 0.01;
+
+      targetY = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetY));
+      
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    };
+
+    const onWheel = (event) => {
+        event.preventDefault();
+        cameraDistance *= (event.deltaY > 0 ? 1.1 : 0.9);
+        cameraDistance = Math.max(100, Math.min(800, cameraDistance)); 
+    };
+
+    renderer.domElement.addEventListener('mousedown', onMouseDown);
+    renderer.domElement.addEventListener('mouseup', onMouseUp);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('wheel', onWheel);
+
+    // 애니메이션 루프
+    const animate = () => {
+      requestAnimationFrame(animate);
+      
+      // 카메라 회전
+      camera.position.x = Math.cos(targetX) * Math.cos(targetY) * cameraDistance;
+      camera.position.y = Math.sin(targetY) * cameraDistance;
+      camera.position.z = Math.sin(targetX) * Math.cos(targetY) * cameraDistance;
+      camera.lookAt(0, 0, 0);
+      
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      if (mountRef.current && renderer.domElement && mountRef.current.contains(renderer.domElement)) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
+  }, []);
+
+  // 관심사 데이터가 변경될 때마다 3D 시각화 업데이트
   useEffect(() => {
     if (!sceneRef.current || interests.length === 0) return;
     updateVisualization();
@@ -268,14 +367,8 @@ const InterestVisualization = () => {
 
   return (
     <>
-      {/* 3D 시각화 패널 */}
-      <div className={homeStyles.fullScreenBox}>
-      
-      <h1 className={homeStyles.title}>3D Interest Cluster 🚀</h1>
-        
-
       {/* 학생 등록 패널 */}
-      <div id="register" className={styles.formPanel} >
+      <div className={styles.transparentBox}>
         <h2 className={styles.formTitle}>1. Register</h2>
         
         <div className={styles.formGroup}>
@@ -405,41 +498,58 @@ const InterestVisualization = () => {
         )}
       </div>
 
-
-      
-
-      {/* Cluster Analysis Result */}
-      {getClusterAnalysis().length > 0 && (
-        <div style={{ 
-          marginTop: '1.5rem', 
-          padding: '1rem', 
-          background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 20%)',
-          borderRadius: '0.5rem'
-        }}>
-          <h3 style={{ margin: '0 0 1rem 0', color: '#92400e' }}>🎯 Cluster Analysis Result</h3>
-          <div style={{ display: 'grid', gap: '0.75rem' }}>
-            {getClusterAnalysis().map((cluster, index) => (
-              <div key={index} style={{ 
-                background: 'white', 
-                padding: '0.75rem', 
-                borderRadius: '0.5rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ fontWeight: '600', color: '#d97706', marginBottom: '0.25rem' }}>
-                  Cluster: {cluster.field} ({cluster.memberCount})
-                </div>
-                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
-                  Members: {cluster.students.join(', ')}
-                </div>
-                <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                  Average Interest: {cluster.avgLevel}/10
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* 3D 시각화 패널 */}
+      <div className={styles.formPanel}>
+        <h2 className={styles.formTitle}>3D Interest Cluster 🚀</h2>
+        <div 
+          ref={mountRef}
+          style={{ 
+            width: '100%', 
+            height: '400px', 
+            border: '2px solid #e5e7eb', 
+            borderRadius: '0.5rem',
+            background: 'linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%)',
+            overflow: 'hidden'
+          }}
+        />
+        
+        <div style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#6b7280' }}>
+          <p>🖱️ Drag: Rotate | 🔄 Wheel: Zoom In/Out | 📊 Z axis: Desired Social Impact (UP=High, DOWN=Low)</p>
+          <p>⚫ Sphere Size: Interest Level | 🎨 Color: Each Student</p>
         </div>
-      )}
-    </div>
+
+        {/* Cluster Analysis Result */}
+        {getClusterAnalysis().length > 0 && (
+          <div style={{ 
+            marginTop: '1.5rem', 
+            padding: '1rem', 
+            background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 20%)',
+            borderRadius: '0.5rem'
+          }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: '#92400e' }}>🎯 Cluster Analysis Result</h3>
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {getClusterAnalysis().map((cluster, index) => (
+                <div key={index} style={{ 
+                  background: 'white', 
+                  padding: '0.75rem', 
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                }}>
+                  <div style={{ fontWeight: '600', color: '#d97706', marginBottom: '0.25rem' }}>
+                    Cluster: {cluster.field} ({cluster.memberCount})
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>
+                    Members: {cluster.students.join(', ')}
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                    Average Interest: {cluster.avgLevel}/10
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 };

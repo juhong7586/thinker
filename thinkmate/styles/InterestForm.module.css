@@ -1,8 +1,39 @@
 .formPanel {
-    background: white;
-    border-radius: 1rem;
-    padding: 2rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 5px;
+    border: 0.5px solid rgba(255, 255, 255, 0.3);
+    padding: 1.3rem;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    height: fit-content;
+    position: absolute;
+    right: 10rem; /* adjust x position by changing this value */
+    /* be responsive on narrow viewports */
+    max-width: calc(100vw - 1rem);
+    overflow-x: hidden; /* prevent horizontal scroll/overflow */
+    /* ensure long forms are usable on small viewports */
+    max-height: 80vh;
+    overflow-y: auto;
+    padding-right: 3 rem; /* room for scrollbar */
+    animation: float 3s ease-in-out infinite;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+ 
+
+  }
+  .formPanel:hover {
+      transform: translateY(-10px) scale(1.01);
+      box-shadow: 0 10px 80px rgba(0, 0, 0, 0.4);
+    }
+
+  .transparentBox {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 0.2rem;
+    border: 0.4px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    color: white;
     height: fit-content;
   }
   
@@ -26,7 +57,7 @@
   }
   
   .input {
-    width: 100%;
+    width: 90%;
     padding: 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
@@ -89,6 +120,9 @@
     margin-top: 2rem;
     padding-top: 2rem;
     border-top: 1px solid #e5e7eb;
+    /* ensure content inside doesn't exceed panel width */
+    max-width: 100%;
+    box-sizing: border-box;
   }
   
   .studentItem {
@@ -99,7 +133,8 @@
     background: #f9fafb;
     border-radius: 0.5rem;
     margin-bottom: 0.5rem;
-  }
+    /* allow inner text to shrink instead of forcing overflow */
+    min-width: 0;}
   
   .colorDot {
     width: 1rem;
@@ -107,3 +142,16 @@
     border-radius: 50%;
     flex-shrink: 0;
   }
+
+/* make the text inside student items wrap or break to fit the panel */
+.studentItem span {
+  display: block;
+  min-width: 0; /* needed for flex children to be able to shrink */
+  overflow-wrap: anywhere; /* break long names or comma lists */
+  word-break: break-word;
+}
+
+/* if you prefer truncation with ellipsis instead of wrapping for very long lists,
+   you can replace the rules above with:
+   .studentItem span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+*/
