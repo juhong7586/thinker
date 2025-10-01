@@ -12,8 +12,12 @@ AI-powered collaborative ideation platform that helps students discover shared i
 ## Getting Started
 
 \`\`\`bash
-npm start
+npm run dev
 \`\`\`
+
+\`\`\`
+npx prisma studio --schema='thinkmate/prisma/schema.prisma' 
+\`\`\` 
 
 ## Tech Stack
 

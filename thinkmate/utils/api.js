@@ -1,13 +1,13 @@
 // call apis
 export const api = {
     // create student
-    createStudent: async (name, email) => {
+    createStudent: async (name, email, color) => {
         const response = await fetch('/api/students', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, email }),
+            body: JSON.stringify({ name, email, color }),
         })
 
         if (!response.ok) {

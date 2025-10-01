@@ -19,6 +19,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
   const [currentInterest, setCurrentInterest] = useState('');
   const [currentLevel, setCurrentLevel] = useState(5);
   const [socialImpact, setSocialImpact] = useState('moderate');
+  const [currentColor, setCurrentColor] = useState('#FF6B6B');
   
   const svgRef = useRef();
 
@@ -128,9 +129,10 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
 
     setLoading(true);
     try {
-      await api.createStudent(currentStudent, currentEmail);
+      await api.createStudent(currentStudent, currentEmail, currentColor);
       setCurrentStudent('');
       setCurrentEmail('');
+      setCurrentColor('');
       await loadData();
       alert('Created student successfully!');
     } catch (error) {
@@ -158,6 +160,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
       setCurrentInterest('');
       await loadData();
       alert('Added interest!');
+      console.log()
     } catch (error) {
       console.error('Failed to add interest:', error);
       alert('Failed to add interest.');
@@ -207,7 +210,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
             disabled={loading}
           />
         </div>
-
         <div className={styles.formGroup}>
           <label className={styles.label}>EMAIL</label>
           <input
@@ -217,6 +219,16 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
             className={styles.input}
             placeholder="abcd@example.com"
             disabled={loading}
+          />
+        </div>
+
+        <div className={styles.inputGroup}>
+          <label>색상 선택 (선택사항)</label>
+          <input 
+          type="color" 
+          id="colorInput" 
+          value={currentColor}
+          onChange={(e) => setCurrentColor(e.target.value)}
           />
         </div>
 
@@ -353,6 +365,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
             ))}
           </div>
         </div>
+        
       )}
     </div>
     </>

@@ -8,42 +8,39 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  role      Role     @default(STUDENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  name          String
+  role          Role     
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  teacherGroups Group[]  @relation("TeacherGroups")
   student       Student?
-  teacherGroups Group[] @relation("TeacherGroups")
-  
+
   @@map("users")
 }
 
 model Student {
-  id        Int       @id @default(autoincrement())
-  userId    Int       @unique
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  interests    Interest[]
+  id           Int           @id @default(autoincrement())
+  userId       Int           @unique
   groupMembers GroupMember[]
-  
+  interests    Interest[]
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  color        String
+
   @@map("students")
 }
 
 model Interest {
   id           Int          @id @default(autoincrement())
   studentId    Int
-  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  field        String       // "AI", "환경보호", "게임개발"
-  level        Int          // 1-10
+  field        String
+  level        Int
   socialImpact SocialImpact
-  
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
   @@map("interests")
 }
 
@@ -53,14 +50,12 @@ model Group {
   description String?
   inviteCode  String        @unique
   teacherId   Int?
-  teacher     User?         @relation("TeacherGroups", fields: [teacherId], references: [id])
-  
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  
   members     GroupMember[]
+  teacher     User?         @relation("TeacherGroups", fields: [teacherId], references: [id])
   projects    Project[]
-  
+
   @@map("groups")
 }
 
@@ -68,13 +63,11 @@ model GroupMember {
   id        Int       @id @default(autoincrement())
   groupId   Int
   studentId Int
-  role      GroupRole @default(MEMBER)
-  
-  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
+  role      GroupRole 
   joinedAt  DateTime  @default(now())
-  
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
   @@unique([groupId, studentId])
   @@map("group_members")
 }
@@ -82,15 +75,13 @@ model GroupMember {
 model Project {
   id          Int           @id @default(autoincrement())
   groupId     Int
-  group       Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  
   title       String
   description String?
-  status      ProjectStatus @default(IDEA)
-  
+  status      ProjectStatus 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  
+  group       Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
   @@map("projects")
 }
 
@@ -102,7 +93,7 @@ enum Role {
 
 enum SocialImpact {
   LOW
-  MODERATE  
+  MODERATE
   HIGH
 }
 

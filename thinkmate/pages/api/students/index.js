@@ -15,30 +15,47 @@ export default async function handler(req, res) {
         }
     } else if (req.method === 'POST') {
         try {
-            const { name, email} = req.body
+            const { name, email, studentColor} = req.body
+            // check for existing user by email
+            let user = await prisma.user.findUnique({ where: { email } })
 
-            // create user
-            const user = await prisma.user.create({
-                data: { 
-                    name, 
-                    email,
-                    role: 'STUDENT',
-                 },
-            })
+            if (!user) {
+                // create user if it doesn't exist
+                user = await prisma.user.create({
+                    data: {
+                        name,
+                        email,
+                        role: 'STUDENT',
+                    },
+                })
+            }
 
-            // create student profile
+            // check if a student profile already exists for this user
+            const existingStudent = await prisma.student.findUnique({ where: { userId: user.id } })
+            if (existingStudent) {
+                // conflict: student already exists for this user
+                return res.status(409).json({ error: 'Student profile already exists for this user' })
+            }
+
+            // create student profile (Student model doesn't include `color` in schema)
             const student = await prisma.student.create({
                 data: {
                     userId: user.id,
+                    color: studentColor
                 },
-                include: { 
+                include: {
                     user: true,
-                interests: true,
-            },
+                    interests: true,
+                },
             })
+
             res.status(201).json(student)
         } catch (error) {
             console.error('Error creating student:', error)
+            // Prisma unique constraint error on email
+            if (error?.code === 'P2002' && error?.meta?.target?.includes('email')) {
+                return res.status(409).json({ error: 'Email already in use' })
+            }
             res.status(500).json({ error: 'Failed to create student' })
         }
         

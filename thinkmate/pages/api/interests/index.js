@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma'
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
+      
       const { studentId, field, level, socialImpact } = req.body
       
       const interest = await prisma.interest.create({
@@ -10,7 +11,7 @@ export default async function handler(req, res) {
           studentId: parseInt(studentId),
           field,
           level: parseInt(level),
-          socialImpact: socialImpact.toUpperCase(),
+          socialImpact: socialImpact.toUpperCase()
         },
         include: {
           student: {

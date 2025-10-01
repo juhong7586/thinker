@@ -7,14 +7,14 @@
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     height: fit-content;
     position: absolute;
-    right: 3rem; /* adjust x position by changing this value */
+    right: 2rem; /* adjust x position by changing this value */
     /* be responsive on narrow viewports */
     max-width: calc(30vw - 3rem);
     overflow-x: hidden; /* prevent horizontal scroll/overflow */
     /* ensure long forms are usable on small viewports */
-    max-height: 80vh;
+    max-height: 75vh;
     overflow-y: auto;
-    padding-right: 3 rem; /* room for scrollbar */
+    padding-right: 2 rem; /* room for scrollbar */
     animation: float 3s ease-in-out infinite;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
  
@@ -28,7 +28,6 @@
   .transparentBox {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     padding: 2rem;
-    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border-radius: 0.2rem;
     border: 0.4px solid rgba(255, 255, 255, 0.2);
@@ -143,16 +142,36 @@
     flex-shrink: 0;
   }
 
-/* make the text inside student items wrap or break to fit the panel */
-.studentItem span {
-  display: block;
-  min-width: 0; /* needed for flex children to be able to shrink */
-  overflow-wrap: anywhere; /* break long names or comma lists */
-  word-break: break-word;
-}
+  /* make the text inside student items wrap or break to fit the panel */
+  .studentItem span {
+    display: block;
+    min-width: 0; /* needed for flex children to be able to shrink */
+    overflow-wrap: anywhere; /* break long names or comma lists */
+    word-break: break-word;
+  }
+  
+  .inputGroup {
+    margin: 15px 0;
+    text-align: left;
+    max-width: calc(30vw - 3rem);
+    
+  }
 
-/* if you prefer truncation with ellipsis instead of wrapping for very long lists,
-   you can replace the rules above with:
-   .studentItem span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-*/
+  .inputGroup label {
+    display: center;
+    padding: 1rem;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .inputGroup input[type="color"] {
+    width: 100px;
+    height: 40px;
+    cursor: pointer;
+    background: none;
+    backdrop-filter: blur(10px);
+    border-radius: .5px;
+    border: .5px solid rgba(255, 255, 255, 1);
+  }
 
