@@ -1,13 +1,13 @@
 // call apis
 export const api = {
     // create student
-    createStudent: async (name, email, color) => {
+    createStudent: async (name, email, studentColor) => {
         const response = await fetch('/api/students', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, email, color }),
+            body: JSON.stringify({ name, email, studentColor }),
         })
 
         if (!response.ok) {
@@ -41,7 +41,7 @@ export const api = {
             }),
         })
         if (!response.ok) {
-            throw new Error('Failed to create interest')
+            throw new Error('Failed to create interest. Change information!')
         }
         return response.json()
     },

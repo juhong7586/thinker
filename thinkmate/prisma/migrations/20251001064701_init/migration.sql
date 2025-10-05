@@ -12,7 +12,7 @@ CREATE TABLE "users" (
 CREATE TABLE "students" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "userId" INTEGER NOT NULL,
-    "color" TEXT NOT NULL,
+    "studentColor" TEXT,
     CONSTRAINT "students_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 

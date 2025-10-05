@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import styles from '../../styles/InterestForm.module.css';
 import homeStyles from '../../styles/Home.module.css';
 import { api } from '../../utils/api';
-import * as d3 from 'd3';
 import {computeVisualizationNodes, interestStats} from '../../utils/visualizationData';
+
+const InterestVisualizationPlotly = dynamic(() => import('./InterestVisualizationPlotly'), { ssr: false });
 
 
 const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
@@ -21,7 +23,8 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
   const [socialImpact, setSocialImpact] = useState('moderate');
   const [currentColor, setCurrentColor] = useState('#FF6B6B');
   
-  const svgRef = useRef();
+  // nodes passed to Plotly
+  const [nodes, setNodes] = useState([]);
 
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FFB347'];
   
@@ -30,11 +33,19 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
     loadData();
   }, []);
 
-   // 관심사 데이터가 변경될 때마다 시각화 업데이트
+  // recompute nodes when interests or students change
   useEffect(() => {
-    if (!svgRef.current || interests.length === 0) return;
-    updateVisualization();
-  }, [interests, students]);
+    if (!interests || interests.length === 0) {
+      setNodes([]);
+      return;
+    }
+    const padding = 40;
+    const width = propWidth || 900;
+    const height = propHeight || 600;
+    const groupResults = interestStats(interests);
+    const newNodes = computeVisualizationNodes(groupResults, students, { width, height, padding, colors });
+    setNodes(newNodes);
+  }, [interests, students, propWidth, propHeight]);
 
   const loadData = async () => {
     try {
@@ -43,7 +54,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
         api.getInterests()
       ]);
       console.log('✅ Loaded students:', studentsData);
-      
       console.log('✅ Loaded interests:', interestsData);
       setStudents(studentsData);
       setInterests(interestsData);
@@ -53,86 +63,21 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
     }
   };
 
-  // 클러스터링 및 시각화 업데이트
-  const updateVisualization = (width = propWidth, height = propHeight) => {    
-    if (!svgRef.current) return;
-    if (!interests || interests.length === 0) return;
-    
-    const svgNode = svgRef.current;
-    const padding = 40;
-
-
-    const svg = d3.select(svgNode);
-    svg.attr('width', width).attr('height', height);
-
-    const groupResults = interestStats(interests);
-
-    // compute nodes (positions, radius, color) from helper
-    const nodes = computeVisualizationNodes(groupResults, students, { width, height, padding, colors });
-
-    // Data join with stable keys using precomputed node positions
-    const groups = svg.selectAll('g.circle-group').data(nodes, d => d.id);
-
-    // EXIT
-    groups.exit().transition().duration(300).style('opacity', 0).remove();
-
-    // ENTER
-    const enter = groups.enter()
-      .append('g')
-      .attr('class', 'circle-group');
-
-    // create circle and label using the precomputed positions
-    enter.append('circle')
-      .attr('class', 'circle')
-      .attr('cx', d => d._x)
-      .attr('cy', d => d._y)
-      .attr('r', 0)
-      .attr('fill', 'purple')
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 1)
-      .style('opacity', 0);
-
-    // MERGE + UPDATE
-    const merged = enter.merge(groups);
-
-    merged.select('circle').transition().duration(350)
-      .style('opacity', 0.6)
-      .attr('cx', d => d._x)
-      .attr('cy', d => d._y)
-      .attr('r', d => d._r * 1.3)
-      .attr('fill', d => colors[d.id % colors.length] || 'purple');
-
-    // optional: add labels on enter
-    enter.append('text')
-      .attr('class', 'label')
-      .attr('x', d => d._x)
-      .attr('y', d => d._y)
-      .text(d => d.field || '');
-
-    // update text positions
-    merged.select('text.label').transition().duration(350)
-      .attr('x', d => d._x)
-      .attr('y', d => d._y)
-      .attr('font-size', 17)
-
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#222')
-      .text(d => d.field || '');
-
-  }
+  // D3 rendering removed; nodes are passed to Plotly renderer via state
 
   const handleCreateStudent = async () => {
-    if (!currentStudent.trim() || !currentEmail.trim()) {
+    if (!currentStudent.trim() || !currentEmail.trim() || !currentColor.trim()) {
       alert('Write your name and email please.');
       return;
     }
 
+    
     setLoading(true);
     try {
+      console.log('[client] creating student with', { name: currentStudent, email: currentEmail, color: currentColor });
       await api.createStudent(currentStudent, currentEmail, currentColor);
       setCurrentStudent('');
       setCurrentEmail('');
-      setCurrentColor('');
       await loadData();
       alert('Created student successfully!');
     } catch (error) {
@@ -160,7 +105,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
       setCurrentInterest('');
       await loadData();
       alert('Added interest!');
-      console.log()
     } catch (error) {
       console.error('Failed to add interest:', error);
       alert('Failed to add interest.');
@@ -193,7 +137,9 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
       
       <div className={homeStyles.fullScreenBox}>
       
-      <svg id="graph" ref={svgRef} style={{ width: '100%', height: '100%'}} />
+      <div style={{ width: '100%', height: propHeight || 600 }}>
+        <InterestVisualizationPlotly nodes={nodes} width={propWidth || 900} height={propHeight || 600} />
+      </div>
 
       {/* 학생 등록 패널 */}
       <div id="register" className={styles.formPanel} >
