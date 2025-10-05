@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
             // log body for easier debugging
             console.log('POST /api/students body:', req.body)
-
+            const incomingColor = studentColor || color
             // validate & normalize color BEFORE creating any DB records
             const hex3 = /^#?[0-9A-Fa-f]{3}$/
             const hex6 = /^#?[0-9A-Fa-f]{6}$/

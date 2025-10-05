@@ -92,9 +92,15 @@ enum Role {
 }
 
 enum SocialImpact {
-  LOW
-  MODERATE
-  HIGH
+  SELF
+  FAMILY
+  FRIENDS
+  CLASS
+  SCHOOL
+  COMMUNITY
+  CITY
+  COUNTRY
+  WORLD
 }
 
 enum GroupRole {
