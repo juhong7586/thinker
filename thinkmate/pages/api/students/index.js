@@ -15,15 +15,15 @@ export default async function handler(req, res) {
         }
     } else if (req.method === 'POST') {
         try {
-            // log body for debugging
-            console.log('[students API] POST body:', req.body);
-            const { name, email, studentColor, color } = req.body || {}
-            // prefer studentColor, but accept color as an alias
-            const incomingColor = studentColor ?? color;
+            // accept either `studentColor` or `color` to be tolerant of client naming
+            const { name, email, studentColor, color } = req.body
 
             // basic required fields check
             if (!name || !email) return res.status(400).json({ error: 'name and email are required' })
 
+            // log body for easier debugging
+            console.log('POST /api/students body:', req.body)
+            const incomingColor = studentColor || color
             // validate & normalize color BEFORE creating any DB records
             const hex3 = /^#?[0-9A-Fa-f]{3}$/
             const hex6 = /^#?[0-9A-Fa-f]{6}$/

@@ -137,8 +137,8 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
       
       <div className={homeStyles.fullScreenBox}>
       
-      <div style={{ width: '100%', height: propHeight || 600 }}>
-        <InterestVisualizationPlotly nodes={nodes} width={propWidth || 900} height={propHeight || 600} />
+      <div style={{ width: '100%', height: '100%' }}>
+        <InterestVisualizationPlotly nodes={nodes}  />
       </div>
 
       {/* 학생 등록 패널 */}
@@ -169,12 +169,12 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
         </div>
 
         <div className={styles.inputGroup}>
-          <label>색상 선택 (선택사항)</label>
-          <input 
-          type="color" 
-          id="colorInput" 
-          value={currentColor}
-          onChange={(e) => setCurrentColor(e.target.value)}
+          <label>PERSONAL COLOR</label>
+          <input
+            type="color"
+            id="colorInput"
+            value={currentColor}
+            onChange={(e) => setCurrentColor(e.target.value)}
           />
         </div>
 
@@ -240,9 +240,15 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
             className={styles.select}
             disabled={loading}
           >
-            <option value="low">Low</option>
-            <option value="moderate">Middle</option>
-            <option value="high">High</option>
+            <option value="self">Self</option>
+            <option value="family">Family</option>
+            <option value="friends">Friends</option>
+            <option value="class">Class</option>
+            <option value="school">School</option>
+            <option value="community">Community</option>
+            <option value="city">City</option>
+            <option value="country">Country</option>
+            <option value="world">World</option>
           </select>
         </div>
 
@@ -257,9 +263,9 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
         {/* 등록된 데이터 현황 */}
         {(students.length > 0 || interests.length > 0) && (
           <div className={styles.studentList}>
-            <h3>Board</h3>
-            <p>👥 Registered students: {students.length}</p>
-            <p>💡 Added interests: {interests.length}</p>
+            <p className={styles.formTitle}>Board</p>
+            <p className={styles.label}>👥 Registered students: {students.length}</p>
+            <p className={styles.label}>💡 Added interests: {interests.length}</p>
             
             {students.map((student) => {
               const studentInterests = interests.filter(
@@ -269,7 +275,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
                 <div key={student.id} className={styles.studentItem}>
                   <div
                     className={styles.colorDot}
-                    style={{ backgroundColor: colors[student.id % colors.length] }}
+                    style={{ backgroundColor: student.studentColor || '#999' }}
                   ></div>
                   <span>
                     {student.user.name} (interests: {studentInterests.length})
