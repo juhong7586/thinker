@@ -37,16 +37,18 @@ export default function Home() {
       <div className={styles.container}>
         <main className={styles.mainContent}>
           <InterestVisualization width={size.width} height={size.height} />
- 
-        </main>
-        <div>
           <Link href="/analysis">
             <button className={styles.pageButton} style={{
-              position: 'absolute',
-              bottom: '0.2rem',
-              right: '3.5rem',
-            }}>Go to Analysis</button>
+                position: 'absolute',
+                width: '12rem',
+                height: '3rem',
+                bottom: '5.5vh',
+                right: '6vw',
+              }}>Go to Analysis</button>
           </Link>
+        </main>
+        <div>
+          
         </div>
         
         
