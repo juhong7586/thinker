@@ -33,7 +33,8 @@ export default function Analysis() {
       
       <div className={styles.container}>
         <main className={styles.mainContent}>
-         
+         <InterestVisualization width={size.width} height={size.height} />
+ 
         </main>
         
         

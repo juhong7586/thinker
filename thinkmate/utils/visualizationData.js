@@ -1,4 +1,4 @@
-import * as d3 from 'd3';
+// lightweight helper; avoids requiring d3 for simple grouping/averages
 
 // Helper to prepare visualization nodes from interests + students
 // Returns array of nodes with {_x, _y, _r, color, id, field, studentId, original}
@@ -25,29 +25,35 @@ const impactToNum = (v) => {
   return 1;
 };
 
-const getRandomColor = (seed) => {
-    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FFB347'];
-    const h = hashSeed(seed);
-    return colors[h % colors.length] || colors[0];
-    };
 
 
 export function interestStats(interests = []) {
-    const groupResults = Array.from(
-      d3.rollup(
-        interests,
-        v => ({
-          count: v.length,
-          avgLevel: d3.mean(v, d => d.level),
-          avgSocialImpact: d3.mean(v, d => impactToNum(d.socialImpact))
-        }),
-        d => d.field
-      ),
-      ([field, stats]) => ({ field, ...stats })
-    );
+  const groups = Object.create(null);
+  for (const it of interests || []) {
+    const key = String(it.field || '');
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(it);
+  }
 
-    return groupResults;
-};
+  const result = Object.keys(groups).map((field) => {
+    const arr = groups[field];
+    const count = arr.length;
+    const avgLevel = count ? arr.reduce((s, v) => s + (Number(v.level) || 0), 0) / count : 0;
+    const avgSocialImpact = count ? arr.reduce((s, v) => s + impactToNum(v.socialImpact), 0) / count : 0;
+    // prefer explicit interest color, otherwise fall back to the student's chosen color (student.studentColor)
+    const rawColors = arr.map(d => {
+      if (d && d.color) return String(d.color).trim();
+      if (d && d.student && (d.student.studentColor || d.student.color)) return String(d.student.studentColor || d.student.color).trim();
+      if (d && d.studentColor) return String(d.studentColor).trim();
+      return null;
+    }).filter(Boolean);
+    const interestColors = Array.from(new Set(rawColors.map(c => (c.startsWith('#') ? c.toUpperCase() : ('#' + c.toUpperCase())))));
+    return { field, count, avgLevel, avgSocialImpact, interestColors };
+  });
+
+  // keep previous behavior (returned array of { field, ...stats })
+  return result;
+}
 
 export function computeVisualizationNodes(groupResults = [], students=[], opts = {}) {
   const {
@@ -82,9 +88,6 @@ export function computeVisualizationNodes(groupResults = [], students=[], opts =
   };
 
 
-   const getColor = (students) => {
-    return getRandomColor(String(students.field));
-   };
 
   return groupResults.map((d = groupResults, i = students) => {
     const id = d.id ?? i;
@@ -95,7 +98,7 @@ export function computeVisualizationNodes(groupResults = [], students=[], opts =
     const _x = Math.max(padding, Math.min(width - padding, xScale(level) + jx));
     const _y = Math.max(padding, Math.min(height - padding, yScale(impact) + jy));
     const _r = computeRadius(d);
-    const color = getColor(i);
+    const colors = d.interestColors;
     return {
       id,
       field: d.field || '',
@@ -103,7 +106,7 @@ export function computeVisualizationNodes(groupResults = [], students=[], opts =
       _x,
       _y,
       _r,
-      color,
+      colors,
       original: d
     };
   });
