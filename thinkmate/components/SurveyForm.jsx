@@ -123,7 +123,8 @@ const dataHandler = {
     if (question.type === 'text') {
       return value && value.trim().length > 0;
     } else if (question.type === 'radio') {
-      return value !== null && value !== '';
+      // Ensure value is defined and non-empty string
+      return typeof value !== 'undefined' && value !== null && value !== '';
     } else if (question.type === 'checkbox') {
       return Array.isArray(value) && value.length > 0;
     } else if (question.type === 'slider') {
@@ -181,6 +182,7 @@ const SurveyForm = () => {
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [answers, setAnswers] = useState({});
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const totalQuestions = questionsData.length;
@@ -192,6 +194,8 @@ const SurveyForm = () => {
       ...prev,
       [questionId]: value
     }));
+    // mark touched for sliders (and other inputs if desired)
+    setTouched(prev => ({ ...prev, [questionId]: true }));
     
     // Clear error when user starts typing/selecting
     if (errors[questionId]) {
@@ -214,15 +218,29 @@ const SurveyForm = () => {
   const validateCurrentQuestion = () => {
     const question = currentQuestionData;
     const answer = answers[question.id];
-    const isValid = dataHandler.validateAnswer(question, answer);
-    
+    // Ensure the user actually provided an answer (not just relying on default rendering)
+    // For sliders we treat a missing key as unanswered even if the UI shows the min value.
+    let isValid;
+    const hasAnswerKey = Object.prototype.hasOwnProperty.call(answers, question.id);
+
+    if (question.required) {
+      if (question.type === 'slider') {
+        // require an explicit answer entry for sliders
+        isValid = hasAnswerKey && dataHandler.validateAnswer(question, answers[question.id]);
+      } else {
+        isValid = dataHandler.validateAnswer(question, answer);
+      }
+    } else {
+      isValid = dataHandler.validateAnswer(question, answer);
+    }
+
     if (!isValid) {
       setErrors(prev => ({
         ...prev,
         [question.id]: true
       }));
     }
-    
+
     return isValid;
   };
 
@@ -278,13 +296,18 @@ const SurveyForm = () => {
 
               {/* Text Input */}
               {currentQuestionData.type === 'text' && (
-                <input
-                  type="text"
-                  value={answers[currentQuestionData.id] || ''}
-                  onChange={(e) => handleInputChange(currentQuestionData.id, e.target.value)}
-                  className={`${styles.input} w-full p-3 border-2 border-gray-200 rounded-lg text-lg focus:border-purple-600 focus:outline-none transition-colors`}
-                  placeholder="Enter your answer..."
-                />
+                <div>
+                  <input
+                    type="text"
+                    value={answers[currentQuestionData.id] || ''}
+                    onChange={(e) => handleInputChange(currentQuestionData.id, e.target.value)}
+                    className={`${styles.input} w-full p-3 border-2 border-gray-200 rounded-lg text-lg focus:border-purple-600 focus:outline-none transition-colors`}
+                    placeholder="Enter your answer..."
+                  />
+                  {!touched[currentQuestionData.id] && (
+                    <div className={styles.sliderUntouchedHint}>Please enter your answer</div>
+                  )}
+                </div>
               )}
 
               {/* Radio Buttons */}
@@ -306,6 +329,9 @@ const SurveyForm = () => {
                       <span className={styles.radioLabelText}>{option.label}</span>
                     </label>
                   ))}
+                  {!touched[currentQuestionData.id] && (
+                    <div className={styles.sliderUntouchedHint}>Please select an option</div>
+                  )}
                 </div>
               )}
 
@@ -327,6 +353,9 @@ const SurveyForm = () => {
                       <span className={styles.checkboxLabel}>{option.label}</span>
                     </label>
                   ))}
+                  {!touched[currentQuestionData.id] && (
+                    <div className={styles.sliderUntouchedHint}>Please select at least one option</div>
+                  )}
                 </div>
               )}
 
@@ -341,9 +370,13 @@ const SurveyForm = () => {
                     onChange={(e) => handleInputChange(currentQuestionData.id, e.target.value)}
                     className={styles.slider}
                   />
-                  <div className={styles.sliderValue}>
+                  <div className={`${styles.sliderValue} ${!touched[currentQuestionData.id] ? styles.sliderUntouched : ''}`}>
                     {answers[currentQuestionData.id] || currentQuestionData.min}
                   </div>
+
+                  {!touched[currentQuestionData.id] && (
+                    <div className={styles.sliderUntouchedHint}>Please move the slider to answer</div>
+                  )}
 
                   {/* Labels under slider */}
                   {(() => {
