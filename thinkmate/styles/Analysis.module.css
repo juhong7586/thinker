@@ -58,13 +58,12 @@
 .breathingContainer {
     text-align: center;
     width: 100%;
-    z-index: 1;
 }
 
 .question {
     font-size: 2.7rem;
     font-weight: 300;
-    padding-top: 30vw;
+    padding-top: 20vw;
     color: white;
     line-height: 1.6;
     letter-spacing: 0.02em;

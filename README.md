@@ -1,4 +1,4 @@
-# ThinkMate 🧠🤝
+# ThinkMate 🤝
 
 AI-powered collaborative ideation platform that helps students discover shared interests, form meaningful groups, and generate impactful project ideas.
 
@@ -24,7 +24,16 @@ npx prisma studio --schema='thinkmate/prisma/schema.prisma'
 - React + Three.js
 - Tailwind CSS
 - D3.js for data analysis
+
+rm -rf prisma/migrations    
+npx prisma migrate reset --force --skip-seed
+npx prisma migrate dev --name init  
+npx prisma migrate deploy 
 \`\`\`
+
+
+
+
 
 thinkmate/
 ├── pages/
