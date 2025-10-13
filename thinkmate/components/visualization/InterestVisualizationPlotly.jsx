@@ -16,7 +16,7 @@ export default function InterestVisualizationPlotly({
   nodes.forEach((n) => {
     const x = n._x ?? n.x ?? 0;
     const y = n._y ?? n.y ?? 0;
-    const baseR = clamp(Math.round((n._r ?? 10) * 2), 6, 200);
+    const baseR = clamp(Math.round((n._r ?? 10) * 3), 6, 400);
     const colors = (n.colors || []).filter(Boolean);
     const hover = `${n.field || ''}<br/>count: ${n.original?.count ?? ''}<br/>avgLevel: ${n.original?.avgLevel ?? ''}<br/>impact: ${n.original?.avgSocialImpact ?? ''}`;
 
@@ -27,13 +27,13 @@ export default function InterestVisualizationPlotly({
     } else {
       traces.push({
         x: [x], y: [y], mode: 'markers',
-        marker: { size: clamp(baseR * 0.6, 4, baseR), color: '#fff', line: { color: colors[0] || '#000', width: 1 } },
+        marker: { size: clamp(baseR * 0.8, 4, baseR), color: '#fff', line: { color: colors[0] || '#000', width: 1 } },
         text: [hover], hoverinfo: 'text', showlegend: false
       });
       const ringCount = Math.min(colors.length, maxRings);
       for (let j = 0; j < ringCount; j++) {
         const color = colors[j];
-        const size = clamp(baseR * (0.9 + j * 0.35), baseR * 0.9, baseR * (1 + ringCount * 0.35));
+        const size = clamp(baseR * (0.9 + j * 0.15), baseR * 0.9, baseR * (1 + ringCount * 0.15));
         traces.push({
           x: [x], y: [y], mode: 'markers',
           marker: { size, color: 'rgba(0,0,0,0)', line: { color, width: 2 + j } },

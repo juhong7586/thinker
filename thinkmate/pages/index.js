@@ -45,7 +45,17 @@ export default function Home() {
                 bottom: '5.5vh',
                 right: '6vw',
               }}>Go to Analysis</button>
+              
           </Link>
+          <Link href="/survey">
+              <button className={styles.pageButton} style={{
+                position: 'absolute',
+                width: '12rem',
+                height: '3rem',
+                bottom: '5.5vh',
+                right: '30vw',
+              }}>Survey</button>
+              </Link>
         </main>
         <div>
           
