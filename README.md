@@ -13,6 +13,7 @@ AI-powered collaborative ideation platform that helps students discover shared i
 
 \`\`\`bash
 npm run dev
+python ./server/app.py
 \`\`\`
 
 \`\`\`
