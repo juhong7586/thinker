@@ -7,7 +7,7 @@
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     height: fit-content;
     position: absolute;
-    right: 4vw; /* adjust x position by changing this value */
+    right: 1.6vw; /* adjust x position by changing this value */
     /* be responsive on narrow viewports */
     min-width: 17rem;
     max-width: calc(30vw - 7rem);

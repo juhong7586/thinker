@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect, use } from 'react';
 import Plot from 'react-plotly.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -11,6 +11,28 @@ export default function InterestVisualizationPlotly({
   flipY = true,
 }) {
   const traces = [];
+  const gdRef = useRef(null);
+
+  const [points, setPoints] = useState(() => {
+    if (nodes && nodes.length) {
+      return nodes.map((n, i) => ({
+        name: n.interest?.name || n.field || n.label || `item ${i + 1}`,
+        x: n._x ?? n.x ?? 0,
+        y: n._y ?? n.y ?? 0,
+        colors: (n.colors || n.colors[0]) || 'rgb(190, 190, 190)',
+        lineWidth: 0,
+      }));
+    }
+    const N = 12; 
+    const bottomY = 5; 
+    return Array.from({ length: N }, (_, i) => ({
+      name: `Interest ${i + 1}`,
+      x: Math.round(5 + i * (90 / (N - 1))),
+      y: bottomY,
+      color: 'rgb(190,190,190)',
+      lineWidth: 0,
+    }));
+  });
   const single = { x: [], y: [], size: [], color: [], lineColor: [], lineWidth: [], text: [] };
 
   nodes.forEach((n) => {
@@ -25,9 +47,9 @@ export default function InterestVisualizationPlotly({
       single.lineWidth.push(1); single.text.push(hover);
     } else {
       traces.push({
-        x: [x], y: [y], mode: 'markers',
+        x: [x], y: [y], mode: 'markers+text',
         marker: { size: clamp(baseR * 0.9, 4, baseR), color: '#fff', line: { color: colors[0] || '#000', width: 1 } },
-        text: [hover], hoverinfo: 'text', showlegend: false, textposition: 'top center', textfont: { size: 20, color: '#222' }
+        text: [hover], hoverinfo: 'text', showlegend: false, textfont: { size: 20, color: '#222' }
       });
       const ringCount = Math.min(colors.length, maxRings);
       for (let j = 0; j < ringCount; j++) {
@@ -36,7 +58,7 @@ export default function InterestVisualizationPlotly({
         traces.push({
           x: [x], y: [y], mode: 'markers',
           marker: { size, color: 'rgba(0,0,0,0)', line: { color, width: 4} },
-          text: [hover], hoverinfo: 'text', showlegend: false, textposition: 'top center', textfont: { size: 20, color: '#222' }
+          text: [hover], hoverinfo: 'text', showlegend: false, textfont: { size: 20, color: '#222' }
         });
       }
     }

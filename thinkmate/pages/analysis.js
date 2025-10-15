@@ -49,7 +49,12 @@ export default function Analysis() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       
-  <div className={styles.wrapper} ref={containerRef}>
+  <div className={styles.wrapper} ref={containerRef} style={{
+      backgroundImage: "url('/water.jpg')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
     <div className={styles.breathingContainer}>
       <div className={styles.breathingCircle}></div>
       <Bubbles count={particleCount} className="particleContainer" style={{ position: 'absolute', inset: 0, zIndex: 0 }} />

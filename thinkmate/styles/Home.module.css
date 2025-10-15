@@ -20,7 +20,7 @@
   }
   
   .fullScreenBox {
-    margin: 2vh 0vw 2vh 1vw;
+    margin: 2vh 0vw 0 0;
     height: 85vh;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
