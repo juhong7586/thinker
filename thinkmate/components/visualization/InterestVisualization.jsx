@@ -141,10 +141,8 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
         <InterestVisualizationPlotly nodes={nodes}  />
       </div>
 
-      {/* 학생 등록 패널 */}
+      {/* Register own interests */}
       <div id="register" className={styles.formPanel} >
-        <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb' }} />
-
         <h2 className={styles.formTitle}>Add Interest</h2>
         
         <div className={styles.formGroup}>

@@ -9,14 +9,14 @@ import { useRouter } from 'next/router'
 function SignedInNameBox({ signedUser, onLogout }) {
   const [open, setOpen] = useState(false)
   return (
-    <div style={{ position: 'absolute', top: '5vh', left: '0.5vw' }}>
+    <div>
       <div onClick={() => setOpen(v => !v)} style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.95)', padding: '0.5rem 0.75rem', borderRadius: 10, boxShadow: '0 6px 18px rgba(0,0,0,0.08)' }}>
         <div style={{ fontSize: '0.95rem', fontWeight: 700 }}>{signedUser?.user?.name || 'Student'}</div>
         <div style={{ fontSize: '0.72rem', color: '#666' }}>{signedUser?.user?.email || ''}</div>
       </div>
       {open && (
         <div style={{ marginTop: 8, background: '#fff', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-          <button onClick={() => { setOpen(false); onLogout(); }} style={{ display: 'block', width: '100%', padding: '8px 12px', border: 'none', background: 'transparent', textAlign: 'left', cursor: 'pointer' }}>Logout</button>
+          <button onClick={() => { setOpen(false); onLogout(); }} style={{  display: 'block', width: '100%', padding: '8px 12px', border: 'none', background: 'transparent', textAlign: 'center', cursor: 'pointer' }}>Logout</button>
         </div>
       )}
     </div>
@@ -88,17 +88,17 @@ export default function Home() {
                 width: '12rem',
                 height: '3rem',
                 bottom: '5.5vh',
-                right: '30vw',
+                right: '22vw',
               }}>Survey</button>
               </Link>
         </main>
         <div>
-          <div style={{ position: 'absolute', top: '1.6vh', left: '1.6vw' }}>
+          <div style={{  position: 'absolute', top: '6vh', left: '2vw' }}>
             {signedIn ? (
             <SignedInNameBox signedUser={signedUser} onLogout={() => { localStorage.removeItem('thinkmate_user'); setSignedIn(false); setSignedUser(null); router.reload(); }} />
           ) : (
             <Link href="/login">
-              <button style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.95)', padding: '0.5rem 0.75rem', borderRadius: 10, boxShadow: '0 6px 18px rgba(0,0,0,0.08)' }}>Login</button>
+              <button style={{ cursor: 'pointer', background: 'rgba(255,255,255,0.95)', padding: '0.8rem 1.5rem', borderRadius: 10, boxShadow: '0 6px 18px rgba(0,0,0,0.08)', stroke: 'none' }}>Login</button>
             </Link>
           )}</div>
           

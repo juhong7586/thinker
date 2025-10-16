@@ -93,13 +93,13 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #6366f1;
+    background: radial-gradient(circle, #947C7C, #371A1A);
     cursor: pointer;
   }
   
   .button {
     width: 100%;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #C1A9A9 0%, #947C7C 100%);
     color: white;
     padding: 0.7rem;
     border: none;

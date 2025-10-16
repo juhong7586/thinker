@@ -36,7 +36,7 @@ const InterestVisualization = () => {
 
     // Scene 설정
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f8ff);
+    sceneRef.ground = new THREE.Color(0xf0f8ff);
     sceneRef.current = scene;
 
     // Camera 설정

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, use } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -12,6 +12,17 @@ export default function InterestVisualizationPlotly({
 }) {
   const traces = [];
   const gdRef = useRef(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = localStorage.getItem('thinkmate_user');
+      if (raw) setCurrentUser(JSON.parse(raw));
+    } catch (e) {
+      setCurrentUser(null);
+    }
+  }, []);
 
   const [points, setPoints] = useState(() => {
     if (nodes && nodes.length) {
@@ -40,15 +51,20 @@ export default function InterestVisualizationPlotly({
     const y = n._y ?? n.y ?? 0;
     const baseR = clamp(Math.round((n._r ?? 10) * 4), 6, 400);
     const colors = (n.colors || []).filter(Boolean);
+    // determine if current logged-in student contributed to this node
+    const contributors = (n.original && n.original.contributors) || [];
+    const userStudentId = currentUser ? String(currentUser.id ?? currentUser.studentId ?? currentUser.user?.id ?? currentUser.userId) : null;
+    const isMine = userStudentId && contributors.map(String).includes(userStudentId);
     const hover = `${n.field || ''}<br>${n.original?.avgLevel ?? ''}/${n.original?.avgSocialImpact ?? ''}`;
     if (!colors.length || colors.length === 1) {
       single.x.push(x); single.y.push(y); single.size.push(baseR);
-      single.color.push(colors[0] || '#999999'); single.lineColor.push('#ffffff');
-      single.lineWidth.push(1); single.text.push(hover);
+      const fill = isMine ? (colors[0] || (currentUser && (currentUser.studentColor || currentUser.student?.studentColor)) || '#FFB347') : '#BDBDBD';
+      single.color.push(fill); single.lineColor.push(isMine ? '#222222' : '#ffffff');
+      single.lineWidth.push(isMine ? 2 : 1); single.text.push(hover);
     } else {
       traces.push({
         x: [x], y: [y], mode: 'markers+text',
-        marker: { size: clamp(baseR * 0.9, 4, baseR), color: '#fff', line: { color: colors[0] || '#000', width: 1 } },
+        marker: { size: clamp(baseR * 0.9, 4, baseR), color: isMine ? (colors[0] || (currentUser && (currentUser.studentColor || currentUser.student?.studentColor)) || '#FFB347') : '#FFFFFF', line: { color: isMine ? (colors[0] || '#222') : '#BBBBBB', width: isMine ? 2 : 1 } },
         text: [hover], hoverinfo: 'text', showlegend: false, textfont: { size: 20, color: '#222' }
       });
       const ringCount = Math.min(colors.length, maxRings);
@@ -57,7 +73,7 @@ export default function InterestVisualizationPlotly({
         const size = clamp(baseR * (1 + j * 0.15), baseR * 0.9, baseR * (1 + ringCount * 0.1));
         traces.push({
           x: [x], y: [y], mode: 'markers',
-          marker: { size, color: 'rgba(0,0,0,0)', line: { color, width: 4} },
+          marker: { size, color: 'rgba(0,0,0,0)', line: { color: isMine ? color : '#BBBBBB', width: isMine ? 4 : 3 } },
           text: [hover], hoverinfo: 'text', showlegend: false, textfont: { size: 20, color: '#222' }
         });
       }
