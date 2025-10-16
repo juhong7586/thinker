@@ -141,54 +141,9 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
         <InterestVisualizationPlotly nodes={nodes}  />
       </div>
 
-      {/* 학생 등록 패널 */}
+      {/* Register own interests */}
       <div id="register" className={styles.formPanel} >
-        <h2 className={styles.formTitle}>1. Register</h2>
-        
-        <div className={styles.formGroup}>
-          <label className={styles.label}>NAME</label>
-          <input
-            type="text"
-            value={currentStudent}
-            onChange={(e) => setCurrentStudent(e.target.value)}
-            className={styles.input}
-            placeholder="Write your name"
-            disabled={loading}
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>EMAIL</label>
-          <input
-            type="email"
-            value={currentEmail}
-            onChange={(e) => setCurrentEmail(e.target.value)}
-            className={styles.input}
-            placeholder="abcd@example.com"
-            disabled={loading}
-          />
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label>PERSONAL COLOR</label>
-          <input
-            type="color"
-            id="colorInput"
-            value={currentColor}
-            onChange={(e) => setCurrentColor(e.target.value)}
-          />
-        </div>
-
-        <button
-          onClick={handleCreateStudent}
-          className={styles.button}
-          disabled={loading}
-        >
-          {loading ? 'Registering...' : 'register student'}
-        </button>
-
-        <hr style={{ margin: '2rem 0', border: 'none', borderTop: '1px solid #e5e7eb' }} />
-
-        <h2 className={styles.formTitle}>2. Add Interest</h2>
+        <h2 className={styles.formTitle}>Add Interest</h2>
         
         <div className={styles.formGroup}>
           <label className={styles.label}>select student</label>
@@ -259,8 +214,8 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
         >
           {loading ? 'Adding...' : 'Add interest'}
         </button>
-
-        {/* 등록된 데이터 현황 */}
+{/* 
+        등록된 데이터 현황
         {(students.length > 0 || interests.length > 0) && (
           <div className={styles.studentList}>
             <p className={styles.formTitle}>Board</p>
@@ -284,7 +239,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
               );
             })}
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Cluster Analysis Result */}

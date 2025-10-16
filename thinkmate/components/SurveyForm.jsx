@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-
 import styles from '../styles/Survey.module.css'
 
 // Questions data configuration

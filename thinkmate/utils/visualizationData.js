@@ -48,7 +48,14 @@ export function interestStats(interests = []) {
       return null;
     }).filter(Boolean);
     const interestColors = Array.from(new Set(rawColors.map(c => (c.startsWith('#') ? c.toUpperCase() : ('#' + c.toUpperCase())))));
-    return { field, count, avgLevel, avgSocialImpact, interestColors };
+    // collect contributing student ids for this interest group
+    const contributors = Array.from(new Set(arr.map(it => {
+      if (it.studentId) return String(it.studentId)
+      if (it.student && (it.student.id || it.student.userId)) return String(it.student.id || it.student.userId)
+      return null
+    }).filter(Boolean)));
+
+    return { field, count, avgLevel, avgSocialImpact, interestColors, contributors };
   });
 
   // keep previous behavior (returned array of { field, ...stats })

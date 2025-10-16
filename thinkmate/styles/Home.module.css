@@ -1,5 +1,5 @@
 .container {
-    background: linear-gradient(135deg, #a8c0ff 0%, #c2e97b 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #dddddd 100%);
     height: 97vh;
     width: 97vw;
     margin: -2vh 2vw 2vh -2vw;
@@ -20,7 +20,7 @@
   }
   
   .fullScreenBox {
-    margin: 2vh 0vw 2vh 1vw;
+    margin: 2vh 0vw 0 0;
     height: 85vh;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
