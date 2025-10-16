@@ -8,7 +8,7 @@ import {computeVisualizationNodes, interestStats} from '../../utils/visualizatio
 const InterestVisualizationPlotly = dynamic(() => import('./InterestVisualizationPlotly'), { ssr: false });
 
 
-const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
+const InterestVisualization = ({ width: propWidth, height: propHeight, signedUser }) => {
   const [students, setStudents] = useState([]);
   const [interests, setInterests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,8 +19,10 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
   const [currentEmail, setCurrentEmail] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [currentInterest, setCurrentInterest] = useState('');
-  const [currentLevel, setCurrentLevel] = useState(5);
-  const [socialImpact, setSocialImpact] = useState('moderate');
+  // default level should be a valid number so validation can run reliably
+  const [currentLevel, setCurrentLevel] = useState(0);
+  // default to the placeholder value 'None' so user must choose explicit impact
+  const [socialImpact, setSocialImpact] = useState('None');
   const [currentColor, setCurrentColor] = useState('#FF6B6B');
   
   // nodes passed to Plotly
@@ -32,6 +34,20 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // when a user is signed in, prefill the registration/add-interest fields
+  useEffect(() => {
+    if (!signedUser) return;
+    // signedUser is the student object returned from the server
+    try {
+      setSelectedStudentId(signedUser.id || '');
+      setCurrentStudent(signedUser.user?.name || '');
+      setCurrentEmail(signedUser.user?.email || '');
+      setCurrentColor(signedUser.studentColor || signedUser.student?.studentColor || '#FF6B6B');
+    } catch (e) {
+      // ignore
+    }
+  }, [signedUser]);
 
   // recompute nodes when interests or students change
   useEffect(() => {
@@ -71,7 +87,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
       return;
     }
 
-    
     setLoading(true);
     try {
       console.log('[client] creating student with', { name: currentStudent, email: currentEmail, color: currentColor });
@@ -89,10 +104,25 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
   };
 
   const handleAddInterest = async () => {
-    if (!selectedStudentId || !currentInterest.trim()) {
-      alert('Select student first.');
+    if (!selectedStudentId) {
+      alert('Select a student before adding an interest.');
       return;
     }
+
+    if (!currentInterest.trim()) {
+      alert('Fill in the interest field please.');
+      return;
+    }
+    if ((!currentLevel) || currentLevel < 1 || currentLevel > 10) {
+      alert('Set interest level between 1 and 10.');
+      return;
+    }
+    
+    if (socialImpact.trim() === 'None') {
+      alert('Select desired social impact please.');
+      return;
+    }
+    
 
     setLoading(true);
     try {
@@ -144,26 +174,19 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
       {/* Register own interests */}
       <div id="register" className={styles.formPanel} >
         <h2 className={styles.formTitle}>Add Interest</h2>
-        
-        <div className={styles.formGroup}>
-          <label className={styles.label}>select student</label>
-          <select
-            value={selectedStudentId}
-            onChange={(e) => setSelectedStudentId(e.target.value)}
-            className={styles.select}
-            disabled={loading}
-          >
-            <option value="">Select student</option>
-            {students.map((student) => (
-              <option key={student.id} value={student.id}>
-                {student.user.name} ({student.user.email})
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* show signed-in student info if available */}
+        {signedUser && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ width: '1rem', height: '1rem', borderRadius: '50%', background: signedUser.studentColor || signedUser.student?.studentColor || '#999' }} />
+            <div>
+              <div style={{ fontWeight: 600 }}>{signedUser.user?.name}</div>
+              <div style={{ fontSize: '0.8rem', color: '#666' }}>{signedUser.user?.email}</div>
+            </div>
+          </div>
+        )}
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>topic</label>
+          <label className={styles.label}>What’s a project idea or topic you want to explore?</label>
           <input
             type="text"
             value={currentInterest}
@@ -175,7 +198,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>How much?: {currentLevel}/10</label>
+          <label className={styles.label}>How excited are you about this? <br/> (Slide: 1 = a little, 10 = super excited) <br/>{currentLevel}/10</label>
           <input
             type="range"
             min="1"
@@ -188,13 +211,15 @@ const InterestVisualization = ({ width: propWidth, height: propHeight }) => {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>Desired Social Impact</label>
+          <label className={styles.label}>Who do you hope your project will help or reach? (Choose one)</label>
           <select
             value={socialImpact}
             onChange={(e) => setSocialImpact(e.target.value)}
             className={styles.select}
             disabled={loading}
-          >
+            defaultValue={"None"}
+            >
+            <option value="None">Please Select</option>
             <option value="self">Self</option>
             <option value="family">Family</option>
             <option value="friends">Friends</option>
