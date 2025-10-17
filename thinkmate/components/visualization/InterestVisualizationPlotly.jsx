@@ -39,8 +39,8 @@ const colorWithAlpha = (col, alpha = 0.8) => {
 
 export default function InterestVisualizationPlotly({
   nodes = [],
-  width = 1100,
-  height = 700,
+  width = {propWidth},
+  height = {propHeight},
   maxRings = 6,
   flipY = true,
 }) {
@@ -58,26 +58,6 @@ export default function InterestVisualizationPlotly({
     }
   }, []);
 
-  const [points, setPoints] = useState(() => {
-    if (nodes && nodes.length) {
-      return nodes.map((n, i) => ({
-        name: n.interest?.name || n.field || n.label || `item ${i + 1}`,
-        x: n._x ?? n.x ?? 0,
-        y: n._y ?? n.y ?? 0,
-        colors: (n.colors || n.colors[0]) || 'rgba(190, 190, 190, 0.8)',
-        lineWidth: 0,
-      }));
-    }
-    const N = 12; 
-    const bottomY = 5; 
-    return Array.from({ length: N }, (_, i) => ({
-      name: `Interest ${i + 1}`,
-      x: Math.round(5 + i * (90 / (N - 1))),
-      y: bottomY,
-      color: 'rgba(190,190,190,0.8)',
-      lineWidth: 0,
-    }));
-  });
   const single = { x: [], y: [], size: [], color: [], lineColor: [], lineWidth: [], text: [] };
 
   nodes.forEach((n) => {
@@ -99,7 +79,7 @@ export default function InterestVisualizationPlotly({
       traces.push({
         x: [x], y: [y], mode: 'markers+text',
         marker: { size: clamp(baseR * 0.9, 4, baseR), color: colorWithAlpha('#FFFFFF', 0.8)},
-        text: [hover], hoverinfo: 'text', showlegend: false, textfont: { family: 'Sejong, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial', size: 20, color: '#222' }
+        text: [hover], hoverinfo: 'text', showlegend: false, textfont: { family: 'NanumSquareNeo', size: 15, color: '#222' }
       });
       const ringCount = Math.min(colors.length, maxRings);
       for (let j = 0; j < ringCount; j++) {
@@ -108,7 +88,7 @@ export default function InterestVisualizationPlotly({
         traces.push({
           x: [x], y: [y], mode: 'markers',
           marker: { size, color: 'rgba(0,0,0,0)', line: { color: isMine ? (color || (currentUser && (currentUser.studentColor || currentUser.student?.studentColor)) || '#FFB347') : '#BDBDBD', width: isMine ? 2 : 3 } },
-          text: [hover], hoverinfo: 'text', showlegend: false, textfont: { size: 20, color: '#222' }
+          text: [hover], hoverinfo: 'text', showlegend: false, textfont: { size: 15, color: '#222' }
         });
       }
     }
@@ -118,7 +98,7 @@ export default function InterestVisualizationPlotly({
     traces.unshift({
       x: single.x, y: single.y, mode: 'markers+text',
       marker: { size: single.size, color: single.color, line: { color: single.lineColor, width: single.lineWidth } },
-      text: single.text, hoverinfo: 'text', showlegend: false, textfont: { family: 'Sejong, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial', size: 17, color: '#222' }
+      text: single.text, hoverinfo: 'text', showlegend: false, textfont: { family: 'NanumSquareNeo', size: 15, color: '#222' }
     });
   }
   const layout = {
@@ -128,12 +108,12 @@ export default function InterestVisualizationPlotly({
     // Note: if `width` is not numeric we fall back to 1000px for tick positioning
     xaxis: (() => {
       const xRange = ['Self', 'Family', 'Friends', 'Class', 'School', 'Community', 'City', 'Country', 'World'];
-      const axisWidth = (typeof width === 'number' && Number.isFinite(width)) ? width : 1000;
+      const axisWidth = (typeof width === 'number' && Number.isFinite(width)) ? width : (width - 100);
       const tickvals = xRange.map((_, i) => (i / (xRange.length - 1)) * axisWidth);
-      return { visible: true, range: [0, axisWidth], tickmode: 'array', tickvals, ticktext: xRange, tickangle: 0, tickfont: { family: 'Sejong, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial' } };
+      return { visible: true, range: [0, axisWidth], tickmode: 'array', tickvals, ticktext: xRange, tickangle: 0, tickfont: { family: 'NanumSquareNeo', size: 12, color: '#222' } };
     })(),
-    yaxis: { visible: false, range: flipY ? [height, 0] : [0, height], scaleanchor: 'x', scaleratio: 1, tickfont: { family: 'Sejong, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial' } },
-    hovermode: 'closest', paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { family: 'Sejong, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial', size: 12, color: '#222' }, hoverlabel: { font: { family: 'Sejong, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial' } }
+    yaxis: { visible: false, range: flipY ? [height, 0] : [0, height], scaleanchor: 'x', scaleratio: 1, tickfont: { family: 'NanumSquareNeo', size: 12, color: '#222' } },
+    hovermode: 'closest', paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { family: 'NanumSquareNeo', size: 12, color: '#222' }, hoverlabel: { font: { family: 'NanumSquareNeo', size: 12, color: '#222' } }
   };
 
   const config = { responsive: true, displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'editInChartStudio', 'zoom2d', 'select2d', 'pan2d', 'lasso2d', 'autoScale2d', 'resetScale2d', 'zoomIn2d', 'zoomOut2d'] };
@@ -143,7 +123,7 @@ export default function InterestVisualizationPlotly({
       data={traces}
       layout={layout}
       config={config}
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: width, height: height }}
       useResizeHandler={true}
     />
   );

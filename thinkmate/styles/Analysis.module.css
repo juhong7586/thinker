@@ -47,10 +47,9 @@
 .wrapper {
     align-items: center;
     background: linear-gradient(135deg, #a8c0ff 0%, #c2e97b 100%);
-    height: 97vh;
-    width: 97vw;
-    margin: -2vh 2vw 2vh -2vw;
-    padding: 2vh 2vw 2vh 2vw; 
+    height: 99vh;
+    width: 99vw;
+    margin: -5vh 0vw 0vh 0vw;
     overflow: hidden;
     font-family:Georgia, 'Times New Roman', Times, serif;
 }

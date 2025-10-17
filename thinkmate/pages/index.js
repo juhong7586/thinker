@@ -25,8 +25,13 @@ function SignedInNameBox({ signedUser, onLogout }) {
 
 
 export default function Home() {
-    const containerRef = useRef();
-  const [size, setSize] = useState({ width: 800, height: 600 });
+  const containerRef = useRef();
+  const getWindowSize = () => ({
+    width: (typeof window !== 'undefined') ? Math.max(200, Math.round(window.innerWidth))*0.9 : 900,
+    height: (typeof window !== 'undefined') ? Math.max(200, Math.round(window.innerHeight))*0.9 : 600
+  });
+  const [size, setSize] = useState(getWindowSize);
+
   const [signedIn, setSignedIn] = useState(false);
   const [signedUser, setSignedUser] = useState(null);
   const router = useRouter();
@@ -35,11 +40,16 @@ export default function Home() {
     const node = containerRef.current;
     if (!node) return;
     const set = () => {
-      const bb = node.getBoundingClientRect();
-      setSize({
-        width: Math.max(200, Math.round(bb.width)),
-        height: Math.max(200, Math.round(bb.height)),
-      });
+     // if container exists, use its size; otherwise fall back to window size
+     if (node) {
+        const bb = node.getBoundingClientRect();
+        setSize({
+          width: Math.max(200, Math.round(bb.width)),
+          height: Math.max(200, Math.round(bb.height)),
+        });
+     } else if (typeof window !== 'undefined') {
+       setSize(getWindowSize());
+     } 
     };
     set();
 
@@ -72,7 +82,7 @@ export default function Home() {
       <div className={styles.container}>
         <main className={styles.mainContent}>
           <InterestVisualization width={size.width} height={size.height} signedUser={signedUser}/>
-          <div className="panelGroup">
+          {/* <div className="panelGroup">
           <Link href="/analysis">
             <button className={styles.pageButton} style={{
               }}>Go to Analysis</button>
@@ -83,7 +93,7 @@ export default function Home() {
                 
               }}>Survey</button>
               </Link>
-</div>
+</div> */}
         </main>
         <div>
           <div style={{  position: 'absolute', top: '6vh', left: '2vw' }}>

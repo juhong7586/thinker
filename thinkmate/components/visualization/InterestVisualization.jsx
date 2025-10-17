@@ -167,10 +167,9 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
       
       <div className={homeStyles.fullScreenBox}>
       
-      <div style={{ width: '100%', height: '100%' }}>
-        <InterestVisualizationPlotly nodes={nodes}  />
-      </div>
-
+   
+      <InterestVisualizationPlotly width={propWidth} height={propHeight} nodes={nodes}  />
+      
       {/* Register own interests */}
       <div id="register" className={styles.formPanel} >
         <h2 className={styles.formTitle}>Add Interest</h2>

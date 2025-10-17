@@ -1,9 +1,11 @@
 .nav {
   position: sticky;
   top: 0;
+  overflow:hidden;
   z-index: 200;
+  width: 97vw;
   display: flex;
-  align-items:self-end;
+  align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1.25rem;
   backdrop-filter: blur(8px);

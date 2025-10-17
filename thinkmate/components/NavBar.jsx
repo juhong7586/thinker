@@ -12,7 +12,7 @@ export default function NavBar({ signedUser }) {
         <Link href="/survey">Survey</Link>
         <Link href="/analysis">Analysis</Link>
       </nav>
-      <div className={styles.right}>
+      {/* <div className={styles.right}>
         {signedUser ? (
           <div className={styles.user}>
             <div className={styles.dot} style={{ background: signedUser.studentColor || signedUser.student?.studentColor || '#FFB347' }} />
@@ -24,7 +24,7 @@ export default function NavBar({ signedUser }) {
             <Link href="/login"><button className={styles.actionBtnPrimary}>Login</button></Link>
           </div>
         )}
-      </div>
+      </div> */}
     </header>
   )
 }

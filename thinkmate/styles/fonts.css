@@ -1,12 +1,4 @@
-/* Add Sejong webfont files to public/fonts/ for this to load. Fallbacks included. */
-@font-face {
-  font-family: 'Sejong';
-  src: url('/fonts/Sejong-Regular.woff2') format('woff2'),
-       url('/fonts/Sejong-Regular.woff') format('woff');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+
 
 @font-face {
     font-family: 'NanumSquareNeo';
