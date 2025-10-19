@@ -34,6 +34,8 @@ export default function Home() {
 
   const [signedIn, setSignedIn] = useState(false);
   const [signedUser, setSignedUser] = useState(null);
+  const [groups, setGroups] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -71,6 +73,24 @@ export default function Home() {
     }
   }, [])
 
+  // when signedUser is present, fetch their groups
+  useEffect(() => {
+    if (!signedUser) return;
+    let mounted = true;
+    const sid = signedUser?.id;
+    if (!sid) return;
+    fetch(`/api/groups?studentId=${sid}`).then(r => r.json()).then(data => {
+      if (!mounted) return;
+      setGroups(data.groups || []);
+      // select first group by default if any
+      if ((data.groups || []).length > 0) setSelectedGroup(data.groups[0]);
+    }).catch(err => {
+      console.error('Failed to load groups', err);
+      if (mounted) setGroups([]);
+    });
+    return () => { mounted = false };
+  }, [signedUser]);
+
     return (
         <>
          <Head>
@@ -81,7 +101,7 @@ export default function Home() {
       
       <div className={styles.container}>
         <main className={styles.mainContent}>
-          <InterestVisualization width={size.width} height={size.height} signedUser={signedUser}/>
+          <InterestVisualization width={size.width} height={size.height} signedUser={signedUser} selectedGroup={selectedGroup} />
           {/* <div className="panelGroup">
           <Link href="/analysis">
             <button className={styles.pageButton} style={{
@@ -98,7 +118,21 @@ export default function Home() {
         <div>
           <div style={{  position: 'absolute', top: '6vh', left: '2vw' }}>
             {signedIn ? (
-            <SignedInNameBox signedUser={signedUser} onLogout={() => { localStorage.removeItem('thinkmate_user'); setSignedIn(false); setSignedUser(null); router.reload(); }} />
+            <div style={{ display: 'grid', gap: 12 }}>
+              <SignedInNameBox signedUser={signedUser} onLogout={() => { localStorage.removeItem('thinkmate_user'); setSignedIn(false); setSignedUser(null); router.reload(); }} />
+
+              {/* group selector */}
+              {groups.length > 0 && (
+                <div style={{ background: 'rgba(255,255,255,0.95)', padding: '0.5rem', borderRadius: 8 }}>
+                  <div style={{ fontSize: '0.8rem', color: '#333', marginBottom: 6 }}>Working group</div>
+                  <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
+                    {groups.map(g => (
+                      <button key={g.id} onClick={() => setSelectedGroup(g)} style={{ padding: '6px 8px', borderRadius: 6, border: selectedGroup?.id === g.id ? '2px solid #333' : '1px solid #ddd', background: selectedGroup?.id === g.id ? '#f3f4f6' : 'white', cursor: 'pointer' }}>{g.name}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <Link href="/login">
               <button className={styles.pageButton} style={{border: '2px solid rgba(94, 77, 77, 0.8)'}}>Login</button>

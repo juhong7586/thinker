@@ -1,9 +1,9 @@
 .container {
     background: linear-gradient(135deg, #ffffff 0%, #dddddd 100%);
     height: 98vh;
-    width: 97vw;
+    width: 98vw;
     margin: -5vh 0vw 0vh 0vw;
-    padding: 0vh 1vw 0vh 1vw; 
+    padding: 0vh 0vw 0vh 1vw; 
     overflow: hidden; 
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   }
@@ -20,12 +20,12 @@
   }
   
   .fullScreenBox {
-    margin: 2vh 0vw 0 0;
-    height: 85vh;
+    margin: 1vh 0vw 0 2vw;
+    height: 100%;
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     display: flex;
-    padding: 2rem;
+    padding: 0.2rem;
   }
 
 

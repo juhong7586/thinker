@@ -62,17 +62,17 @@ export default function Login() {
         <title>Login - ThinkMate</title>
       </Head>
       <div className={styles.container} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 360, background: 'rgba(255,255,255,0.95)', padding: '2rem', borderRadius: 12, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
+        <div style={{ width: 360, background: 'rgba(255,255,255,0.95)', padding: '1rem', borderRadius: '2rem', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
           <h2 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Sign in</h2>
           <p style={{ marginTop: 0, color: '#555', marginBottom: '1rem' }}>Enter your name and email. We'll remember you on this device.</p>
 
           {error && <div style={{ color: 'crimson', marginBottom: 8 }}>{error}</div>}
 
           <label style={{ display: 'block', fontSize: 13, color: '#333', marginBottom: 6 }}>Name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Your name" style={{ width: '100%', padding: '10px', borderRadius: 6, border: '1px solid #ddd', marginBottom: 12 }} />
+          <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Your name" style={{ width: '90%', padding: '10px', borderRadius: 6, border: '1px solid #ddd', marginBottom: 12 }} />
 
           <label style={{ display: 'block', fontSize: 13, color: '#333', marginBottom: 6 }}>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" style={{ width: '100%', padding: '10px', borderRadius: 6, border: '1px solid #ddd', marginBottom: 14 }} />
+          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" style={{ width: '90%', padding: '10px', borderRadius: 6, border: '1px solid #ddd', marginBottom: 14 }} />
 
           <div style={{ display: 'flex', gap:'1rem' }}>
             

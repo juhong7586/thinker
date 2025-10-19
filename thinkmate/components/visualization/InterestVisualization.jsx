@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import styles from '../../styles/InterestForm.module.css';
 import homeStyles from '../../styles/Home.module.css';
@@ -8,11 +8,12 @@ import {computeVisualizationNodes, interestStats} from '../../utils/visualizatio
 const InterestVisualizationPlotly = dynamic(() => import('./InterestVisualizationPlotly'), { ssr: false });
 
 
-const InterestVisualization = ({ width: propWidth, height: propHeight, signedUser }) => {
+const InterestVisualization = ({ width: propWidth, height: propHeight, signedUser, selectedGroup }) => {
   const [students, setStudents] = useState([]);
   const [interests, setInterests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [clusters, setClusters] = useState([]);
+  const [memberIds, setMemberIds] = useState(null);
   
   // 폼 상태
   const [currentStudent, setCurrentStudent] = useState('');
@@ -28,11 +29,112 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
   // nodes passed to Plotly
   const [nodes, setNodes] = useState([]);
 
+  // draggable register panel state
+  const panelRef = useRef(null);
+  const draggingRef = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ left: null, top: null });
+  const [isDragging, setIsDragging] = useState(false);
+
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FFB347'];
   
   // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
     loadData();
+  }, []);
+
+  // load saved panel position from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('thinkmate_register_pos');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.left === 'number' && typeof parsed.top === 'number') {
+          setPosition({ left: parsed.left, top: parsed.top });
+        }
+      } else {
+        // default position: 24px from left, 120px from top
+        setPosition({ left: 24, top: 120 });
+      }
+    } catch (e) {
+      setPosition({ left: 24, top: 120 });
+    }
+  }, []);
+
+  // helper to clamp position inside the viewport using panel size
+  const clampToViewport = (left, top) => {
+    const winW = window.innerWidth;
+    const winH = window.innerHeight;
+    const rect = panelRef.current ? panelRef.current.getBoundingClientRect() : { width: 360, height: 240 };
+    const maxLeft = Math.max(0, winW - rect.width - 8);
+    const maxTop = Math.max(8, winH - rect.height - 8);
+    const clampedLeft = Math.min(Math.max(0, left), maxLeft);
+    const clampedTop = Math.min(Math.max(8, top), maxTop);
+    return { left: clampedLeft, top: clampedTop };
+  };
+
+  // pointer/mouse/touch handlers for dragging
+  const onPointerMove = (e) => {
+    if (!draggingRef.current) return;
+    let clientX, clientY;
+    if (e.type === 'touchmove') {
+      if (!e.touches || e.touches.length === 0) return;
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    const newLeft = clientX - dragOffset.current.x;
+    const newTop = clientY - dragOffset.current.y;
+    const clamped = clampToViewport(newLeft, newTop);
+    setPosition(clamped);
+  };
+
+  const onPointerUp = () => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    setIsDragging(false);
+    // remove global listeners
+    window.removeEventListener('mousemove', onPointerMove);
+    window.removeEventListener('mouseup', onPointerUp);
+    window.removeEventListener('touchmove', onPointerMove);
+    window.removeEventListener('touchend', onPointerUp);
+    // persist position
+    try {
+      localStorage.setItem('thinkmate_register_pos', JSON.stringify(position));
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const onPointerDown = (e) => {
+    // only start dragging when left mouse button or touch
+    if (e.type === 'mousedown' && e.button !== 0) return;
+    draggingRef.current = true;
+    setIsDragging(true);
+    const rect = panelRef.current ? panelRef.current.getBoundingClientRect() : { left: 0, top: 0 };
+    let clientX = e.clientX, clientY = e.clientY;
+    if (e.type === 'touchstart') {
+      if (!e.touches || e.touches.length === 0) return;
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    }
+    dragOffset.current = { x: clientX - rect.left, y: clientY - rect.top };
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('touchend', onPointerUp);
+  };
+
+  // cleanup on unmount
+  useEffect(() => {
+    return () => {
+      window.removeEventListener('mousemove', onPointerMove);
+      window.removeEventListener('mouseup', onPointerUp);
+      window.removeEventListener('touchmove', onPointerMove);
+      window.removeEventListener('touchend', onPointerUp);
+    };
   }, []);
 
   // when a user is signed in, prefill the registration/add-interest fields
@@ -51,17 +153,45 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
 
   // recompute nodes when interests or students change
   useEffect(() => {
-    if (!interests || interests.length === 0) {
+    const activeInterests = (selectedGroup && memberIds) ? interests.filter(i => memberIds.has(i.studentId)) : interests;
+    if (!activeInterests || activeInterests.length === 0) {
       setNodes([]);
       return;
     }
-    const padding = 40;
-    const width = propWidth || 900;
-    const height = propHeight || 600;
-    const groupResults = interestStats(interests);
+
+    const padding = 10;
+    const width = propWidth;
+    const height = propHeight;
+    const groupResults = interestStats(activeInterests);
     const newNodes = computeVisualizationNodes(groupResults, students, { width, height, padding, colors });
     setNodes(newNodes);
   }, [interests, students, propWidth, propHeight]);
+
+
+  // when selectedGroup changes, fetch its members so we can filter interests
+  useEffect(() => {
+    let mounted = true;
+    if (!selectedGroup) {
+      setMemberIds(null);
+      return () => { mounted = false };
+    }
+
+    const fetchMembers = async () => {
+      try {
+        const res = await fetch(`/api/groups/${selectedGroup.id}/members`);
+        if (!res.ok) throw new Error('failed to load members');
+        const data = await res.json();
+        const ids = new Set((data.members || []).map(m => m.studentId).filter(Boolean));
+        if (mounted) setMemberIds(ids);
+      } catch (err) {
+        console.error('Could not load group members', err);
+        if (mounted) setMemberIds(new Set());
+      }
+    };
+
+    fetchMembers();
+    return () => { mounted = false };
+  }, [selectedGroup]);
 
   const loadData = async () => {
     try {
@@ -166,13 +296,31 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
     <>
       
       <div className={homeStyles.fullScreenBox}>
-      
-   
+
       <InterestVisualizationPlotly width={propWidth} height={propHeight} nodes={nodes}  />
-      
-      {/* Register own interests */}
-      <div id="register" className={styles.formPanel} >
-        <h2 className={styles.formTitle}>Add Interest</h2>
+
+      {/* Register own interests (draggable) */}
+      <div
+        id="register"
+        ref={panelRef}
+        className={styles.formPanel}
+        style={{
+          position: 'fixed',
+          left: typeof position.left === 'number' ? `${position.left}px` : undefined,
+          top: typeof position.top === 'number' ? `${position.top}px` : undefined,
+          zIndex: 1200,
+          cursor: isDragging ? 'grabbing' : 'default',
+          touchAction: 'none'
+        }}
+      >
+        <div
+          onMouseDown={onPointerDown}
+          onTouchStart={onPointerDown}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: isDragging ? 'grabbing' : 'grab', paddingBottom: '0.5rem' }}
+        >
+          <h2 className={styles.formTitle} style={{ margin: 0 }}>Add Interest</h2>
+          <div style={{ fontSize: '0.9rem', color: '#666' }}>{isDragging ? 'Dragging...' : 'Drag to move'}</div>
+        </div>
         {/* show signed-in student info if available */}
         {signedUser && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
@@ -216,7 +364,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
             onChange={(e) => setSocialImpact(e.target.value)}
             className={styles.select}
             disabled={loading}
-            defaultValue={"None"}
             >
             <option value="None">Please Select</option>
             <option value="self">Self</option>
