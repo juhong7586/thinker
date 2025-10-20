@@ -27,17 +27,14 @@ class GenRequest(BaseModel):
     max_new_tokens: int = 120
     temperature: float = 0.2
 
+from .prompt import build_prompt_from_answers
+
 log.info(f"Loading tokenizer/model to {DEVICE} ...")
 tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-1b-it")
 model = AutoModelForCausalLM.from_pretrained("google/gemma-3-1b-it")
 model.to(DEVICE)
 model.eval()
 log.info("Model loaded")
-
-def build_prompt_from_answers(answers: dict) -> str:
-    # concise prompt - you can customize formatting
-    content = "User survey answers (JSON):\n" + str(answers) + "\n\nTask: Give a short friendly summary (3 sentences) and 2 personalized suggestions."
-    return content
 
 @app.post("/generate")
 async def generate(req: GenRequest):
@@ -59,7 +56,7 @@ async def generate(req: GenRequest):
         inputs = tokenizer(prompt, return_tensors="pt").to(DEVICE)
 
     with torch.no_grad():
-        outputs = model.generate(**inputs, max_new_tokens=40)
+        outputs = model.generate(**inputs, max_new_tokens=1000)
     input_len = inputs["input_ids"].shape[-1]
     decoded = tokenizer.decode(outputs[0][input_len:], skip_special_tokens=True)
     return {"reply": decoded}
