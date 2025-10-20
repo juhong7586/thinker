@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import styles from '../../styles/InterestForm.module.css';
 import homeStyles from '../../styles/Home.module.css';
@@ -26,8 +26,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
   const [socialImpact, setSocialImpact] = useState('None');
   const [currentColor, setCurrentColor] = useState('#FF6B6B');
   
-  // nodes passed to Plotly
-  const [nodes, setNodes] = useState([]);
+  // nodes passed to Plotly (memoized)
 
   // draggable register panel state
   const panelRef = useRef(null);
@@ -38,10 +37,34 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
 
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FFB347'];
   
-  // 컴포넌트 마운트 시 데이터 로드
-  useEffect(() => {
-    loadData();
+  // stable load function with in-flight guard
+  const loadingRef = useRef(false);
+  const loadData = useCallback(async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    try {
+      const [studentsData, interestsData] = await Promise.all([
+        api.getStudents(),
+        api.getInterests(),
+      ]);
+      console.log('✅ Loaded students:', studentsData);
+      console.log('✅ Loaded interests:', interestsData);
+      setStudents(studentsData);
+      setInterests(interestsData);
+    } catch (error) {
+      console.error('Failed to load data:', error);
+      // surface a user-friendly message only once
+      if (!window.__thinkmate_notified) {
+        window.__thinkmate_notified = true;
+        alert('데이터를 불러오는데 실패했습니다.');
+      }
+    } finally {
+      loadingRef.current = false;
+    }
   }, []);
+
+  // load data on mount
+  useEffect(() => { loadData(); }, [loadData]);
 
   // load saved panel position from localStorage
   useEffect(() => {
@@ -53,11 +76,11 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
           setPosition({ left: parsed.left, top: parsed.top });
         }
       } else {
-        // default position: 24px from left, 120px from top
-        setPosition({ left: 24, top: 120 });
+        // default position: 20px from right, 20px from top
+        setPosition({ right: '2rem', top: 20 });
       }
     } catch (e) {
-      setPosition({ left: 24, top: 120 });
+      setPosition({ right: '2rem', top: 20 });
     }
   }, []);
 
@@ -151,21 +174,16 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
     }
   }, [signedUser]);
 
-  // recompute nodes when interests or students change
-  useEffect(() => {
+  // memoize computed visualization nodes to avoid re-computation on unrelated renders
+  const nodes = useMemo(() => {
     const activeInterests = (selectedGroup && memberIds) ? interests.filter(i => memberIds.has(i.studentId)) : interests;
-    if (!activeInterests || activeInterests.length === 0) {
-      setNodes([]);
-      return;
-    }
-
+    if (!activeInterests || activeInterests.length === 0) return [];
     const padding = 10;
     const width = propWidth;
     const height = propHeight;
     const groupResults = interestStats(activeInterests);
-    const newNodes = computeVisualizationNodes(groupResults, students, { width, height, padding, colors });
-    setNodes(newNodes);
-  }, [interests, students, propWidth, propHeight]);
+    return computeVisualizationNodes(groupResults, students, { width, height, padding, colors });
+  }, [interests, students, propWidth, propHeight, selectedGroup, memberIds]);
 
 
   // when selectedGroup changes, fetch its members so we can filter interests
@@ -193,22 +211,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
     return () => { mounted = false };
   }, [selectedGroup]);
 
-  const loadData = async () => {
-    try {
-      const [studentsData, interestsData] = await Promise.all([
-        api.getStudents(),
-        api.getInterests()
-      ]);
-      console.log('✅ Loaded students:', studentsData);
-      console.log('✅ Loaded interests:', interestsData);
-      setStudents(studentsData);
-      setInterests(interestsData);
-    } catch (error) {
-      console.error('Failed to load data:', error);
-      alert('데이터를 불러오는데 실패했습니다.');
-    }
-  };
-
   // D3 rendering removed; nodes are passed to Plotly renderer via state
 
   const handleCreateStudent = async () => {
@@ -223,6 +225,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
       await api.createStudent(currentStudent, currentEmail, currentColor);
       setCurrentStudent('');
       setCurrentEmail('');
+      // refresh list
       await loadData();
       alert('Created student successfully!');
     } catch (error) {
@@ -256,13 +259,9 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
 
     setLoading(true);
     try {
-      await api.createInterest(
-        selectedStudentId,
-        currentInterest,
-        currentLevel,
-        socialImpact
-      );
+      await api.createInterest(selectedStudentId, currentInterest, currentLevel, socialImpact);
       setCurrentInterest('');
+      // refresh list
       await loadData();
       alert('Added interest!');
     } catch (error) {
@@ -274,22 +273,16 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
   };
 
 
-  const getClusterAnalysis = () => {
+  const clusterAnalysis = useMemo(() => {
     return clusters.filter(cluster => cluster.items.length > 1).map(cluster => {
       const avgLevel = (cluster.items.reduce((sum, item) => sum + item.level, 0) / cluster.items.length).toFixed(1);
       const studentNames = cluster.items.map(item => {
         const student = students.find(s => s.id === item.studentId);
         return student ? student.user.name : 'Unknown';
       });
-      
-      return {
-        field: cluster.field,
-        memberCount: cluster.items.length,
-        students: studentNames,
-        avgLevel
-      };
+      return { field: cluster.field, memberCount: cluster.items.length, students: studentNames, avgLevel };
     });
-  };
+  }, [clusters, students]);
 
 
   return (
@@ -306,20 +299,21 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
         className={styles.formPanel}
         style={{
           position: 'fixed',
+          
           left: typeof position.left === 'number' ? `${position.left}px` : undefined,
           top: typeof position.top === 'number' ? `${position.top}px` : undefined,
           zIndex: 1200,
           cursor: isDragging ? 'grabbing' : 'default',
-          touchAction: 'none'
+          touchAction: ' none'
         }}
       >
         <div
           onMouseDown={onPointerDown}
           onTouchStart={onPointerDown}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: isDragging ? 'grabbing' : 'grab', paddingBottom: '0.5rem' }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: isDragging ? 'grabbing' : 'default', paddingBottom: '0.5rem' }}
         >
           <h2 className={styles.formTitle} style={{ margin: 0 }}>Add Interest</h2>
-          <div style={{ fontSize: '0.9rem', color: '#666' }}>{isDragging ? 'Dragging...' : 'Drag to move'}</div>
+          <div style={{ fontSize: '0.9rem', color: '#666', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none', userSelect: 'none' }}>{isDragging ? 'Dragging...' : 'Drag to move'}</div>
         </div>
         {/* show signed-in student info if available */}
         {signedUser && (
@@ -413,8 +407,8 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
         )} */}
       </div>
 
-      {/* Cluster Analysis Result */}
-      {getClusterAnalysis().length > 0 && (
+  {/* Cluster Analysis Result */}
+  {clusterAnalysis.length > 0 && (
         <div style={{ 
           marginTop: '1.5rem', 
           padding: '1rem', 
@@ -423,7 +417,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
         }}>
           <h3 style={{ margin: '0 0 1rem 0', color: '#92400e' }}>🎯 Cluster Analysis Result</h3>
           <div style={{ display: 'grid', gap: '0.75rem' }}>
-            {getClusterAnalysis().map((cluster, index) => (
+            {clusterAnalysis.map((cluster, index) => (
               <div key={index} style={{ 
                 background: 'white', 
                 padding: '0.75rem', 

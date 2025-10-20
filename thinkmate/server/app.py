@@ -6,50 +6,34 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from fastapi.middleware.cors import CORSMiddleware
 
-tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-1b-it")
-model = AutoModelForCausalLM.from_pretrained("google/gemma-3-1b-it")
-messages = [
-    {"role": "user", "content": "Who are you?"},
-]
-inputs = tokenizer.apply_chat_template(
-	messages,
-	add_generation_prompt=True,
-	tokenize=True,
-	return_dict=True,
-	return_tensors="pt",
-).to(model.device)
 
-outputs = model.generate(**inputs, max_new_tokens=40)
-print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:]))  
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("gen-server")
 
+MODEL_ID = os.environ.get("MODEL_ID", "google/gemma-3-1b-it")
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-# logging.basicConfig(level=logging.INFO)
-# log = logging.getLogger("gen-server")
+app = FastAPI(title="Gen API")
 
-# MODEL_ID = os.environ.get("MODEL_ID", "google/gemma-3-1b-it")
-# DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=["http://localhost:3000"],  # your Next dev origin
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
+)
 
-# app = FastAPI(title="Gen API")
+class GenRequest(BaseModel):
+    answers: dict
+    max_new_tokens: int = 120
+    temperature: float = 0.2
 
-# app.add_middleware(
-#   CORSMiddleware,
-#   allow_origins=["http://localhost:3000"],  # your Next dev origin
-#   allow_credentials=True,
-#   allow_methods=["*"],
-#   allow_headers=["*"],
-# )
-
-# class GenRequest(BaseModel):
-#     answers: dict
-#     max_new_tokens: int = 120
-#     temperature: float = 0.2
-
-# log.info(f"Loading tokenizer/model {MODEL_ID} to {DEVICE} ...")
-# tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-# model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
-# model.to(DEVICE)
-# model.eval()
-# log.info("Model loaded")
+log.info(f"Loading tokenizer/model {MODEL_ID} to {DEVICE} ...")
+tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
+model = AutoModelForCausalLM.from_pretrained(MODEL_ID)
+model.to(DEVICE)
+model.eval()
+log.info("Model loaded")
 
 # def build_prompt_from_answers(answers: dict) -> str:
 #     # concise prompt - you can customize formatting

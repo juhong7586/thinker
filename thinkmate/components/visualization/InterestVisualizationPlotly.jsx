@@ -63,7 +63,7 @@ export default function InterestVisualizationPlotly({
   const single = { x: [], y: [], size: [], color: [], lineColor: [], lineWidth: [], text: [] };
   // memoize heavy computation: positions, simulation, and trace building
   const { traces: memoTraces, layout, config } = React.useMemo(() => {
-    const padding = 60;
+    const padding = 70;
 
     // compute numeric width/height fallback (handles string props)
     const numericWidth = (typeof width === 'number' && Number.isFinite(width)) ? width : (typeof window !== 'undefined' ? window.innerWidth : 1200);
@@ -86,7 +86,7 @@ export default function InterestVisualizationPlotly({
       const contributors = (n.original && n.original.contributors) || [];
       const userStudentId = currentUser ? String(currentUser.id ?? currentUser.studentId ?? currentUser.user?.id ?? currentUser.userId) : null;
       const isMine = userStudentId && contributors.map(String).includes(userStudentId);
-      const hover = `${n.field || ''}<br>${n.original?.avgSocialImpact ?? ''}/${n.original?.avgLevel ?? ''}`;
+      const hover = `${n.field || ''}<br>🧡:${n.original?.avgSocialImpact ?? ''}<br>🤝:${n.original?.avgLevel ?? ''}`;
 
       return {
         original: n,
@@ -176,7 +176,7 @@ export default function InterestVisualizationPlotly({
         const yRange = [0,1,2,3,4,5,6,7,8,9,10];
         const axisHeight = numericHeight - 100;
         const tickvals = yRange.map((_, i) => (i / (yRange.length - 1)) * axisHeight);
-        return { visible: true, range: flipY? [axisHeight,0] : [0, axisHeight], tickmode: 'array', tickvals, ticktext: yRange, tickangle: 0, tickfont: { family: 'NanumSquareNeo', size: 12, color: '#222' } };
+        return { visible: false, range: flipY? [axisHeight,0] : [0, axisHeight], tickmode: 'array', tickvals, ticktext: yRange, tickangle: 0, tickfont: { family: 'NanumSquareNeo', size: 12, color: '#222' } };
       })(),
       hovermode: 'closest', paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { family: 'NanumSquareNeo', size: 12, color: '#222' }, hoverlabel: { font: { family: 'NanumSquareNeo', size: 12, color: '#222' } }
     };
