@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import generateFromAnswers from '../utils/genClient';
 import styles from '../styles/Survey.module.css'
 
 // Questions data configuration
@@ -27,91 +28,90 @@ const questionsData = [
     ,
     invert: true
   },
-  {
-    id: 3,
-    type: 'slider',
-    question: "It is difficult for me to sense what my friends think.",
-    label: 'Please rate your empathy on a scale of 1 to 7',
-    name: 'empathy3',
-    required: true,
-    errorMessage: 'This field is required',
-    min: 1,
-    max: 7
-    ,
-    invert: true
-  },
-  {
-    id: 4,
-    type: 'slider',
-    question: "It is difficult for me to sense what my neighbors think.",
-    label: 'Please rate your empathy on a scale of 1 to 7',
-    name: 'empathy4',
-    required: true,
-    errorMessage: 'This field is required',
-    min: 1,
-    max: 7,
-    invert: true
-  },
-  {
-    id: 5,
-    type: 'checkbox',
-    question: 'It is important to me that (      ) are okay.',
-    label: 'Please select at least one option',
-    name: 'empathy5',
-    required: true,
-    errorMessage: 'Please select at least one interest',
-    options: [
-      { value: 'self', label: 'Myself' },
-      { value: 'family', label: 'My family' },
-      { value: 'friends', label: 'My friends' },
-      { value: 'classmates', label: 'My classmates and my teacher' },
-      { value: 'school', label: 'My school' },
-      { value: 'community', label: 'My community' },
-      { value: 'country', label: 'My country' },
-      { value: 'world', label: 'The world' }
-    ]
-  },
-  {
-    id: 6,
-    type: 'radio',
-    question: "I can see situations from my friends' perspectives.",
-    label: 'Please select one option',
-    name: 'empathy6',
-    required: true,
-    errorMessage: 'Please select an option',
-    options: [
-      { value: 'Yes', label: 'Yes' },
-      { value: 'No', label: 'No' }
-    ]
-  },
- {
-    id: 7,
-    type: 'checkbox',
-    question: 'I can predict the needs of (      ).',
-    label: 'Please select at least one option',
-    name: 'empathy7',
-    required: true,
-    errorMessage: 'Please select at least one interest',
-    options: [
-      { value: 'self', label: 'Myself' },
-      { value: 'family', label: 'My family' },
-      { value: 'friends', label: 'My friends' },
-      { value: 'classmates', label: 'My classmates and my teacher' },
-      { value: 'school', label: 'My school' },
-      { value: 'community', label: 'My community' },
-      { value: 'country', label: 'My country' },
-      { value: 'world', label: 'The world' }
-    ]
-  },
-  {
-    id: 8,
-    type: 'text',
-    question: "Please write three words when you are thinking about others.",
-    label: 'It could be feelings, objects, or situations.',
-    name: 'empathy8',
-    required: true,
-    errorMessage: 'This field is required'
-  }
+//   {
+//     id: 3,
+//     type: 'slider',
+//     question: "It is difficult for me to sense what my friends think.",
+//     label: 'Please rate your empathy on a scale of 1 to 7',
+//     name: 'empathy3',
+//     required: true,
+//     errorMessage: 'This field is required',
+//     min: 1,
+//     max: 7
+//     ,
+//     invert: true
+//   },
+//   {
+//     id: 4,
+//     type: 'slider',
+//     question: "It is difficult for me to sense what my neighbors think.",
+//     label: 'Please rate your empathy on a scale of 1 to 7',
+//     name: 'empathy4',
+//     required: true,
+//     errorMessage: 'This field is required',
+//     min: 1,
+//     max: 7,
+//     invert: true
+//   },
+//   {
+//     id: 5,
+//     type: 'checkbox',
+//     question: 'It is important to me that (      ) are okay.',
+//     label: 'Please select at least one option',
+//     name: 'empathy5',
+//     required: true,
+//     errorMessage: 'Please select at least one interest',
+//     options: [
+//       { value: 'self', label: 'Myself' },
+//       { value: 'family', label: 'My family' },
+//       { value: 'friends', label: 'My friends' },
+//       { value: 'classmates', label: 'My classmates and my teacher' },
+//       { value: 'school', label: 'My school' },
+//       { value: 'community', label: 'My community' },
+//       { value: 'country', label: 'My country' },
+//       { value: 'world', label: 'The world' }
+//     ]
+//   },
+//   {
+//     id: 6,
+//     type: 'slider',
+//     question: "I can see situations from my friends' perspectives.",
+//     label: 'Please rate your empathy on a scale of 1 to 7',
+//     name: 'empathy6',
+//     required: true,
+//     errorMessage: 'This field is required',
+//     min: 1,
+//     max: 7,
+//     invert: true
+//   },
+//  {
+//     id: 7,
+//     type: 'checkbox',
+//     question: 'I can predict the needs of (      ).',
+//     label: 'Please select at least one option',
+//     name: 'empathy7',
+//     required: true,
+//     errorMessage: 'Please select at least one interest',
+//     options: [
+//       { value: 'self', label: 'Myself' },
+//       { value: 'family', label: 'My family' },
+//       { value: 'friends', label: 'My friends' },
+//       { value: 'classmates', label: 'My classmates and my teacher' },
+//       { value: 'school', label: 'My school' },
+//       { value: 'community', label: 'My community' },
+//       { value: 'country', label: 'My country' },
+//       { value: 'world', label: 'The world' }
+//     ]
+//   },
+//   {
+//     id: 8,
+//     type: 'text',
+//     question: "Please write three words when you are thinking about others.",
+//     label: 'It could be feelings, objects, or situations.',
+//     name: 'empathy8',
+//     required: true,
+//     errorMessage: 'This field is required'
+//   }
 ];
 
 // Data handler functions
@@ -136,25 +136,6 @@ const dataHandler = {
     return false;
   },
 
-  submitData: async (formData) => {
-    console.log('Form Data to Submit:', formData);
-    
-    try {
-      const response = await fetch('https://fake-api-server.com/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      console.log('Submission attempted');
-      return { success: true };
-    } catch (error) {
-      console.log('Expected error (fake server):', error.message);
-      return { success: true }; // Return success anyway for demo
-    }
-  },
 
   formatFormData: (answers) => {
     const formatted = {};
@@ -183,6 +164,8 @@ const SurveyForm = () => {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSendingToAI, setIsSendingToAI] = useState(false);
+  const [aiReply, setAiReply] = useState(null);
 
   const totalQuestions = questionsData.length;
   const currentQuestionData = questionsData[currentQuestion - 1];
@@ -243,10 +226,10 @@ const SurveyForm = () => {
     return isValid;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (validateCurrentQuestion()) {
       if (currentQuestion === totalQuestions) {
-        handleSubmit();
+        await handleSubmit();
       } else {
         setCurrentQuestion(prev => prev + 1);
       }
@@ -261,16 +244,63 @@ const SurveyForm = () => {
 
   const handleSubmit = async () => {
     const formData = dataHandler.formatFormData(answers);
-    const result = await dataHandler.submitData(formData);
-    
-    if (result.success) {
+    // First, submit to existing backend (demo)
+
+    if (formData) {
       setIsSubmitted(true);
+      console.log('SurveyForm: formData submitted, setIsSubmitted=true', { formData });
+    }
+
+    // Send formatted answers to AI for analysis/feedback via genClient
+    try {
+      setIsSendingToAI(true);
+      setAiReply(null);
+
+      const payload = {
+        type: 'survey_analysis',
+        data: formData,
+        meta: {
+          source: 'survey_form',
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      const gen = await generateFromAnswers(payload).catch(err => ({ error: err.message }));
+
+      if (gen && gen.error) {
+        setAiReply({ error: gen.error });
+        console.log('SurveyForm: AI returned error', gen.error);
+      } else if (gen && (gen.reply || gen.answer || gen.data)) {
+        setAiReply(gen.reply ?? gen.answer ?? gen.data);
+        console.log('SurveyForm: AI reply received', gen.reply ?? gen.answer ?? gen.data);
+      } else if (typeof gen === 'string') {
+        setAiReply(gen);
+        console.log('SurveyForm: AI string reply received', gen);
+      } else {
+        setAiReply({ info: 'No response from AI' });
+        console.log('SurveyForm: AI returned no recognizable reply', gen);
+      }
+    } catch (err) {
+      setAiReply({ error: err.message });
+    } finally {
+      setIsSendingToAI(false);
     }
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.formContainer}>
+        {/* DEBUG: visible debug banner while troubleshooting submission state */}
+        {isSubmitted && (
+          <div style={{position:'fixed',top:12,right:12,background:'#0b1220',color:'#e6f0ff',padding:'8px 12px',borderRadius:6,boxShadow:'0 2px 8px rgba(0,0,0,0.3)',zIndex:9999,fontSize:12}}>
+            <div style={{fontWeight:600,marginBottom:6}}>DEBUG</div>
+            <div>isSubmitted: {String(isSubmitted)}</div>
+            <div>isSendingToAI: {String(isSendingToAI)}</div>
+            <div style={{maxWidth:300,whiteSpace:'pre-wrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+              aiReply: {typeof aiReply === 'string' ? aiReply : JSON.stringify(aiReply)}
+            </div>
+          </div>
+        )}
         {/* Progress Bar */}
         <div className={styles.progressBar}>
           <div 
@@ -444,6 +474,22 @@ const SurveyForm = () => {
             <p className={`${styles.successText}`}>
               Your responses have been recorded. Thank you for completing the form.
             </p>
+            {/* AI Reply area */}
+            <div className={styles.aiReplyContainer}>
+              {isSendingToAI ? (
+                <p>Analyzing your responses...</p>
+              ) : aiReply ? (
+                aiReply.error ? (
+                  <div className={styles.aiError}>AI Error: {aiReply.error}</div>
+                ) : typeof aiReply === 'string' ? (
+                  <div className={styles.aiTextReply}>{aiReply}</div>
+                ) : (
+                  <pre className={styles.aiJsonReply}>{JSON.stringify(aiReply, null, 2)}</pre>
+                )
+              ) : (
+                <p className={styles.aiHint}>Receive personalized feedback from our AI once you submit.</p>
+              )}
+            </div>
           </div>
         )}
       </div>

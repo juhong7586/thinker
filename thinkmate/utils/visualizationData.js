@@ -20,9 +20,15 @@ const deterministicJitter = (seed, mag = 20) => {
 
 const impactToNum = (v) => {
   const s = (v || '').toString().toLowerCase();
-  if (s.includes('high')) return 10;
-  if (s.includes('moderate') || s.includes('middle') || s.includes('med')) return 5;
-  return 1;
+  if (s.includes('world')) return 9;
+  else if (s.includes('country')) return 8;
+  else if (s.includes('community')) return 7;
+  else if (s.includes('school')) return 5;
+  else if (s.includes('class')) return 4;
+  else if (s.includes('friends')) return 3;
+  else if (s.includes('family')) return 2;
+  else if (s.includes('self')) return 1;
+  else return 0;
 };
 
 
@@ -39,7 +45,7 @@ export function interestStats(interests = []) {
     const arr = groups[field];
     const count = arr.length;
     const avgLevel = count ? arr.reduce((s, v) => s + (Number(v.level) || 0), 0) / count : 0;
-    const avgSocialImpact = count ? arr.reduce((s, v) => s + impactToNum(v.socialImpact), 0) / count : 0;
+    const avgSocialImpact = count ? arr.reduce((s, v) => s + (impactToNum(v.socialImpact) || 0), 0) / count : 0;
     // prefer explicit interest color, otherwise fall back to the student's chosen color (student.studentColor)
     const rawColors = arr.map(d => {
       if (d && d.color) return String(d.color).trim();
