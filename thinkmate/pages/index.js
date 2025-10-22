@@ -6,6 +6,8 @@ import InterestVisualization from '../components/visualization/InterestVisualiza
 import { useRouter } from 'next/router'
 
 
+// ai result is passed into visualization via props
+
 function SignedInNameBox({ signedUser, onLogout }) {
   const [open, setOpen] = useState(false)
   return (
@@ -24,6 +26,7 @@ function SignedInNameBox({ signedUser, onLogout }) {
 }
 
 
+
 export default function Home() {
   const containerRef = useRef();
   const getWindowSize = () => ({
@@ -37,6 +40,40 @@ export default function Home() {
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const router = useRouter();
+  const [aiPending, setAiPending] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+
+  // Watch localStorage keys for AI pending/result so we can show a loading overlay
+  useEffect(() => {
+    let mounted = true;
+    const check = () => {
+      try {
+        const pending = localStorage.getItem('thinkmate.ai.pending');
+        const resultRaw = localStorage.getItem('thinkmate.ai.result');
+        if (!mounted) return;
+        setAiPending(Boolean(pending));
+        try {
+          setAiResult(resultRaw ? JSON.parse(resultRaw) : null);
+        } catch (e) {
+          setAiResult(resultRaw || null);
+        }
+      } catch (e) {
+        if (!mounted) return;
+        setAiPending(false);
+        setAiResult(null);
+      }
+    };
+
+    check();
+    const onStorage = (e) => {
+      if (e.key && (e.key.startsWith('thinkmate.ai.'))) check();
+    };
+    window.addEventListener('storage', onStorage);
+
+    // also poll occasionally for same-tab updates
+    const iv = setInterval(check, 1000);
+    return () => { mounted = false; window.removeEventListener('storage', onStorage); clearInterval(iv); };
+  }, []);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -101,7 +138,7 @@ export default function Home() {
       
       <div className={styles.container}>
         <main className={styles.mainContent}>
-          <InterestVisualization width={size.width} height={size.height} signedUser={signedUser} selectedGroup={selectedGroup} />
+          <InterestVisualization width={size.width} height={size.height} signedUser={signedUser} selectedGroup={selectedGroup} aiResult={aiResult} />
           {/* <div className="panelGroup">
           <Link href="/analysis">
             <button className={styles.pageButton} style={{
@@ -143,6 +180,44 @@ export default function Home() {
         
         
       </div>
+      {/* AI Loading Overlay */}
+      {aiPending && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(6,8,15,0.45)' }}>
+          <div style={{ background: 'white', padding: 24, borderRadius: 12, boxShadow: '0 12px 40px rgba(2,6,23,0.6)', minWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Analyzing your responses</div>
+            <div style={{ marginBottom: 12, color: '#444' }}>Our AI is preparing personalized feedback — this may take a moment.</div>
+            <div style={{ height: 8, background: '#eef2ff', borderRadius: 6, overflow: 'hidden' }}>
+              <div style={{ width: '0%', height: '100%', background: '#6b46c1', transition: 'width 1s linear 2s' }} />
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <button onClick={() => { try { localStorage.removeItem('thinkmate.ai.pending'); } catch(e){}; setAiPending(false); }} style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: '#eee', cursor: 'pointer' }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Result Toast */}
+      {aiResult && (
+        <div style={{ position: 'fixed', right: 18, bottom: 18, zIndex: 9999 }}>
+          <div style={{ background: 'white', padding: 12, borderRadius: 10, boxShadow: '0 8px 28px rgba(0,0,0,0.12)', minWidth: 260 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>AI Feedback Ready</div>
+            <div style={{ maxWidth: 420, whiteSpace: 'pre-wrap', color: '#222' }}>
+              {aiResult.error ? (
+                <div style={{ color: '#b91c1c' }}>Error: {aiResult.error}</div>
+              ) : typeof aiResult === 'string' ? (
+                aiResult
+              ) : aiResult.reply ? (
+                aiResult.reply
+              ) : (
+                JSON.stringify(aiResult, null, 2)
+              )}
+            </div>
+            <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+              <button onClick={() => { try { localStorage.removeItem('thinkmate.ai.result'); setAiResult(null); } catch(e){} }} style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: '#eef2ff', cursor: 'pointer' }}>Dismiss</button>
+            </div>
+          </div>
+        </div>
+      )}
       
         </>
     )

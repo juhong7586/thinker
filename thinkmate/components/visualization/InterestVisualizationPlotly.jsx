@@ -46,6 +46,7 @@ export default function InterestVisualizationPlotly({
   height = {propHeight},
   maxRings = 6,
   flipY = true,
+  aiResult = null,
 }) {
   const gdRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -86,7 +87,7 @@ export default function InterestVisualizationPlotly({
       const contributors = (n.original && n.original.contributors) || [];
       const userStudentId = currentUser ? String(currentUser.id ?? currentUser.studentId ?? currentUser.user?.id ?? currentUser.userId) : null;
       const isMine = userStudentId && contributors.map(String).includes(userStudentId);
-      const hover = `${n.field || ''}<br>🧡:${n.original?.avgSocialImpact ?? ''}<br>🤝:${n.original?.avgLevel ?? ''}`;
+      const hover = `${n.field || ''}<br>${n.original?.avgSocialImpact ?? ''}/${n.original?.avgLevel ?? ''}`;
 
       return {
         original: n,
@@ -180,6 +181,27 @@ export default function InterestVisualizationPlotly({
       })(),
       hovermode: 'closest', paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { family: 'NanumSquareNeo', size: 12, color: '#222' }, hoverlabel: { font: { family: 'NanumSquareNeo', size: 12, color: '#222' } }
     };
+
+    // If an AI result is provided, add a small annotation box in the top-right
+    if (aiResult) {
+      try {
+        const raw = (typeof aiResult === 'string') ? aiResult : (aiResult.reply || JSON.stringify(aiResult));
+        const aiFirst = String(raw).split('\n')[0];
+        const aiCategory = aiFirst.slice(13, 30);
+        console.log('AI First:', aiFirst, 'AI Category:', aiCategory);
+        
+
+
+        // layout.annotations = layout.annotations || [];
+        // layout.annotations.push({
+        //   xref: 'paper', yref: 'paper', x: 0.98, y: 0.98,
+        //   xanchor: 'right', yanchor: 'top', showarrow: false,
+        //   align: 'right', text: preview.replace(/\n/g, '<br>'), bgcolor: 'rgba(255,255,255,0.9)', bordercolor: '#ddd', borderwidth: 1, font: { size: 12, color: '#111' }
+        // });
+      } catch (e) {
+        // ignore annotation errors
+      }
+    }
 
     const config = { responsive: true, displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'editInChartStudio', 'zoom2d', 'select2d', 'pan2d', 'lasso2d', 'autoScale2d', 'resetScale2d', 'zoomIn2d', 'zoomOut2d'] };
 

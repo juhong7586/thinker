@@ -1,6 +1,6 @@
 import re, random
 
-def build_social_impact_prompt(answers: dict) -> str:
+def build_prompt_from_answers(answers: dict) -> str:
     txt = str(answers).lower()
     lvls = ["Self","Family","Friends","Class","School","Community","City","Country","World"]
     kw = {"Friends":["friend","peer"],"Class":["class","team"],"School":["school"],"Community":["community","local"],"Family":["family","home"],"Self":["myself","me"],"City":["city"],"Country":["country"],"World":["world"]}

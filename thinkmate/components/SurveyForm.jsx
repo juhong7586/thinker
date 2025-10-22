@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import generateFromAnswers from '../utils/genClient';
+import { useRouter } from 'next/router';
 import styles from '../styles/Survey.module.css'
 
 // Questions data configuration
@@ -253,9 +254,8 @@ const SurveyForm = () => {
 
     // Send formatted answers to AI for analysis/feedback via genClient
     try {
-      setIsSendingToAI(true);
-      setAiReply(null);
-
+      // Prepare payload and set a pending marker in localStorage so the home page
+      // can show a loading overlay after we redirect the user there.
       const payload = {
         type: 'survey_analysis',
         data: formData,
@@ -265,27 +265,45 @@ const SurveyForm = () => {
         }
       };
 
-      const gen = await generateFromAnswers(payload).catch(err => ({ error: err.message }));
-
-      if (gen && gen.error) {
-        setAiReply({ error: gen.error });
-        console.log('SurveyForm: AI returned error', gen.error);
-      } else if (gen && (gen.reply || gen.answer || gen.data)) {
-        setAiReply(gen.reply ?? gen.answer ?? gen.data);
-        console.log('SurveyForm: AI reply received', gen.reply ?? gen.answer ?? gen.data);
-      } else if (typeof gen === 'string') {
-        setAiReply(gen);
-        console.log('SurveyForm: AI string reply received', gen);
-      } else {
-        setAiReply({ info: 'No response from AI' });
-        console.log('SurveyForm: AI returned no recognizable reply', gen);
+      // store pending state and payload for the background worker
+      try {
+        localStorage.setItem('thinkmate.ai.pending', '1');
+        localStorage.setItem('thinkmate.ai.payload', JSON.stringify(payload));
+        // clear any previous result
+        localStorage.removeItem('thinkmate.ai.result');
+      } catch (e) {
+        console.warn('SurveyForm: failed to write ai.pending to localStorage', e);
       }
+
+      // Start background generation but don't await it here — we redirect the user
+      // to the home page and let the home page observe the pending flag.
+      (async () => {
+        try {
+          const gen = await generateFromAnswers(payload).catch(err => ({ error: err.message }));
+          // store result
+          try {
+            localStorage.setItem('thinkmate.ai.result', JSON.stringify(gen));
+          } catch (e) {
+            console.warn('SurveyForm: failed to write ai.result to localStorage', e);
+          }
+        } catch (err) {
+          try { localStorage.setItem('thinkmate.ai.result', JSON.stringify({ error: err.message })); } catch (e) {}
+        } finally {
+          try { localStorage.removeItem('thinkmate.ai.pending'); } catch (e) {}
+        }
+      })();
+
+      // redirect to home and let home show loading overlay
+      try { router.push('/'); } catch (e) { /* best-effort */ }
+      return;
     } catch (err) {
       setAiReply({ error: err.message });
     } finally {
       setIsSendingToAI(false);
     }
   };
+
+  const router = useRouter();
 
   return (
     <div className={styles.container}>
