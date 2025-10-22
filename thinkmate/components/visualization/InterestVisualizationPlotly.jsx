@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { forceSimulation, forceCollide, forceX, forceY } from 'd3-force';
+import { type } from 'os';
 
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -162,16 +163,27 @@ export default function InterestVisualizationPlotly({
         text: singleTrace.text, hoverinfo: 'text', showlegend: false, textfont: { family: 'NanumSquareNeo', size: 15, color: '#222' }
       });
     }
+    const xRange = ['Self', 'Family', 'Friends', 'Class', 'School', 'Community', 'City', 'Country', 'World'];
+    const n = xRange.length;
 
+    const bPaper = [];
+    for (let i = 0; i <= n; i++) bPaper.push(i / n);
+
+      // tick positions = centers in paper coords
+    const centersPaper = [];
+    for (let i = 0; i < n; i++) centersPaper.push((bPaper[i] + bPaper[i+1]) / 2);
+
+
+    // compute axis layout and set tick positions to centers (so labels appear between separators)
     const layout = {
       width: numericWidth,
       height: numericHeight,
       margin: { l: 20, r: 20, t: 20, b: 20 },
       xaxis: (() => {
-        const xRange = ['Self', 'Family', 'Friends', 'Class', 'School', 'Community', 'City', 'Country', 'World'];
         const axisWidth = numericWidth;
-        const tickvals = xRange.map((_, i) => (i / (xRange.length - 1)) * axisWidth);
-        return { visible: true, range: [0, axisWidth], tickmode: 'array', tickvals, ticktext: xRange, tickangle: 0, tickfont: { family: 'NanumSquareNeo', size: 12, color: '#222' } };
+        // centersPaper are fractions 0..1; convert to data-space tick positions
+        const centersData = centersPaper.map(c => c * axisWidth);
+        return { visible: true, range: [0, axisWidth], tickmode: 'array', tickvals: centersData, ticktext: xRange, tickangle: 0, tickfont: { family: 'NanumSquareNeo', size: 16, color: '#222' } };
       })(),
       yaxis: (() => {
         const yRange = [0,1,2,3,4,5,6,7,8,9,10];
@@ -182,27 +194,84 @@ export default function InterestVisualizationPlotly({
       hovermode: 'closest', paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { family: 'NanumSquareNeo', size: 12, color: '#222' }, hoverlabel: { font: { family: 'NanumSquareNeo', size: 12, color: '#222' } }
     };
 
-    // If an AI result is provided, add a small annotation box in the top-right
+    // If an AI result is provided, add highlighted rectangles for any matching categories
     if (aiResult) {
       try {
         const raw = (typeof aiResult === 'string') ? aiResult : (aiResult.reply || JSON.stringify(aiResult));
-        const aiFirst = String(raw).split('\n')[0];
-        const aiCategory = aiFirst.slice(13, 30);
-        console.log('AI First:', aiFirst, 'AI Category:', aiCategory);
+        const lower = String(raw).toLowerCase();
+        const matched = [];
+        // find which categories are mentioned
+        xRange.forEach((label, idx) => {
+          if (lower.includes(label.toLowerCase())) matched.push(idx);
+        });
+
+        if (matched.length) {
+          layout.shapes = layout.shapes || [];
+          // push one rectangle per matched index using paper coords (bPaper)
+          matched.forEach(idx => {
+            const start = bPaper[idx];
+            const end = bPaper[idx + 1];
+            layout.shapes.push({
+              type: 'rect',
+              xref: 'paper',
+              yref: 'paper',
+              x0: start,
+              y0: 0,
+              x1: end,
+              y1: 1,
+              fillcolor: '#FFEE8C',
+              opacity: 0.7,
+              line: { color: '#ddd', width: 1 },
+              layer: 'below'
+            });
+          });
+          console.log('AI highlighted categories:', matched.map(i => xRange[i]).join(', '));
+        }
+      
+        const candidates = [];
         
-
-
-        // layout.annotations = layout.annotations || [];
-        // layout.annotations.push({
-        //   xref: 'paper', yref: 'paper', x: 0.98, y: 0.98,
-        //   xanchor: 'right', yanchor: 'top', showarrow: false,
-        //   align: 'right', text: preview.replace(/\n/g, '<br>'), bgcolor: 'rgba(255,255,255,0.9)', bordercolor: '#ddd', borderwidth: 1, font: { size: 12, color: '#111' }
-        // });
+        const text = String(raw || '');
+        const lines = text.split(/\r?\n/);
+        const itemRe = /^\s*(\d+)[\.)]\s*(.*)$/; // matches '4. something' or '4) something'
+        const items = {};
+        let cur = null;
+        for (let ln of lines) {
+          const m = ln.match(itemRe);
+          if (m) {
+            cur = Number(m[1]);
+            items[cur] = (items[cur] || '') + m[2].trim();
+          } else if (cur !== null) {
+            const t = ln.trim();
+            if (t) items[cur] = items[cur] + ' ' + t;
+          }
+        }
+        const item4 = items[4] || '';
+        // Prefer extracting quoted words (e.g. 'Mindfulness') from item4
+        const seen = new Set();
+        const pushIfNew = (v) => { const t = String(v||'').trim(); if (t && !seen.has(t)) { seen.add(t); candidates.push(t); } };
+        // extract single-quoted items
+        try {
+          const singleRe = /'([^']+)'/g;
+          let m;
+          while ((m = singleRe.exec(item4)) !== null) pushIfNew(m[1]);
+          // also check double-quoted items
+          const doubleRe = /"([^"]+)"/g;
+          while ((m = doubleRe.exec(item4)) !== null) pushIfNew(m[1]);
+        } catch (e) {
+          // ignore
+        }
+        // fallback: if no quoted items found, split by common separators
+        if (candidates.length === 0 && item4) {
+          item4.split(/[;,\/\n]+/).map(s => s.trim()).filter(Boolean).forEach(s => pushIfNew(s));
+        }
+        console.log('AI suggested topics:', candidates);
       } catch (e) {
-        // ignore annotation errors
+        // ignore parsing errors
       }
     }
 
+
+    
     const config = { responsive: true, displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'editInChartStudio', 'zoom2d', 'select2d', 'pan2d', 'lasso2d', 'autoScale2d', 'resetScale2d', 'zoomIn2d', 'zoomOut2d'] };
 
     return { traces, layout, config };

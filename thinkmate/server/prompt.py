@@ -13,8 +13,8 @@ def build_prompt_from_answers(answers: dict) -> str:
     # We ask the model to respond EXACTLY like the template below (no extra prose):
     template = (
         "RESPOND EXACTLY IN THIS FORMAT (NO EXTRA TEXT):\n"
-        "1. options: {opt0}, {opt1}\n"
-        "2. task: The student seeks change at {opt0} and {opt1} levels, focusing on {focus}. Their aims are concrete and near-term.\n"
+        "1. options: {opt0} {opt1}\n"
+        "2. task: You seek change at {opt0} and {opt1} levels, focusing on {focus}. Their aims are concrete and near-term.\n"
         "3. task: What is one step you could start this week for {opt0} or {opt1}?\n"
         "4. suggest 3 topics they can explore further per each social impact level:\n"
         "- {opt0}: {topics0}\n"

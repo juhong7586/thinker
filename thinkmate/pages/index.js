@@ -42,6 +42,8 @@ export default function Home() {
   const router = useRouter();
   const [aiPending, setAiPending] = useState(false);
   const [aiResult, setAiResult] = useState(null);
+  const lastAiResultRef = useRef(null);
+  const prevAiPendingRef = useRef(false);
 
   // Watch localStorage keys for AI pending/result so we can show a loading overlay
   useEffect(() => {
@@ -57,13 +59,31 @@ export default function Home() {
         } catch (e) {
           setAiResult(resultRaw || null);
         }
+        // If we transitioned from pending -> not pending and a new result appeared, refresh once
+        const hadPending = !!prevAiPendingRef.current;
+        const nowPending = Boolean(pending);
+        const hasResult = !!resultRaw;
+        if (hadPending && !nowPending && hasResult && resultRaw !== lastAiResultRef.current) {
+          // remember the result so we don't reload repeatedly
+          lastAiResultRef.current = resultRaw;
+          // do a single soft reload using next/router so client state refreshes
+          setTimeout(() => {
+            try {
+              router.replace(router.asPath);
+            } catch (e) {
+              window.location.reload();
+            }
+          }, 250);
+        }
+        prevAiPendingRef.current = nowPending;
       } catch (e) {
         if (!mounted) return;
         setAiPending(false);
         setAiResult(null);
       }
     };
-
+    // initialize previous pending flag from storage on mount
+    try { prevAiPendingRef.current = Boolean(localStorage.getItem('thinkmate.ai.pending')); } catch (e) { prevAiPendingRef.current = false; }
     check();
     const onStorage = (e) => {
       if (e.key && (e.key.startsWith('thinkmate.ai.'))) check();
@@ -207,7 +227,32 @@ export default function Home() {
               ) : typeof aiResult === 'string' ? (
                 aiResult
               ) : aiResult.reply ? (
-                aiResult.reply
+                (() => {
+                  // show only numbered items 2 and 3 from the AI reply
+                  const raw = (typeof aiResult === 'string') ? aiResult : (aiResult.reply || JSON.stringify(aiResult));
+                  console.log(raw);
+                  const text = String(raw || '');
+                  const lines = text.split(/\r?/);
+                  const itemRe = /^\s*(\d+)[\.)]\s*(.*)$/; // matches '1. foo' or '2) bar'
+                  const items = {};
+                  let cur = null;
+                  for (let ln of lines) {
+                    const m = ln.match(itemRe);
+                    if (m) {
+                      cur = Number(m[1]);
+                      items[cur] = (items[cur] || '') + m[2].trim();
+                    } else if (cur !== null) {
+                      // continuation line for current item
+                      const t = ln.trim();
+                      if (t) items[cur] = items[cur] + ' ' + t;
+                    }
+                  }
+                  const out = [];
+                  [2,3].forEach(i => { if (items[i]) out.push(items[i].trim()); });
+                  if (out.length) return out.join('\n\n');
+                  // fallback: show a portion of reply
+                  return text.slice(30, 1000);
+                })()
               ) : (
                 JSON.stringify(aiResult, null, 2)
               )}
