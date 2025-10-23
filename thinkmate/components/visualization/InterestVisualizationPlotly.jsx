@@ -429,17 +429,17 @@ export default function InterestVisualizationPlotly({
             <div style={{ fontWeight: 700, marginBottom: 8 }}>Register interest: {selectedCandidate.field}</div>
             <div style={{ marginBottom: 8 }}>
               <label style={{ display: 'block', fontSize: 13, marginBottom: 6 }}>Interest level (1-10)</label>
-              <input type="number" min={1} max={10} value={regLevel} onChange={e => setRegLevel(Number(e.target.value))} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd' }} />
+              <input type="number" min={1} max={10} value={regLevel} onChange={e => setRegLevel(Number(e.target.value))} style={{ width: '90%', padding: '8px 10px', borderRadius: 20, border: '1px solid #ddd' }} />
             </div>
             <div style={{ marginBottom: 8 }}>
               <label style={{ display: 'block', fontSize: 13, marginBottom: 6 }}>Desired social impact</label>
-              <select value={regImpact} onChange={e => setRegImpact(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #ddd' }}>
+              <select value={regImpact} onChange={e => setRegImpact(e.target.value)} style={{ width: '97%', padding: '8px 10px', borderRadius: 20, border: '1px solid #ddd' }}>
                 {xRange.map(x => <option key={x} value={x}>{x}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={handleCancel} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #ddd', background: '#fff', cursor: 'pointer' }}>Cancel</button>
-              <button onClick={handleSubmitNewInterest} style={{ padding: '8px 12px', borderRadius: 6, border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer' }}>Register</button>
+              <button onClick={handleSubmitNewInterest} style={{ padding: '8px 12px', borderRadius: 6, border: 'none', background: '#F3C25A', color: '#fff', cursor: 'pointer' }}>Register</button>
             </div>
           </div>
         </div>
