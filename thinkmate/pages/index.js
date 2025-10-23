@@ -130,6 +130,26 @@ export default function Home() {
     }
   }, [])
 
+  // centralized logout that also clears local saved interests and AI keys
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('thinkmate_user');
+      localStorage.removeItem('thinkmate.newInterests');
+      localStorage.removeItem('thinkmate.ai.pending');
+      localStorage.removeItem('thinkmate.ai.result');
+      localStorage.removeItem('thinkmate.ai.payload');
+    } catch (e) {
+      // ignore
+    }
+    // clear client state for AI UI and user
+    setAiPending(false);
+    setAiResult(null);
+    setSignedIn(false);
+    setSignedUser(null);
+    // soft reload so other pages refresh their state
+    try { router.reload(); } catch (e) { window.location.reload(); }
+  };
+
   // when signedUser is present, fetch their groups
   useEffect(() => {
     if (!signedUser) return;
@@ -176,7 +196,7 @@ export default function Home() {
           <div style={{  position: 'absolute', top: '6vh', left: '2vw' }}>
             {signedIn ? (
             <div style={{ display: 'grid', gap: 12 }}>
-              <SignedInNameBox signedUser={signedUser} onLogout={() => { localStorage.removeItem('thinkmate_user'); setSignedIn(false); setSignedUser(null); router.reload(); }} />
+              <SignedInNameBox signedUser={signedUser} onLogout={handleLogout} />
 
               {/* group selector */}
               {groups.length > 0 && (
@@ -230,6 +250,7 @@ export default function Home() {
                 (() => {
                   // show only numbered items 2 and 3 from the AI reply
                   const raw = (typeof aiResult === 'string') ? aiResult : (aiResult.reply || JSON.stringify(aiResult));
+                  console.log(raw);
                   const text = String(raw || '');
                   const lines = text.split(/\r?/);
                   const itemRe = /^\s*(\d+)[\.)]\s*(.*)$/; // matches '1. foo' or '2) bar'

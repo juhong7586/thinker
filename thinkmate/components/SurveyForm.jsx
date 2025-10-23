@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import generateFromAnswers from '../utils/genClient';
 import { useRouter } from 'next/router';
 import styles from '../styles/Survey.module.css'
@@ -167,6 +167,7 @@ const SurveyForm = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSendingToAI, setIsSendingToAI] = useState(false);
   const [aiReply, setAiReply] = useState(null);
+  const [hasCurrentUser, setHasCurrentUser] = useState(false);
 
   const totalQuestions = questionsData.length;
   const currentQuestionData = questionsData[currentQuestion - 1];
@@ -305,6 +306,16 @@ const SurveyForm = () => {
 
   const router = useRouter();
 
+  // enable survey only when a current user is present
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('thinkmate_user');
+      setHasCurrentUser(Boolean(raw));
+    } catch (e) {
+      setHasCurrentUser(false);
+    }
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.formContainer}>
@@ -329,6 +340,12 @@ const SurveyForm = () => {
 
         {!isSubmitted ? (
           <>
+            {!hasCurrentUser && (
+              <div style={{ marginBottom: 12, padding: 12, background: '#fff7ed', border: '1px solid #f5c6a5', borderRadius: 8 }}>
+                <strong>Please sign in to submit the survey.</strong>
+                <div style={{ marginTop: 6 }}>Your responses are saved to your account so you can access AI feedback across devices.</div>
+              </div>
+            )}
             {/* Question Display */}
             <div className="animate-fadeIn">
               <span className={styles.questionCounter}>
@@ -477,6 +494,8 @@ const SurveyForm = () => {
               <button
                 onClick={handleNext}
                 className={`${styles.surveyButton} ${styles.btnNext}`}
+                disabled={!hasCurrentUser}
+                title={!hasCurrentUser ? 'Sign in to enable submitting the survey' : undefined}
               >
                 {currentQuestion === totalQuestions ? 'Submit' : 'Next'}
               </button>
