@@ -230,7 +230,6 @@ export default function Home() {
                 (() => {
                   // show only numbered items 2 and 3 from the AI reply
                   const raw = (typeof aiResult === 'string') ? aiResult : (aiResult.reply || JSON.stringify(aiResult));
-                  console.log(raw);
                   const text = String(raw || '');
                   const lines = text.split(/\r?/);
                   const itemRe = /^\s*(\d+)[\.)]\s*(.*)$/; // matches '1. foo' or '2) bar'

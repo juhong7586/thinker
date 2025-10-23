@@ -126,7 +126,7 @@ export default function InterestVisualizationPlotly({
         console.error('d3-force simulation failed', e);
       }
     }
-
+    const candidates = [];
     // build traces
     const traces = [];
     const singleTrace = { x: [], y: [], size: [], color: [], lineColor: [], lineWidth: [], text: [] };
@@ -219,7 +219,7 @@ export default function InterestVisualizationPlotly({
               y0: 0,
               x1: end,
               y1: 1,
-              fillcolor: '#FFEE8C',
+              fillcolor: 'rgba(255,238,140, 0.3)',
               opacity: 0.7,
               line: { color: '#ddd', width: 1 },
               layer: 'below'
@@ -228,8 +228,6 @@ export default function InterestVisualizationPlotly({
           console.log('AI highlighted categories:', matched.map(i => xRange[i]).join(', '));
         }
       
-        const candidates = [];
-        
         const text = String(raw || '');
         const lines = text.split(/\r?\n/);
         const itemRe = /^\s*(\d+)[\.)]\s*(.*)$/; // matches '4. something' or '4) something'
@@ -265,17 +263,40 @@ export default function InterestVisualizationPlotly({
           item4.split(/[;,\/\n]+/).map(s => s.trim()).filter(Boolean).forEach(s => pushIfNew(s));
         }
         console.log('AI suggested topics:', candidates);
+        
+        // distribute candidate circles horizontally across the plot area (between padding and width-padding)
+        const startX = padding;
+        const endX = (numericWidth - padding);
+        const bottomY = numericHeight - padding*2; // place near bottom
+        const canCircles = candidates.map((c, i) => {
+          const count = Math.max(1, candidates.length);
+          const xPos = count === 1 ? (numericWidth / 2) : (startX + (i / (count - 1)) * (endX - startX));
+          return { original: c, _x: xPos, _y: bottomY, _size: 30, colors: [], isMine: false, hover: `${c}`, field: c };
+        });
+
+        // convert candidate objects into tiny, light-gray marker traces and add them
+        const smallTraces = canCircles.map(c => ({
+          x: [c._x], y: [c._y], mode: 'markers+text',
+          marker: { size: Math.max(6, Math.round(c._size)), color: 'rgba(255, 255, 255, 0.0)', line: { color: '#FFEE8C', width: 2 } },
+          text: [c.field], textposition: 'top center', textfont: { family: 'NanumSquareNeo', size: 11, color: '#444' },
+          hoverinfo: 'text', showlegend: false
+        }));
+
+        // add smallTraces after other traces so they render on top
+        traces.push(...smallTraces);
+
+        
       } catch (e) {
         // ignore parsing errors
       }
-    }
-
+    };
+    
 
     
     const config = { responsive: true, displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'editInChartStudio', 'zoom2d', 'select2d', 'pan2d', 'lasso2d', 'autoScale2d', 'resetScale2d', 'zoomIn2d', 'zoomOut2d'] };
 
     return { traces, layout, config };
-  }, [nodes, width, height, maxRings, flipY, currentUser]);
+  }, [nodes, width, height, maxRings, flipY, currentUser, aiResult]);
   // use memoized results from computation
 
   return (
