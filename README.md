@@ -13,12 +13,13 @@ AI-powered collaborative ideation platform that helps students discover shared i
 
 \`\`\`bash
 npm run dev
-python ./server/app.py
-\`\`\`
+pyenv activate .venv   
+MODEL_ID="google/gemma-3-1b-it" uvicorn server.app:app --host 0.0.0.0 --port 8000 &> server.log &
+tail -f server.log
+npx prisma studio --schema='thinkmate/prisma/schema.prisma' 
 
 \`\`\`
-npx prisma studio --schema='thinkmate/prisma/schema.prisma' 
-\`\`\` 
+ 
 
 ## Tech Stack
 

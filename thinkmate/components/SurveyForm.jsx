@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import generateFromAnswers from '../utils/genClient';
+import { useRouter } from 'next/router';
 import styles from '../styles/Survey.module.css'
 
 // Questions data configuration
@@ -166,6 +167,7 @@ const SurveyForm = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSendingToAI, setIsSendingToAI] = useState(false);
   const [aiReply, setAiReply] = useState(null);
+  const [hasCurrentUser, setHasCurrentUser] = useState(false);
 
   const totalQuestions = questionsData.length;
   const currentQuestionData = questionsData[currentQuestion - 1];
@@ -253,9 +255,8 @@ const SurveyForm = () => {
 
     // Send formatted answers to AI for analysis/feedback via genClient
     try {
-      setIsSendingToAI(true);
-      setAiReply(null);
-
+      // Prepare payload and set a pending marker in localStorage so the home page
+      // can show a loading overlay after we redirect the user there.
       const payload = {
         type: 'survey_analysis',
         data: formData,
@@ -265,27 +266,55 @@ const SurveyForm = () => {
         }
       };
 
-      const gen = await generateFromAnswers(payload).catch(err => ({ error: err.message }));
-
-      if (gen && gen.error) {
-        setAiReply({ error: gen.error });
-        console.log('SurveyForm: AI returned error', gen.error);
-      } else if (gen && (gen.reply || gen.answer || gen.data)) {
-        setAiReply(gen.reply ?? gen.answer ?? gen.data);
-        console.log('SurveyForm: AI reply received', gen.reply ?? gen.answer ?? gen.data);
-      } else if (typeof gen === 'string') {
-        setAiReply(gen);
-        console.log('SurveyForm: AI string reply received', gen);
-      } else {
-        setAiReply({ info: 'No response from AI' });
-        console.log('SurveyForm: AI returned no recognizable reply', gen);
+      // store pending state and payload for the background worker
+      try {
+        localStorage.setItem('thinkmate.ai.pending', '1');
+        localStorage.setItem('thinkmate.ai.payload', JSON.stringify(payload));
+        // clear any previous result
+        localStorage.removeItem('thinkmate.ai.result');
+      } catch (e) {
+        console.warn('SurveyForm: failed to write ai.pending to localStorage', e);
       }
+
+      // Start background generation but don't await it here — we redirect the user
+      // to the home page and let the home page observe the pending flag.
+      (async () => {
+        try {
+          const gen = await generateFromAnswers(payload).catch(err => ({ error: err.message }));
+          // store result
+          try {
+            localStorage.setItem('thinkmate.ai.result', JSON.stringify(gen));
+          } catch (e) {
+            console.warn('SurveyForm: failed to write ai.result to localStorage', e);
+          }
+        } catch (err) {
+          try { localStorage.setItem('thinkmate.ai.result', JSON.stringify({ error: err.message })); } catch (e) {}
+        } finally {
+          try { localStorage.removeItem('thinkmate.ai.pending'); } catch (e) {}
+        }
+      })();
+
+      // redirect to home and let home show loading overlay
+      try { router.push('/'); } catch (e) { /* best-effort */ }
+      return;
     } catch (err) {
       setAiReply({ error: err.message });
     } finally {
       setIsSendingToAI(false);
     }
   };
+
+  const router = useRouter();
+
+  // enable survey only when a current user is present
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('thinkmate_user');
+      setHasCurrentUser(Boolean(raw));
+    } catch (e) {
+      setHasCurrentUser(false);
+    }
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -311,6 +340,12 @@ const SurveyForm = () => {
 
         {!isSubmitted ? (
           <>
+            {!hasCurrentUser && (
+              <div style={{ marginBottom: 12, padding: 12, background: '#fff7ed', border: '1px solid #f5c6a5', borderRadius: 8 }}>
+                <strong>Please sign in to submit the survey.</strong>
+                <div style={{ marginTop: 6 }}>Your responses are saved to your account so you can access AI feedback across devices.</div>
+              </div>
+            )}
             {/* Question Display */}
             <div className="animate-fadeIn">
               <span className={styles.questionCounter}>
@@ -459,6 +494,8 @@ const SurveyForm = () => {
               <button
                 onClick={handleNext}
                 className={`${styles.surveyButton} ${styles.btnNext}`}
+                disabled={!hasCurrentUser}
+                title={!hasCurrentUser ? 'Sign in to enable submitting the survey' : undefined}
               >
                 {currentQuestion === totalQuestions ? 'Submit' : 'Next'}
               </button>

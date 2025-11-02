@@ -6,6 +6,8 @@ import InterestVisualization from '../components/visualization/InterestVisualiza
 import { useRouter } from 'next/router'
 
 
+// ai result is passed into visualization via props
+
 function SignedInNameBox({ signedUser, onLogout }) {
   const [open, setOpen] = useState(false)
   return (
@@ -24,6 +26,7 @@ function SignedInNameBox({ signedUser, onLogout }) {
 }
 
 
+
 export default function Home() {
   const containerRef = useRef();
   const getWindowSize = () => ({
@@ -37,6 +40,60 @@ export default function Home() {
   const [groups, setGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const router = useRouter();
+  const [aiPending, setAiPending] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const lastAiResultRef = useRef(null);
+  const prevAiPendingRef = useRef(false);
+
+  // Watch localStorage keys for AI pending/result so we can show a loading overlay
+  useEffect(() => {
+    let mounted = true;
+    const check = () => {
+      try {
+        const pending = localStorage.getItem('thinkmate.ai.pending');
+        const resultRaw = localStorage.getItem('thinkmate.ai.result');
+        if (!mounted) return;
+        setAiPending(Boolean(pending));
+        try {
+          setAiResult(resultRaw ? JSON.parse(resultRaw) : null);
+        } catch (e) {
+          setAiResult(resultRaw || null);
+        }
+        // If we transitioned from pending -> not pending and a new result appeared, refresh once
+        const hadPending = !!prevAiPendingRef.current;
+        const nowPending = Boolean(pending);
+        const hasResult = !!resultRaw;
+        if (hadPending && !nowPending && hasResult && resultRaw !== lastAiResultRef.current) {
+          // remember the result so we don't reload repeatedly
+          lastAiResultRef.current = resultRaw;
+          // do a single soft reload using next/router so client state refreshes
+          setTimeout(() => {
+            try {
+              router.replace(router.asPath);
+            } catch (e) {
+              window.location.reload();
+            }
+          }, 250);
+        }
+        prevAiPendingRef.current = nowPending;
+      } catch (e) {
+        if (!mounted) return;
+        setAiPending(false);
+        setAiResult(null);
+      }
+    };
+    // initialize previous pending flag from storage on mount
+    try { prevAiPendingRef.current = Boolean(localStorage.getItem('thinkmate.ai.pending')); } catch (e) { prevAiPendingRef.current = false; }
+    check();
+    const onStorage = (e) => {
+      if (e.key && (e.key.startsWith('thinkmate.ai.'))) check();
+    };
+    window.addEventListener('storage', onStorage);
+
+    // also poll occasionally for same-tab updates
+    const iv = setInterval(check, 1000);
+    return () => { mounted = false; window.removeEventListener('storage', onStorage); clearInterval(iv); };
+  }, []);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -73,6 +130,26 @@ export default function Home() {
     }
   }, [])
 
+  // centralized logout that also clears local saved interests and AI keys
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('thinkmate_user');
+      localStorage.removeItem('thinkmate.newInterests');
+      localStorage.removeItem('thinkmate.ai.pending');
+      localStorage.removeItem('thinkmate.ai.result');
+      localStorage.removeItem('thinkmate.ai.payload');
+    } catch (e) {
+      // ignore
+    }
+    // clear client state for AI UI and user
+    setAiPending(false);
+    setAiResult(null);
+    setSignedIn(false);
+    setSignedUser(null);
+    // soft reload so other pages refresh their state
+    try { router.reload(); } catch (e) { window.location.reload(); }
+  };
+
   // when signedUser is present, fetch their groups
   useEffect(() => {
     if (!signedUser) return;
@@ -101,7 +178,7 @@ export default function Home() {
       
       <div className={styles.container}>
         <main className={styles.mainContent}>
-          <InterestVisualization width={size.width} height={size.height} signedUser={signedUser} selectedGroup={selectedGroup} />
+          <InterestVisualization width={size.width} height={size.height} signedUser={signedUser} selectedGroup={selectedGroup} aiResult={aiResult} />
           {/* <div className="panelGroup">
           <Link href="/analysis">
             <button className={styles.pageButton} style={{
@@ -119,7 +196,7 @@ export default function Home() {
           <div style={{  position: 'absolute', top: '6vh', left: '2vw' }}>
             {signedIn ? (
             <div style={{ display: 'grid', gap: 12 }}>
-              <SignedInNameBox signedUser={signedUser} onLogout={() => { localStorage.removeItem('thinkmate_user'); setSignedIn(false); setSignedUser(null); router.reload(); }} />
+              <SignedInNameBox signedUser={signedUser} onLogout={handleLogout} />
 
               {/* group selector */}
               {groups.length > 0 && (
@@ -143,6 +220,69 @@ export default function Home() {
         
         
       </div>
+      {/* AI Loading Overlay */}
+      {aiPending && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(6,8,15,0.45)' }}>
+          <div style={{ background: 'white', padding: 24, borderRadius: 12, boxShadow: '0 12px 40px rgba(2,6,23,0.6)', minWidth: 320, textAlign: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Analyzing your responses</div>
+            <div style={{ marginBottom: 12, color: '#444' }}>Our AI is preparing personalized feedback — this may take a moment.</div>
+            <div style={{ height: 8, background: '#eef2ff', borderRadius: 6, overflow: 'hidden' }}>
+              <div style={{ width: '0%', height: '100%', background: '#6b46c1', transition: 'width 1s linear 2s' }} />
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <button onClick={() => { try { localStorage.removeItem('thinkmate.ai.pending'); } catch(e){}; setAiPending(false); }} style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: '#eee', cursor: 'pointer' }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Result Toast */}
+      {aiResult && (
+        <div style={{ position: 'fixed', right: 18, bottom: 18, zIndex: 9999 }}>
+          <div style={{ background: 'white', padding: 12, borderRadius: 10, boxShadow: '0 8px 28px rgba(0,0,0,0.12)', minWidth: 260 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>AI Feedback Ready</div>
+            <div style={{ maxWidth: 420, whiteSpace: 'pre-wrap', color: '#222' }}>
+              {aiResult.error ? (
+                <div style={{ color: '#b91c1c' }}>Error: {aiResult.error}</div>
+              ) : typeof aiResult === 'string' ? (
+                aiResult
+              ) : aiResult.reply ? (
+                (() => {
+                  // show only numbered items 2 and 3 from the AI reply
+                  const raw = (typeof aiResult === 'string') ? aiResult : (aiResult.reply || JSON.stringify(aiResult));
+                  console.log(raw);
+                  const text = String(raw || '');
+                  const lines = text.split(/\r?/);
+                  const itemRe = /^\s*(\d+)[\.)]\s*(.*)$/; // matches '1. foo' or '2) bar'
+                  const items = {};
+                  let cur = null;
+                  for (let ln of lines) {
+                    const m = ln.match(itemRe);
+                    if (m) {
+                      cur = Number(m[1]);
+                      items[cur] = (items[cur] || '') + m[2].trim();
+                    } else if (cur !== null) {
+                      // continuation line for current item
+                      const t = ln.trim();
+                      if (t) items[cur] = items[cur] + ' ' + t;
+                    }
+                  }
+                  const out = [];
+                  [2,3].forEach(i => { if (items[i]) out.push(items[i].trim()); });
+                  if (out.length) return out.join('\n\n');
+                  // fallback: show a portion of reply
+                  return text.slice(30, 1000);
+                })()
+              ) : (
+                JSON.stringify(aiResult, null, 2)
+              )}
+            </div>
+            <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+              <button onClick={() => { try { localStorage.removeItem('thinkmate.ai.result'); setAiResult(null); } catch(e){} }} style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: '#eef2ff', cursor: 'pointer' }}>Dismiss</button>
+            </div>
+          </div>
+        </div>
+      )}
       
         </>
     )

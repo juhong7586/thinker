@@ -8,7 +8,7 @@ import {computeVisualizationNodes, interestStats} from '../../utils/visualizatio
 const InterestVisualizationPlotly = dynamic(() => import('./InterestVisualizationPlotly'), { ssr: false });
 
 
-const InterestVisualization = ({ width: propWidth, height: propHeight, signedUser, selectedGroup }) => {
+const InterestVisualization = ({ width: propWidth, height: propHeight, signedUser, selectedGroup, aiResult }) => {
   const [students, setStudents] = useState([]);
   const [interests, setInterests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -290,7 +290,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
       
       <div className={homeStyles.fullScreenBox}>
 
-      <InterestVisualizationPlotly width={propWidth} height={propHeight} nodes={nodes}  />
+  <InterestVisualizationPlotly width={propWidth} height={propHeight} nodes={nodes} aiResult={aiResult} />
 
       {/* Register own interests (draggable) */}
       <div

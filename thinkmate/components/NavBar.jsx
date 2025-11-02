@@ -9,8 +9,10 @@ export default function NavBar({ signedUser }) {
       <div className={styles.left} onClick={() => router.push('/')}>ThinkMate</div>
       <nav className={styles.links}>
         <Link href="/">Home</Link>
+        <Link href="/rational">Rational</Link>
         <Link href="/register-group">Register Group</Link>
         <Link href="/survey">Survey</Link>
+       
         <Link href="/analysis">Analysis</Link>
       </nav>
       {/* <div className={styles.right}>

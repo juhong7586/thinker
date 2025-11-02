@@ -1,23 +1,23 @@
 .nav {
   position: sticky;
   top: 0;
-  overflow:hidden;
   z-index: 200;
+  overflow:hidden;
   width: 97vw;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1.25rem;
   backdrop-filter: blur(8px);
-  background: linear-gradient(90deg, rgba(255,255,255,0.45), rgba(255,255,255,0.25));
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 6px 20px rgba(16,24,40,0.04);
+  background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0));
+  box-shadow: 0 6px 20px rgba(16,24,40,0.03);
   font-family: 'NanumSquareNeo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+
  }
 
 .left {
   font-weight: 900;
-  font-size: 1rem;
+  font-size: 0.8rem;
   color: #111827;
   cursor: pointer;
 }
