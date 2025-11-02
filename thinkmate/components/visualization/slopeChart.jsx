@@ -44,21 +44,30 @@ export default function SlopeChart() {
   useEffect(() => {
     if (!svgRef.current) return;
 
-    // Combine and sort data by overall score
-    const data = Object.keys(creativeTscores)
+    // Combine data and create two separate sorted arrays
+    const allData = Object.keys(creativeTscores)
       .map(country => ({
         country,
         overallScore: creativeTscores[country],
         socialSuccess: socialProbData[country] || 0,
         isKorea: country === 'Korea'
       }))
-      .filter(d => d.socialSuccess !== 0)
-      .sort((a, b) => b.overallScore - a.overallScore);
+      .filter(d => d.socialSuccess !== 0);
 
-    const margin = { top: 50, right: 120, bottom: 40, left: 120 };
-    const barHeight = 20;
+    // Sort by overall score (high to low) for positioning
+    const data = [...allData].sort((a, b) => b.overallScore - a.overallScore);
+    
+    // Create a lookup for social scores sorted high to low
+    const socialSorted = [...allData].sort((a, b) => b.socialSuccess - a.socialSuccess);
+    const socialRank = {};
+    socialSorted.forEach((d, i) => {
+      socialRank[d.country] = i;
+    });
+
+    const margin = { top: 50, right: 60, bottom: 40, left: 80 };
+    const barHeight = 8;
     const height = data.length * barHeight + margin.top + margin.bottom;
-    const width = 1000;
+    const width = 800;
 
     d3.select(svgRef.current).selectAll("*").remove();
 
@@ -76,116 +85,161 @@ export default function SlopeChart() {
 
     // Title
     svg.append('text')
-      .attr('x', width / 2)
-      .attr('y', 25)
+      .attr('x', width / 2)      
+      .attr('y', 20)
       .attr('text-anchor', 'middle')
-      .attr('font-size', '18px')
+      .attr('font-size', '1.2rem')
       .attr('font-weight', 'bold')
-      .text('Creative Performance Slope: Overall vs Social Problem Solving');
+      .text('Creative Performance Slope: Overall vs Social Problem Solving')
+      ;
 
     // Left axis label
     svg.append('text')
-      .attr('x', margin.left - 10)
-      .attr('y', 35)
-      .attr('text-anchor', 'end')
-      .attr('font-size', '12px')
+      .attr('x', margin.left-20)
+      .attr('y', 45)
+      .attr('text-anchor', 'start')
+      .attr('font-size', '1rem')
       .attr('font-weight', 'bold')
-      .text('Overall Creative Thinking Score');
+      .text('Overall Creative Thinking Rank');
 
     // Right axis label
     svg.append('text')
-      .attr('x', width - margin.right + 10)
-      .attr('y', 35)
-      .attr('text-anchor', 'start')
-      .attr('font-size', '12px')
+      .attr('x', width - margin.right )
+      .attr('y', 45)
+      .attr('text-wrap', 'wrap')
+      .attr('text-anchor', 'end')
+      .attr('font-size', '1rem')
       .attr('font-weight', 'bold')
-      .text('Social Problem Solving Success (%)');
+      .text('Social Problem Solving Rank');
 
-    // Draw connections and points
+    // Draw connections and points — group each row so we can show labels on hover
     data.forEach((d, i) => {
       const y = i * barHeight;
-      const leftX = xScale(d.overallScore);
-      const rightX = socialScale(d.socialSuccess);
+      // Get the position on the right based on social ranking
+      const socialY = socialRank[d.country] * barHeight;
+
+      const row = g.append('g').attr('class', 'row').attr('data-country', d.country);
 
       // Connecting line
-      g.append('line')
+      row.append('line')
         .attr('x1', 0)
         .attr('y1', y + barHeight / 2)
-        .attr('x2', width - margin.left - margin.right)
-        .attr('y2', y + barHeight / 2)
+        .attr('x2', width - margin.left - margin.right-20)
+        .attr('y2', socialY + barHeight / 2)
         .attr('stroke', d.isKorea ? '#d73027' : '#ccc')
         .attr('stroke-width', d.isKorea ? 2 : 0.5)
-        .attr('opacity', d.isKorea ? 1 : 0.5);
+        .attr('opacity', d.isKorea ? 1 : 0.5)
+        .style('pointer-events', 'stroke');
 
       // Left point (overall score)
-      g.append('circle')
+      row.append('circle')
         .attr('cx', 0)
         .attr('cy', y + barHeight / 2)
-        .attr('r', d.isKorea ? 6 : 4)
+        .attr('r', d.isKorea ? 5 : 3)
         .attr('fill', '#4575b4')
-        .attr('opacity', d.isKorea ? 1 : 0.7);
+        .attr('opacity', d.isKorea ? 1 : 0.7)
+        .style('cursor', 'pointer');
 
       // Right point (social problem solving)
       const pointColor = d.socialSuccess > 0 ? '#2ca02c' : '#d73027';
-      g.append('circle')
-        .attr('cx', width - margin.left - margin.right)
-        .attr('cy', y + barHeight / 2)
-        .attr('r', d.isKorea ? 6 : 4)
+      row.append('circle')
+        .attr('cx', width - margin.left - margin.right-20)
+        .attr('cy', socialY + barHeight / 2)
+        .attr('r', d.isKorea ? 5 : 3)
         .attr('fill', pointColor)
-        .attr('opacity', d.isKorea ? 1 : 0.7);
+        .attr('opacity', d.isKorea ? 1 : 0.7)
+        .style('cursor', 'pointer');
 
-      // Country label (left)
-      g.append('text')
+      // Country label (left) — hidden by default
+      row.append('text')
         .attr('x', -10)
         .attr('y', y + barHeight / 2 + 3)
         .attr('text-anchor', 'end')
-        .attr('font-size', '11px')
+        .attr('font-size', d.isKorea ? '1.2rem' : '0.8rem')
         .attr('font-weight', d.isKorea ? 'bold' : 'normal')
         .attr('fill', d.isKorea ? '#d73027' : '#333')
+        .attr('class', 'label-country')
+        .style('opacity', d.isKorea ? 1 : 0)
         .text(d.country);
 
       // Overall score label
-      g.append('text')
-        .attr('x', 8)
+      row.append('text')
+        .attr('x', 5)
         .attr('y', y + barHeight / 2 + 3)
-        .attr('font-size', '10px')
+        .attr('font-size', '0.8rem')
+        .style('opacity', d.isKorea ? 1 : 0)
+        .attr('class', 'label-overall')
         .attr('fill', '#333')
         .text(d.overallScore);
 
-      // Social success label (right)
-      g.append('text')
-        .attr('x', width - margin.left - margin.right + 10)
-        .attr('y', y + barHeight / 2 + 3)
-        .attr('font-size', '10px')
+      // Social success label (right) — hidden by default
+      row.append('text')
+        .attr('x', width - margin.left - margin.right + 5)
+        .attr('y', socialY + barHeight / 2 + 3)
+        .attr('font-size', '0.8rem')
         .attr('fill', '#333')
+        .attr('class', 'label-social')
+        .style('opacity', d.isKorea ? 1 : 0)
         .text(d.socialSuccess.toFixed(1) + '%');
+
+      // Hover handlers: show labels on mouseover and hide on mouseout
+      row.on('mouseover', function() {
+        d3.select(this).selectAll('.label-country, .label-social, .label-overall')
+          .transition().duration(120).style('opacity', 1);
+      }).on('mouseout', function() {
+        d3.select(this).selectAll('.label-country, .label-social, .label-overall')
+          .transition().duration(120).style('opacity', 0);
+        d.isKorea && d3.select(this).selectAll('.label-country, .label-social, .label-overall')
+          .transition().duration(120).style('opacity', 1);
+      });
     });
 
     // Legend
     const legendY = height - 30;
     
-    svg.append('circle').attr('cx', margin.left + 20).attr('cy', legendY).attr('r', 4).attr('fill', '#4575b4');
-    svg.append('text').attr('x', margin.left + 35).attr('y', legendY + 3).attr('font-size', '11px').text('Overall Creative Thinking');
+    svg.append('circle')
+      .attr('cx', margin.left + 20)
+      .attr('cy', legendY)
+      .attr('r', 4)
+      .attr('fill', '#4575b4');
+    svg.append('text')
+      .attr('x', margin.left + 35)
+      .attr('y', legendY + 3)
+      .attr('font-size', '11px')
+      .text('Overall Creative Thinking');
 
-    svg.append('circle').attr('cx', margin.left + 280).attr('cy', legendY).attr('r', 4).attr('fill', '#2ca02c');
-    svg.append('text').attr('x', margin.left + 295).attr('y', legendY + 3).attr('font-size', '11px').text('Positive Social Problem Solving');
+    svg.append('circle')
+      .attr('cx', margin.left + 250)
+      .attr('cy', legendY)
+      .attr('r', 4)
+      .attr('fill', '#2ca02c');
+    svg.append('text')
+      .attr('x', margin.left + 265)
+      .attr('y', legendY + 3)
+      .attr('font-size', '11px')
+      .text('Positive Social Problem Solving');
 
-    svg.append('circle').attr('cx', margin.left + 580).attr('cy', legendY).attr('r', 4).attr('fill', '#d73027');
-    svg.append('text').attr('x', margin.left + 595).attr('y', legendY + 3).attr('font-size', '11px').text('Negative Social Problem Solving (South Korea highlighted)');
+    svg.append('circle')
+      .attr('cx', margin.left + 500)
+      .attr('cy', legendY)
+      .attr('r', 4)
+      .attr('fill', '#d73027');
+    svg.append('text')
+      .attr('x', margin.left + 515)
+      .attr('y', legendY + 3)
+      .attr('font-size', '11px')
+      .text('Negative Social Problem Solving');
 
   }, []);
 
   return (
-    <div style={{ width: '100%', padding: '20px', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+    <div style={{ width: '100%', padding: '20px', backgroundColor: '#f5f5f5', minHeight: '80vh' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', backgroundColor: '#fafafa', padding: '15px', borderRadius: '4px' }}>
           <svg ref={svgRef}></svg>
         </div>
 
-        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '4px', fontSize: '13px', color: '#666', lineHeight: '1.7' }}>
-        
-          
-        </div>
+       
       </div>
     </div>
   );

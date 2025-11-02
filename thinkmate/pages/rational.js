@@ -2,6 +2,7 @@ import Head from 'next/head';
 import BubbleMenu from '../components/BubbleMenu';
 import styles from '../styles/Home.module.css';
 import SlopeChart from '../components/visualization/slopeChart';
+import LollipopChart from '../components/visualization/lollipopChart';
 
 const items = [
   {
@@ -69,17 +70,19 @@ export default function RationalPage() {
 
         <main style={{ maxWidth: 900, margin: '3rem auto' }}>
            <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
-          What would these issues mean for our students? <p style={{fontStyle:'italic'}}>Surprisingly, they are not interested in them.</p>
+           What would these issues mean for our students? They do think these problems are important, however, they do not think they should make a difference.
           <br />How would these problems impact on them? Would it be okay to let them ignore these issues?
           <br />As someone to guide our students, how can we solve them?</p>
             <SlopeChart />
-          <section style={{ marginTop: 18 }}>
-            <h3>How empathy and creativity relate</h3>
+
+            <h3 className={styles.subtitle} style={{ fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>How can we solve this problem?</h3>
+            <LollipopChart />
             <p style={{ lineHeight: 1.6 }}>
-              Empathy — the ability to understand and resonate with another person's feelings and perspective — supplies the raw material
-              that creative thinking transforms into meaningful solutions. Use the menu to explore sample sections.
+              We can find hint in empathy. Chart above is about confidence in self-directed learning, and social and emotional skills.
+              <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
+              <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
             </p>
-          </section>
+
         </main>
       </div>
     </>
