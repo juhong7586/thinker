@@ -1,77 +1,88 @@
-import Head from 'next/head'
-import Link from 'next/link'
-import styles from '../styles/Home.module.css'
+import Head from 'next/head';
+import BubbleMenu from '../components/BubbleMenu';
+import styles from '../styles/Home.module.css';
+import SlopeChart from '../components/visualization/slopeChart';
 
-export default function Rational() {
+const items = [
+  {
+    label: '‘Men don’t know why they became unhappy’: the toxic gender war dividing South Korea',
+    href: 'https://www.theguardian.com/society/2025/sep/20/inside-saturday-south-korea-gender-war',
+    ariaLabel: 'Home',
+    rotation: -2,
+    hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' }
+  },
+  {
+    label: 'Gender, generation gap on full display in exit poll showing entrenched differences',
+    href: 'https://koreajoongangdaily.joins.com/news/2025-06-03/national/2025presidential/Gender-generation-gap-on-full-display-in-exit-poll-showing-entrenched-differences/2322105',
+    ariaLabel: 'About',
+    rotation: 4,
+    hoverStyles: { bgColor: '#10b981', textColor: '#ffffff' }
+  },
+  {
+    label: 'South Korea’s deep political divide',
+    href: 'https://www.koreaherald.com/article/10508049',
+    ariaLabel: 'Projects',
+    rotation: 2,
+    hoverStyles: { bgColor: '#f59e0b', textColor: '#ffffff' }
+  },
+  {
+    label: 'For cash-strapped South Koreans, the class conflict in "Squid Game" is deadly serious',
+    href: 'https://www.npr.org/2021/11/06/1053163060/class-conflict-and-economic-hardship-in-squid-game-is-real-for-many-south-korean',
+    ariaLabel: 'Blog',
+    rotation: -1,
+    hoverStyles: { bgColor: '#ef4444', textColor: '#ffffff' }
+  },
+  {
+    label: 'S. Korea has 3rd highest social conflict index among OECD countries',
+    href: 'https://english.hani.co.kr/arti/english_edition/e_national/912156.html',
+    ariaLabel: 'Contact',
+    rotation: 4,
+    hoverStyles: { bgColor: '#8b5cf6', textColor: '#ffffff' }
+  }
+];
+
+export default function RationalPage() {
   return (
     <>
       <Head>
         <title>Rational — ThinkMate</title>
         <meta name="description" content="Rational info: how empathy and creativity relate" />
       </Head>
+    <div className={styles.title} style={{ maxWidth: '100%', margin: '3rem auto', textAlign: 'center' }}>
+ <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
+         
+    </div>
+      <div style={{ padding: '2rem' }}>
+        {/* BubbleMenu placed at the top of the page */}
+        <BubbleMenu
+          logo={<span style={{ fontWeight: 700 }}>RB</span>}
+          items={items}
+          menuAriaLabel="Toggle navigation"
+          menuBg="#ffffff"
+          menuContentColor="#111111"
+          useFixedPosition={false}
+          alwaysVisible={true}
+          animationEase="back.out(1.5)"
+          animationDuration={0.5}
+          staggerDelay={0.12}
+        />
 
-      <div className={styles.container}>
-        <main className={styles.mainContent} style={{ maxWidth: 900, padding: '3rem 1.5rem' }}>
-          <div style={{ marginBottom: 18 }}>
-            <h1 style={{ margin: 0 }}>Rational</h1>
-            <div style={{ color: '#666', marginTop: 8 }}>Understanding how empathy and creativity interact</div>
-          </div>
-
-          <section style={{ lineHeight: 1.6, color: '#222' }}>
-            <h3>Brief overview</h3>
-            <p>
-              The "Rational" perspective emphasizes clear thinking, analysis, and evidence-based decision making. It does
-              not exclude feelings or imagination — instead, it benefits when those human qualities are harnessed in service of
-              well-reasoned outcomes.
-            </p>
-          </section>
-
-          <section style={{ marginTop: 18, lineHeight: 1.6 }}>
-            <h3>How empathy and creativity relate</h3>
-            <p>
-              Empathy and creativity are deeply connected. Empathy — the ability to understand and resonate with another person's
-              feelings and perspective — supplies the raw material that creative thinking transforms into meaningful solutions.
-            </p>
-
-            <h4>Key ways they interact</h4>
-            <ul>
-              <li><strong>Empathy seeds insight:</strong> By listening and imagining another person's world, you discover unmet needs and surprising constraints that spark creative ideas.</li>
-              <li><strong>Creativity shapes empathy into form:</strong> Creative skills translate empathetic insight into prototypes, stories, and experiments that others can experience and evaluate.</li>
-              <li><strong>Balance with analysis:</strong> Empathy and creative exploration produce options; rational evaluation helps pick the best ones — ensuring ideas are feasible, ethical, and effective.</li>
-              <li><strong>Emotional resonance drives adoption:</strong> Solutions that feel understood and humane are more likely to be accepted and used — creativity that honors empathy often wins.</li>
-            </ul>
-          </section>
-
-          <section style={{ marginTop: 18, lineHeight: 1.6 }}>
-            <h3>Practical tips (for thinkers who lead with rationality)</h3>
-            <ol>
-              <li>Practice active listening: ask open questions, reflect back feelings, and avoid jumping straight to solutions.</li>
-              <li>Use quick experiments: build low-cost prototypes or role-play scenarios that let you test whether your idea resonates emotionally.</li>
-              <li>Invite diverse perspectives: empathy grows when you include voices different from your own — it expands the creative search space.</li>
-              <li>Apply clear evaluation criteria: once you have empathetic ideas, assess them using constraints like feasibility, impact, cost, and alignment with values.</li>
-            </ol>
-          </section>
-
+        <main style={{ maxWidth: 900, margin: '3rem auto' }}>
+           <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
+          What would these issues mean for our students? <p style={{fontStyle:'italic'}}>Surprisingly, they are not interested in them.</p>
+          <br />How would these problems impact on them? Would it be okay to let them ignore these issues?
+          <br />As someone to guide our students, how can we solve them?</p>
+            <SlopeChart />
           <section style={{ marginTop: 18 }}>
-            <h3>Short exercise</h3>
-            <p>
-              Next time you solve a problem, try this quick loop:
+            <h3>How empathy and creativity relate</h3>
+            <p style={{ lineHeight: 1.6 }}>
+              Empathy — the ability to understand and resonate with another person's feelings and perspective — supplies the raw material
+              that creative thinking transforms into meaningful solutions. Use the menu to explore sample sections.
             </p>
-            <ol>
-              <li>Spend 5 minutes interviewing or imagining a target person.</li>
-              <li>Write down 3 emotions or unmet needs you observed.</li>
-              <li>Generate 5 rapid ideas (no judgment) that respond to those needs.</li>
-              <li>Pick the top idea and list 3 concrete reasons it could succeed or fail.</li>
-            </ol>
           </section>
-
-          <div style={{ marginTop: 28, display: 'flex', gap: 12 }}>
-            <Link href="/">
-              <a style={{ padding: '8px 12px', borderRadius: 8, background: '#eef2ff', textDecoration: 'none' }}>Back</a>
-            </Link>
-          </div>
         </main>
       </div>
     </>
-  )
+  );
 }
+
