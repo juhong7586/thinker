@@ -64,7 +64,7 @@ export default function SlopeChart() {
       socialRank[d.country] = i;
     });
 
-    const margin = { top: 50, right: 60, bottom: 40, left: 80 };
+  const margin = { top: 80, right: 60, bottom: 40, left: 80 };
     const barHeight = 8;
     const height = data.length * barHeight + margin.top + margin.bottom;
     const width = 800;
@@ -86,7 +86,7 @@ export default function SlopeChart() {
     // Title
     svg.append('text')
       .attr('x', width / 2)      
-      .attr('y', 20)
+      .attr('y', 40)
       .attr('text-anchor', 'middle')
       .attr('font-size', '1.2rem')
       .attr('font-weight', 'bold')
@@ -96,20 +96,20 @@ export default function SlopeChart() {
     // Left axis label
     svg.append('text')
       .attr('x', margin.left-20)
-      .attr('y', 45)
+      .attr('y', 65)
       .attr('text-anchor', 'start')
-      .attr('font-size', '1rem')
-      .attr('font-weight', 'bold')
+      .attr('font-size', '0.8rem')
+      .attr('font-weight', 'normal')
       .text('Overall Creative Thinking Rank');
 
     // Right axis label
     svg.append('text')
       .attr('x', width - margin.right )
-      .attr('y', 45)
+      .attr('y', 65)
       .attr('text-wrap', 'wrap')
       .attr('text-anchor', 'end')
-      .attr('font-size', '1rem')
-      .attr('font-weight', 'bold')
+      .attr('font-size', '0.8rem')
+      .attr('font-weight', 'normal')
       .text('Social Problem Solving Rank');
 
     // Draw connections and points — group each row so we can show labels on hover
@@ -233,7 +233,7 @@ export default function SlopeChart() {
   }, []);
 
   return (
-    <div style={{ width: '100%', padding: '20px', backgroundColor: '#f5f5f5', minHeight: '80vh' }}>
+    <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '80vh' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', backgroundColor: '#fafafa', padding: '15px', borderRadius: '4px' }}>
           <svg ref={svgRef}></svg>
