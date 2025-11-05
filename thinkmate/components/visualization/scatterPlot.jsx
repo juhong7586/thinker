@@ -22,12 +22,14 @@ export default function CreativityScatter() {
         data = rawData.filter(item => !isNaN(item.ave_cr) && !isNaN(item.ave_emp));
         yLabel = 'Creativity (Overall)';
         yDomain = [0, 2.2];
-        regression = { slope: 0.11, intercept: 0.86 };
+        // Use requested regression for overall creativity
+        regression = { slope: 0.04, intercept: 1.12 };
       } else {
         data = rawData.filter(item => !isNaN(item.ave_cr_social) && !isNaN(item.ave_emp));
         yLabel = 'Creativity (Social Problem Solving)';
         yDomain = [0, 2.2];
-        regression = { slope: 0.09, intercept: 0.75 };
+        // Use requested regression for social problem solving
+        regression = { slope: 0.11, intercept: 0.86 };
       }
 
       const { slope, intercept } = regression;
@@ -41,8 +43,7 @@ export default function CreativityScatter() {
 
       const svg = d3.select(svgRef.current)
         .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .attr('style', 'background-color: white; border-radius: 8px;');
+        .attr('height', height + margin.top + margin.bottom);
 
       const g = svg.append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -182,8 +183,8 @@ export default function CreativityScatter() {
   }, [selectedMetric]);
 
   return (
-    <div style={{ width: '100%', minHeight: '80vh', backgroundColor: '#ffffff', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
+    <div style={{ width: '100%', minHeight: '80vh', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ padding: '30px' }}>
         <div style={{ marginBottom: '20px', textAlign: 'center' }}>
           <label style={{ marginRight: '20px', fontSize: '16px', fontWeight: 'bold' }}>
             Select Creativity Metric:
@@ -194,8 +195,6 @@ export default function CreativityScatter() {
             style={{
               padding: '8px 12px',
               fontSize: '14px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
               cursor: 'pointer'
             }}
           >

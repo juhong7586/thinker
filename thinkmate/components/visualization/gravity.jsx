@@ -12,8 +12,8 @@ export default function GravityScatterPlot() {
 
       const rawData = csv.filter(item => !isNaN(item.ave_emp));
 
-      const width = 800;
-      const height = 800;
+      const width = 700;
+      const height = 700;
       const centerX = width / 2;
       const centerY = height / 2;
       const maxRadius = Math.min(width, height) / 2 - 40;
@@ -23,8 +23,7 @@ export default function GravityScatterPlot() {
 
       const svg = d3.select(svgRef.current)
         .attr('width', width)
-        .attr('height', height)
-        .attr('style', 'background: radial-gradient(circle, #333333 0%, #000000 100%); border-radius: 8px;');
+        .attr('height', height);
 
       // Add concentric circles (universe rings)
       const circles = [0, 1, 2, 3, 4, 5];
@@ -136,13 +135,13 @@ export default function GravityScatterPlot() {
         .attr('text-anchor', 'middle')
         .attr('font-size', '13px')
         .attr('fill', '#999')
-        .text('5 (Full Score)');
+        .text('Social problem solving');
 
       // Add legend
       const legendData = [
-        { label: 'Low Empathy', color: '#ff6b6b' },
+        { label: 'High Empathy', color: '#ff6b6b' },
         { label: 'Medium Empathy', color: '#ffd700' },
-        { label: 'High Empathy', color: '#4ecdc4' }
+        { label: 'Low Empathy', color: '#4ecdc4' }
       ];
 
       const legend = svg.append('g')
@@ -176,8 +175,8 @@ export default function GravityScatterPlot() {
   }, []);
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ padding: '20px', borderRadius: '8px', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
+    <div style={{ width: '100%', minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div>
         <svg ref={svgRef}></svg>
       </div>
     </div>

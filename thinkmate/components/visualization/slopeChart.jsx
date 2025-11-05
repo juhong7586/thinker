@@ -3,7 +3,8 @@ import * as d3 from 'd3';
 
 export default function SlopeChart() {
   const svgRef = useRef();
-
+  const uniqueSocial = new Set();
+  const uniqueCreativity = new Set();
 
   useEffect(() => {
      d3.csv('/data/global_creativity.csv').then(csv => {
@@ -12,6 +13,8 @@ export default function SlopeChart() {
          d.overallScore = d.overallScore === '' ? NaN : +d.overallScore;
          d.socialSuccess = d.socialSuccess === '' ? NaN : +d.socialSuccess;
          d.country = d.country && d.country.trim();
+          if (!isNaN(d.socialSuccess)) uniqueSocial.add(d.socialSuccess);
+          if (!isNaN(d.overallScore)) uniqueCreativity.add(d.overallScore);
        });
 
        const rawData = csv;
@@ -24,17 +27,27 @@ export default function SlopeChart() {
            isKorea: d.country === 'Korea'
          }));
 
-    // Sort by overall score (high to low) for positioning
+    // Keep data sorted by overall score for iteration (display order)
     const data = [...allData].sort((a, b) => b.overallScore - a.overallScore);
-    
-    // Create a lookup for social scores sorted high to low
-    const socialSorted = [...allData].sort((a, b) => b.socialSuccess - a.socialSuccess);
+
+    // Build index maps from the unique value sets (sorted high -> low).
+    // These maps let us place rows on discrete bands for each unique score value.
+    const creativityValues = Array.from(uniqueCreativity).filter(v => !isNaN(v)).sort((a, b) => b - a);
+    const creativityIndex = {};
+    creativityValues.forEach((v, i) => { creativityIndex[v] = i; });
+
+    const socialValues = Array.from(uniqueSocial).filter(v => !isNaN(v)).sort((a, b) => b - a);
+    const socialIndex = {};
+    socialValues.forEach((v, i) => { socialIndex[v] = i; });
+
+    // Create a lookup for social index by country for convenience
     const socialRank = {};
-    socialSorted.forEach((d, i) => {
-      socialRank[d.country] = i;
+    data.forEach(d => {
+      socialRank[d.country] = socialIndex[d.socialSuccess];
     });
 
-  const margin = { top: 80, right: 60, bottom: 40, left: 80 };
+    const margin = { top: 80, right: 60, bottom: 40, left: 80 };
+    const leftBarHeight = 18;  
     const barHeight = 8;
     const height = data.length * barHeight + margin.top + margin.bottom;
     const width = 800;
@@ -43,8 +56,7 @@ export default function SlopeChart() {
 
     const svg = d3.select(svgRef.current)
       .attr('width', width)
-      .attr('height', height)
-      .style('background', '#ffffff');
+      .attr('height', height);
 
     const g = svg.append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -83,10 +95,16 @@ export default function SlopeChart() {
       .text('Social Problem Solving Rank');
 
     // Draw connections and points — group each row so we can show labels on hover
-    data.forEach((d, i) => {
-      const y = i * barHeight;
-      // Get the position on the right based on social ranking
-      const socialY = socialRank[d.country] * barHeight;
+    data.forEach((d) => {
+      // Use the creativity index (based on unique creativity values) for left axis position
+      const creativityIdx = (creativityIndex[d.overallScore] !== undefined) ? creativityIndex[d.overallScore] : 0;
+      const y = creativityIdx * leftBarHeight;
+      // Use the social index ( based on unique social values) for right axis position
+      const socialIdx = (socialIndex[d.socialSuccess] !== undefined) ? socialIndex[d.socialSuccess] : 0;
+      const socialY = socialIdx * barHeight;
+
+      // // Get the position on the right based on social ranking (from socialRank built above)
+      // const socialY = (socialRank[d.country] !== undefined) ? socialRank[d.country] * barHeight : 0;
 
       const row = g.append('g').attr('class', 'row').attr('data-country', d.country);
 
@@ -201,14 +219,14 @@ export default function SlopeChart() {
       .text('Negative Social Problem Solving');
 
   }).catch(err => {
-        console.error('Failed to load CSV for LollipopChart:', err);
+        console.error('Failed to load CSV for SlopeChart:', err);
       });
 
   }, []);
 
   return (
     <div style={{ width: '100%', padding: '20px',  minHeight: '80vh' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '30px' }}>
         <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', padding: '15px', borderRadius: '4px' }}>
           <svg ref={svgRef}></svg>
         </div>
