@@ -46,7 +46,7 @@ export default function SlopeChart() {
       socialRank[d.country] = socialIndex[d.socialSuccess];
     });
 
-    const margin = { top: 80, right: 60, bottom: 40, left: 150 };
+    const margin = { top: 80, right: 60, bottom: 10, left: 150 };
     const leftBarHeight = 18;  
     const barHeight = 8;
     const height = data.length * barHeight + margin.top + margin.bottom;
@@ -66,21 +66,22 @@ export default function SlopeChart() {
     const socialScale = d3.scaleLinear().domain([-15, 10]).range([0, width - margin.left - margin.right]);
 
     // Title
-    svg.append('text')
-      .attr('x', width / 2)      
-      .attr('y', 40)
-      .attr('text-anchor', 'middle')
-      .attr('font-size', '1.2rem')
-      .attr('font-weight', 'bold')
-      .text('Creative Performance Slope: Overall vs Social Problem Solving')
-      ;
+    // svg.append('text')
+    //   .attr('x', width / 2)      
+    //   .attr('y', 40)
+    //   .attr('text-anchor', 'middle')
+    //   .attr('font-size', '1.5rem')
+    //   .attr('font-weight', 'bold')
+    //   .attr('margin', '10px')
+    //   .text('Overall vs Social Problem Solving')
+    //   ;
 
     // Left axis label
     svg.append('text')
       .attr('x', margin.left-20)
       .attr('y', 65)
       .attr('text-anchor', 'start')
-      .attr('font-size', '0.8rem')
+      .attr('font-size', '1.2rem')
       .attr('font-weight', 'normal')
       .text('Overall Creative Thinking Rank');
 
@@ -90,7 +91,7 @@ export default function SlopeChart() {
       .attr('y', 65)
       .attr('text-wrap', 'wrap')
       .attr('text-anchor', 'end')
-      .attr('font-size', '0.8rem')
+      .attr('font-size', '1.2rem')
       .attr('font-weight', 'normal')
       .text('Social Problem Solving Rank');
 
@@ -251,36 +252,25 @@ export default function SlopeChart() {
     const legendY = height - 30;
     
     svg.append('circle')
-      .attr('cx', margin.left + 20)
-      .attr('cy', legendY)
-      .attr('r', 4)
-      .attr('fill', '#4575b4');
-    svg.append('text')
-      .attr('x', margin.left + 35)
-      .attr('y', legendY + 3)
-      .attr('font-size', '11px')
-      .text('Overall Creative Thinking');
-
-    svg.append('circle')
-      .attr('cx', margin.left + 250)
+      .attr('cx', margin.left)
       .attr('cy', legendY)
       .attr('r', 4)
       .attr('fill', '#2ca02c');
     svg.append('text')
-      .attr('x', margin.left + 265)
+      .attr('x', margin.left + 15)
       .attr('y', legendY + 3)
-      .attr('font-size', '11px')
+      .attr('font-size', '15px')
       .text('Positive Social Problem Solving');
 
     svg.append('circle')
-      .attr('cx', margin.left + 500)
+      .attr('cx', margin.left + 330)
       .attr('cy', legendY)
       .attr('r', 4)
       .attr('fill', '#d73027');
     svg.append('text')
-      .attr('x', margin.left + 515)
+      .attr('x', margin.left + 345)
       .attr('y', legendY + 3)
-      .attr('font-size', '11px')
+      .attr('font-size', '15px')
       .text('Negative Social Problem Solving');
 
   }).catch(err => {
