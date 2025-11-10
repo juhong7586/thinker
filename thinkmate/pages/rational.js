@@ -85,6 +85,12 @@ export default function RationalPage() {
           IT is really a problem, especially comparing between students. </p>
       
         <CreativityScatter />
+        <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+          
+          Look at the distribution of empathy and creativity scores among students.
+          <br />Compare number of students between overall creativity and social problem solving creativity.
+          <br /> Although they possess high creativity, they struggle when the problems narrow down to social problems.
+          <br /> This is directly related to the unsolved conflicts within our society.</p>
 
         <h3 className={styles.subtitle} style={{ fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>How can we solve this problem?</h3>
         <LollipopChart />

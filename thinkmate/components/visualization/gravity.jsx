@@ -68,36 +68,56 @@ export default function GravityScatterPlot() {
       });
 
       const simulation = d3.forceSimulation(data)
-        .force('radial', d3.forceRadial(d => (d.value / 5) * maxRadius, centerX, centerY).strength(0.2))
-        .force('collide', d3.forceCollide(3))
+        .force('radial', d3.forceRadial(d => (d.value / 5) * maxRadius, centerX, centerY).strength(0.7))
+        .force('collide', d3.forceCollide(1))
         .stop();
 
       for (let i = 0; i < 150; i++) simulation.tick();
 
+      // Continuous color scale: white at center (low values) → black at outer (high values)
+      const colorScale = d3.scaleLinear()
+        .domain([0, 5])
+        .range(['#ffffff', '#000000']);
+
       // Add scatter points (universe particles)
+      // We'll support different entrance directions and a scale/fade-in effect.
+      const startDir = 'bottom'; // options: 'bottom' | 'top' | 'left' | 'right' | 'center'
+      const startOffset = maxRadius * 1.6;
+
+      const getStartPos = (d) => {
+        switch (startDir) {
+          case 'top':
+            return { x: d.x, y: centerY - startOffset };
+          case 'left':
+            return { x: centerX - startOffset, y: d.y };
+          case 'right':
+            return { x: centerX + startOffset, y: d.y };
+          case 'center':
+            return { x: centerX, y: centerY };
+          case 'bottom':
+          default:
+            return { x: d.x, y: centerY + startOffset };
+        }
+      };
+
+      // Append particles at their start positions with small radius and zero opacity for scale/fade-in
       svg.selectAll('.particle')
         .data(data)
         .enter()
         .append('circle')
         .attr('class', 'particle')
-        .attr('cx', d => d.x)
-        .attr('cy', d => d.y)
-        .attr('r', 4)
-        .attr('fill', d => {
-          // Color gradient based on empathy score
-          const colorScale = d3.scaleLinear()
-            .domain([0, 2.5, 5])
-            .range(['#ff6b6b', '#ffd700', '#4ecdc4']);
-          return colorScale(d.value);
-        })
-        .attr('opacity', 0.7)
+        .attr('cx', d => getStartPos(d).x)
+        .attr('cy', d => getStartPos(d).y)
+        .attr('r', 0.5)
+        .attr('fill', d => colorScale(d.value))
+        .attr('opacity', 0)
         .on('mouseover', function(event, d) {
           d3.select(this)
             .transition()
             .duration(200)
             .attr('r', 7)
             .attr('opacity', 1);
-          
+
           // Show tooltip
           svg.append('text')
             .attr('class', 'tooltip')
@@ -118,6 +138,44 @@ export default function GravityScatterPlot() {
           svg.selectAll('.tooltip').remove();
         });
 
+      // Animation: animate particles from start positions to their computed (d.x,d.y)
+      const animateParticles = (reset = false) => {
+        const sel = svg.selectAll('.particle');
+        if (reset) {
+          // Reset to start positions, tiny radius and invisible
+          sel
+            .attr('cx', d => getStartPos(d).x)
+            .attr('cy', d => getStartPos(d).y)
+            .attr('r', 0.5)
+            .attr('opacity', 0);
+        }
+
+        sel.transition()
+          .duration(900)
+          .delay((d, i) => i * 6)
+          .ease(d3.easeCubicOut)
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y)
+          .attr('r', 4)
+          .attr('opacity', 0.95);
+      };
+
+      // IntersectionObserver to trigger animation when the svg is scrolled into view and replay on re-entry
+      if (typeof IntersectionObserver !== 'undefined') {
+        const obs = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              // Reset and animate so the effect replays on each entry
+              animateParticles(true);
+            }
+          });
+        }, { threshold: 0.25 });
+        obs.observe(svgRef.current);
+      } else {
+        // Fallback: run immediately
+        animateParticles(true);
+      }
+
       // Add title
       svg.append('text')
         .attr('x', centerX)
@@ -134,39 +192,48 @@ export default function GravityScatterPlot() {
         .attr('y', centerY + 8)
         .attr('text-anchor', 'middle')
         .attr('font-size', '13px')
-        .attr('fill', '#999')
+        .attr('fill', '#FFF')
         .text('Social problem solving');
 
-      // Add legend
-      const legendData = [
-        { label: 'High Empathy', color: '#ff6b6b' },
-        { label: 'Medium Empathy', color: '#ffd700' },
-        { label: 'Low Empathy', color: '#4ecdc4' }
-      ];
+      // Add gradient legend (graduated color bar)
+      const legendX = 30;
+      const legendY = height - 90;
+      const legendWidth = 180;
+      const legendHeight = 12;
+
+  // Define gradient stops using the colorScale (white -> black)
+  const defs = svg.append('defs');
+  const grad = defs.append('linearGradient').attr('id', 'empGradient');
+  grad.append('stop').attr('offset', '10%').attr('stop-color', colorScale(0));
+  grad.append('stop').attr('offset', '60%').attr('stop-color', colorScale(2.5));
+  grad.append('stop').attr('offset', '100%').attr('stop-color', colorScale(5));
 
       const legend = svg.append('g')
-        .attr('transform', `translate(30, ${height - 100})`);
+        .attr('transform', `translate(${legendX}, ${legendY})`);
+
+      legend.append('rect')
+        .attr('width', legendWidth)
+        .attr('height', legendHeight)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .attr('fill', 'url(#empGradient)');
+
+      // legend axis
+      const legendScale = d3.scaleLinear().domain([0, 5]).range([0, legendWidth]);
+      const legendAxis = d3.axisBottom(legendScale).ticks(3).tickFormat(d3.format('.1f'));
+      legend.append('g')
+        .attr('transform', `translate(0, ${legendHeight})`)
+        .call(legendAxis)
+        .selectAll('text')
+        .attr('font-size', '11px');
 
       legend.append('text')
+        .attr('x', 0)
+        .attr('y', -8)
         .attr('font-size', '12px')
         .attr('font-weight', 'bold')
         .attr('fill', '#333')
-        .text('Empathy Scale:');
-
-      legendData.forEach((d, i) => {
-        legend.append('circle')
-          .attr('cx', 0)
-          .attr('cy', 20 + i * 20)
-          .attr('r', 4)
-          .attr('fill', d.color);
-        
-        legend.append('text')
-          .attr('x', 12)
-          .attr('y', 24 + i * 20)
-          .attr('font-size', '11px')
-          .attr('fill', '#666')
-          .text(d.label);
-      });
+        .text('Empathy (white = center / low → black = outer / high)');
 
     }).catch(err => {
       console.error('Failed to load CSV:', err);

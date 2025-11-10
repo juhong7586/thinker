@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 export default function BeesSwarmPlot() {
@@ -24,7 +24,7 @@ export default function BeesSwarmPlot() {
       const allData = [...dataCr, ...datacrSocial];
 
       const margin = { top: 60, right: 100, bottom: 0, left: 150 };
-      const width = 1200 - margin.left - margin.right;
+      const width = 1500 - margin.left - margin.right;
       const height = 350 - margin.top - margin.bottom;
 
       // Clear previous content
@@ -71,7 +71,7 @@ export default function BeesSwarmPlot() {
       const simulation = d3.forceSimulation(allData)
         .force('x', d3.forceX(d => xScale(d.value)).strength(0.9))
         .force('y', d3.forceY(d => yScale(d.type)).strength(0.9))
-        .force('collide', d3.forceCollide(3.5))
+        .force('collide', d3.forceCollide(5))
         .stop();
 
       // Run simulation
@@ -89,8 +89,8 @@ export default function BeesSwarmPlot() {
       // Guide line (vertical) and per-band tooltips
       const guideLine = g.append('line')
         .attr('class', 'hover-line')
-        .attr('y1', height/4)
-        .attr('y2', height/4*3)
+        .attr('y1', height/4-20)
+        .attr('y2', height/4*3-20)
         .attr('stroke', '#000')
         .attr('stroke-width', 1)
         .style('opacity', 0);
@@ -166,7 +166,7 @@ export default function BeesSwarmPlot() {
 
             // position these tooltips centered on the vertical line, above each band
             const tWidth = 120;
-            tooltipOverall.attr('transform', `translate(${absX - tWidth/2}, ${overallCenter - 52})`).style('display', null);
+            tooltipOverall.attr('transform', `translate(${absX - tWidth/2}, ${overallCenter - 110})`).style('display', null);
             tooltipSocial.attr('transform', `translate(${absX - tWidth/2}, ${socialCenter + 36})`).style('display', null);
 
         

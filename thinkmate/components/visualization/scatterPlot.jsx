@@ -91,55 +91,116 @@ export default function CreativityScatter() {
         .call(d3.axisLeft(yScale)
           .tickSize(-width)
           .tickFormat('')
-        );
+        );     
 
-      // Add trend line
-      const minX = 0;
-      const maxX = 5;
-      const trendLineData = [
-        { x: minX, y: slope * minX + intercept },
-        { x: maxX, y: slope * maxX + intercept }
-      ];
-
-      g.append('line')
-        .attr('x1', xScale(trendLineData[0].x))
-        .attr('y1', yScale(trendLineData[0].y))
-        .attr('x2', xScale(trendLineData[1].x))
-        .attr('y2', yScale(trendLineData[1].y))
-        .attr('stroke', '#ff7300')
-        .attr('stroke-width', 2)
-        .attr('opacity', 0.8)
-        .attr('stroke-dasharray', '5,5');
+      // g.append('line')
+      //   .attr('x1', xScale(trendLineData[0].x))
+      //   .attr('y1', yScale(trendLineData[0].y))
+      //   .attr('x2', xScale(trendLineData[1].x))
+      //   .attr('y2', yScale(trendLineData[1].y))
+      //   .attr('stroke', '#ff7300')
+      //   .attr('stroke-width', 2)
+      //   .attr('opacity', 0.8)
+      //   .attr('stroke-dasharray', '5,5');
 
       // Add scatter points
       const yDataKey = selectedMetric === 'ave_cr' ? 'ave_cr' : 'ave_cr_social';
-      
-      g.selectAll('.dot')
-        .data(data)
-        .enter()
-        .append('circle')
-        .attr('class', 'dot')
-        .attr('cx', d => xScale(d.ave_emp))
-        .attr('cy', d => yScale(d[yDataKey]))
-        .attr('r', 5)
-        .attr('fill', '#8884d8')
-        .attr('opacity', 0.7)
-        .on('mouseover', function() {
-          d3.select(this)
-            .transition()
-            .duration(200)
-            .attr('r', 8)
-            .attr('opacity', 1);
-        })
-        .on('mouseout', function() {
-          d3.select(this)
-            .transition()
-            .duration(200)
-            .attr('r', 5)
-            .attr('opacity', 0.7);
-        });
 
-      // Add title
+      // Compute a min/max envelope across x by binning the data along ave_emp.
+      // This produces a shaded area between min and max y for each x-bin.
+      const bins = d3.bin()
+        .domain(xScale.domain())
+        .thresholds(80) // adjust number of bins for smoothness/detail
+        .value(d => d.ave_emp)(data);
+
+      const envelope = bins
+        .map(bin => {
+          if (!bin.length) return null;
+          const xCenter = (bin.x0 + bin.x1) / 2;
+          return {
+            x: xCenter,
+            min: d3.min(bin, d => d[yDataKey]),
+            max: d3.max(bin, d => d[yDataKey]),
+            avg: d3.mean(bin, d => d[yDataKey]),
+            count: bin.length
+          };
+        })
+        .filter(d => d !== null)
+        .sort((a, b) => a.x - b.x);
+
+      const area = d3.area()
+        .x(d => xScale(d.x))
+        .y0(d => yScale(d.min))
+        .y1(d => yScale(d.max))
+        .curve(d3.curveCatmullRom.alpha(0.02));
+
+      g.append('path')
+        .datum(envelope)
+        .attr('fill', '#888888')
+        .attr('fill-opacity', 0.25)
+        .attr('stroke', 'none')
+        .attr('d', area);
+
+
+      // Add max line 
+      const lineMax = d3.line()
+        .x(d => xScale(d.x))
+        .y(d => yScale(d.max))
+        .curve(d3.curveCatmullRom.alpha(0.02));
+
+      g.append('path')
+        .datum(envelope)
+        .attr('fill', 'none')
+        .attr('stroke', '#CCC')
+        .attr('stroke-width', 1)
+        .attr('stroke-linecap', 'round')
+        .attr('d', lineMax);    
+
+      // Add min line
+      const lineMin = d3.line()
+        .x(d => xScale(d.x))
+        .y(d => yScale(d.min))
+        .curve(d3.curveCatmullRom.alpha(0.02));
+
+      g.append('path')
+        .datum(envelope)
+        .attr('fill', 'none')
+        .attr('stroke', '#AAAAAA')
+        .attr('stroke-width', 1)
+        .attr('stroke-linecap', 'round')
+        .attr('d', lineMin);
+
+      // Draw average line as segmented lines with thickness proportional to bin count
+      // To make thickness changes smoother, compute a short-window smoothed count per envelope point
+      const counts = envelope.map(d => d.count || 0);
+      const smoothed = counts.map((c, i) => {
+        const prev = counts[i - 1] || 0;
+        const next = counts[i + 1] || 0;
+        return (prev + c + next) / 3; // simple 3-point moving average
+      });
+      const maxSmoothed = d3.max(smoothed) || 1;
+
+      for (let i = 0; i < envelope.length - 1; i++) {
+        const d = envelope[i];
+        const nextD = envelope[i + 1];
+        // thickness based on average of smoothed counts at the two segment endpoints
+        const avgSm = (smoothed[i] + smoothed[i + 1]) / 2;
+        const thickness = 2 + (avgSm / maxSmoothed) * 8; // base 2px + scaled
+
+        g.append('line')
+          .attr('x1', xScale(d.x))
+          .attr('y1', yScale(d.x * slope + intercept))
+          .attr('x2', xScale(nextD.x))
+          .attr('y2', yScale(nextD.x * slope + intercept))
+          .attr('stroke', '#ff7300')
+          .attr('stroke-width', thickness)
+          .attr('stroke-linecap', 'round')
+          .attr('opacity', 0.95);
+      }
+
+
+
+        // Add title
       svg.append('text')
         .attr('x', (width + margin.left + margin.right) / 2)
         .attr('y', 20)
@@ -153,14 +214,6 @@ export default function CreativityScatter() {
       const legend = svg.append('g')
         .attr('transform', `translate(${margin.left + 20}, ${margin.top + 20})`);
 
-      legend.append('circle')
-        .attr('r', 5)
-        .attr('fill', '#8884d8');
-      legend.append('text')
-        .attr('x', 15)
-        .attr('y', 5)
-        .attr('font-size', '12px')
-        .text('Students');
 
       legend.append('line')
         .attr('x1', 0)
@@ -168,8 +221,7 @@ export default function CreativityScatter() {
         .attr('y1', 20)
         .attr('y2', 20)
         .attr('stroke', '#ff7300')
-        .attr('stroke-width', 2)
-        .attr('stroke-dasharray', '5,5');
+        .attr('stroke-width', 2);
       legend.append('text')
         .attr('x', 25)
         .attr('y', 25)

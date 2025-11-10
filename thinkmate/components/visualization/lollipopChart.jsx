@@ -40,14 +40,24 @@ export default function LollipopChart() {
       .range([height, 0]);
 
     // Axes
-    const xAxis = d3.axisBottom(xScale);
+    const xAxis = d3.axisBottom(xScale).tickSize(0);
     const yAxis = d3.axisLeft(yScale);
 
-    g.append('g')
+
+    // Render x axis and rotate tick labels for readability
+    const xAxisG = g.append('g')
       .attr('transform', `translate(0,${height})`)
-      .call(xAxis)
-      .append('text')
-      .attr('y', margin.bottom-10)
+      .call(xAxis);
+
+    xAxisG.selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-0.6em')
+      .attr('dy', '0.25em');
+
+    // Axis label
+    xAxisG.append('text')
+      .attr('y', margin.bottom - 10)
       .attr('x', width / 2)
       .attr('fill', 'black')
       .attr('text-anchor', 'middle')
@@ -159,7 +169,7 @@ export default function LollipopChart() {
 
   return (
   <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '80vh' }}>
-       <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
+       <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px' }}>
         <svg ref={svgRef}></svg>
       </div>
     </div>
