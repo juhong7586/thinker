@@ -3,68 +3,51 @@ import * as d3 from 'd3';
 
 export default function SlopeChart() {
   const svgRef = useRef();
-
-  // Overall creative thinking scores
-  const creativeTscores = {
-    'Singapore': 41, 'Korea': 38, 'Canada': 38, 'Australia': 37, 'New Zealand': 36,
-    'Estonia': 36, 'Finland': 36, 'Denmark': 35, 'Latvia': 35, 'Belgium': 35,
-    'Poland': 34, 'Portugal': 34, 'Lithuania': 33, 'Spain': 33, 'Czechia': 33,
-    'Germany': 33, 'France': 32, 'Netherlands': 32, 'Israel': 32, 'Italy': 31,
-    'Malta': 31, 'Hungary': 31, 'Chile': 31, 'Croatia': 30, 'Iceland': 30,
-    'Slovenia': 30, 'Slovak Republic': 29, 'Mexico': 29, 'Serbia': 29, 'Uruguay': 29,
-    'United Arab Emirates': 28, 'Qatar': 28, 'Costa Rica': 27, 'Greece': 27,
-    'Romania': 26, 'Colombia': 26, 'Jamaica': 26, 'Malaysia': 25, 'Mongolia': 25,
-    'Moldova': 24, 'Kazakhstan': 24, 'Brunei Darussalam': 24, 'Peru': 23, 'Brazil': 23,
-    'Saudi Arabia': 23, 'Panama': 23, 'El Salvador': 23, 'Thailand': 21, 'Bulgaria': 21,
-    'Jordan': 20, 'North Macedonia': 19, 'Indonesia': 19, 'Dominican Republic': 15,
-    'Morocco': 15, 'Uzbekistan': 14, 'Philippines': 14, 'Albania': 13,
-    'Chinese Taipei': 33, 'Macao (China)': 32, 'Hong Kong (China)': 32,
-    'Ukrainian regions': 27, 'Cyprus': 24, 'Baku (Azerbaijan)': 23, 'Palestinian Authority': 18
-  };
-
-  // Social problem solving relative success
-  const socialProbData = {
-    'Australia': -2.3, 'Belgium': -0.5, 'Canada': -1.0, 'Chile': -5.8, 'Colombia': -8.3,
-    'Costa Rica': 5.3, 'Czechia': -4.1, 'Denmark': -3.7, 'Estonia': -0.4, 'Finland': 2.4,
-    'France': 1.0, 'Germany': 0.7, 'Greece': 2.2, 'Hungary': -1.0, 'Iceland': -9.6,
-    'Israel': -0.1, 'Italy': -3.3, 'Korea': -3.8, 'Latvia': 1.6, 'Lithuania': -0.6,
-    'Mexico': -6.5, 'Netherlands': -1.7, 'New Zealand': -1.4, 'Poland': 1.3, 'Portugal': -0.2,
-    'Slovak Republic': -1.8, 'Slovenia': -1.8, 'Spain': -2.3,
-    'Albania': -13.0, 'Baku (Azerbaijan)': -0.8, 'Brazil': 1.9, 'Brunei Darussalam': -2.6,
-    'Bulgaria': -3.5, 'Croatia': -3.1, 'Cyprus': 5.5, 'Dominican Republic': -12.9,
-    'El Salvador': 0.4, 'Hong Kong (China)': -3.0, 'Indonesia': -2.5, 'Jamaica': -0.1,
-    'Jordan': -1.3, 'Kazakhstan': 3.5, 'Macao (China)': -2.8, 'Malaysia': 7.0, 'Malta': -3.2,
-    'Moldova': -1.9, 'Mongolia': -5.8, 'Morocco': -7.8, 'North Macedonia': -7.1,
-    'Palestinian Authority': -0.6, 'Panama': 3.9, 'Peru': 0.6, 'Philippines': -11.9,
-    'Qatar': -0.3, 'Romania': -11.2, 'Saudi Arabia': -0.3, 'Serbia': -4.0, 'Singapore': 4.8,
-    'Chinese Taipei': -0.3, 'Thailand': -3.9, 'Ukrainian regions': -5.6,
-    'United Arab Emirates': -1.1, 'Uruguay': -3.9, 'Uzbekistan': -1.1
-  };
+  const uniqueSocial = new Set();
+  const uniqueCreativity = new Set();
 
   useEffect(() => {
-    if (!svgRef.current) return;
+     d3.csv('/data/global_creativity.csv').then(csv => {
+       csv.forEach(function(d) {
+         // CSV has columns: country,overallScore,socialSuccess
+         d.overallScore = d.overallScore === '' ? NaN : +d.overallScore;
+         d.socialSuccess = d.socialSuccess === '' ? NaN : +d.socialSuccess;
+         d.country = d.country && d.country.trim();
+          if (!isNaN(d.socialSuccess)) uniqueSocial.add(d.socialSuccess);
+          if (!isNaN(d.overallScore)) uniqueCreativity.add(d.overallScore);
+       });
 
-    // Combine data and create two separate sorted arrays
-    const allData = Object.keys(creativeTscores)
-      .map(country => ({
-        country,
-        overallScore: creativeTscores[country],
-        socialSuccess: socialProbData[country] || 0,
-        isKorea: country === 'Korea'
-      }))
-      .filter(d => d.socialSuccess !== 0);
+       const rawData = csv;
+       const allData = rawData
+         .filter(item => item.country && !isNaN(item.overallScore) && !isNaN(item.socialSuccess))
+         .map(d => ({
+           country: d.country,
+           overallScore: d.overallScore,
+           socialSuccess: d.socialSuccess,
+           isKorea: d.country === 'Korea'
+         }));
 
-    // Sort by overall score (high to low) for positioning
+    // Keep data sorted by overall score for iteration (display order)
     const data = [...allData].sort((a, b) => b.overallScore - a.overallScore);
-    
-    // Create a lookup for social scores sorted high to low
-    const socialSorted = [...allData].sort((a, b) => b.socialSuccess - a.socialSuccess);
+
+    // Build index maps from the unique value sets (sorted high -> low).
+    // These maps let us place rows on discrete bands for each unique score value.
+    const creativityValues = Array.from(uniqueCreativity).filter(v => !isNaN(v)).sort((a, b) => b - a);
+    const creativityIndex = {};
+    creativityValues.forEach((v, i) => { creativityIndex[v] = i; });
+
+    const socialValues = Array.from(uniqueSocial).filter(v => !isNaN(v)).sort((a, b) => b - a);
+    const socialIndex = {};
+    socialValues.forEach((v, i) => { socialIndex[v] = i; });
+
+    // Create a lookup for social index by country for convenience
     const socialRank = {};
-    socialSorted.forEach((d, i) => {
-      socialRank[d.country] = i;
+    data.forEach(d => {
+      socialRank[d.country] = socialIndex[d.socialSuccess];
     });
 
-    const margin = { top: 50, right: 60, bottom: 40, left: 80 };
+    const margin = { top: 80, right: 60, bottom: 10, left: 150 };
+    const leftBarHeight = 18;  
     const barHeight = 8;
     const height = data.length * barHeight + margin.top + margin.bottom;
     const width = 800;
@@ -73,8 +56,7 @@ export default function SlopeChart() {
 
     const svg = d3.select(svgRef.current)
       .attr('width', width)
-      .attr('height', height)
-      .style('background', '#f9f9f9');
+      .attr('height', height);
 
     const g = svg.append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -84,41 +66,54 @@ export default function SlopeChart() {
     const socialScale = d3.scaleLinear().domain([-15, 10]).range([0, width - margin.left - margin.right]);
 
     // Title
-    svg.append('text')
-      .attr('x', width / 2)      
-      .attr('y', 20)
-      .attr('text-anchor', 'middle')
-      .attr('font-size', '1.2rem')
-      .attr('font-weight', 'bold')
-      .text('Creative Performance Slope: Overall vs Social Problem Solving')
-      ;
+    // svg.append('text')
+    //   .attr('x', width / 2)      
+    //   .attr('y', 40)
+    //   .attr('text-anchor', 'middle')
+    //   .attr('font-size', '1.5rem')
+    //   .attr('font-weight', 'bold')
+    //   .attr('margin', '10px')
+    //   .text('Overall vs Social Problem Solving')
+    //   ;
 
     // Left axis label
     svg.append('text')
       .attr('x', margin.left-20)
-      .attr('y', 45)
+      .attr('y', 65)
       .attr('text-anchor', 'start')
-      .attr('font-size', '1rem')
-      .attr('font-weight', 'bold')
+      .attr('font-size', '1.2rem')
+      .attr('font-weight', 'normal')
       .text('Overall Creative Thinking Rank');
 
     // Right axis label
     svg.append('text')
       .attr('x', width - margin.right )
-      .attr('y', 45)
+      .attr('y', 65)
       .attr('text-wrap', 'wrap')
       .attr('text-anchor', 'end')
-      .attr('font-size', '1rem')
-      .attr('font-weight', 'bold')
+      .attr('font-size', '1.2rem')
+      .attr('font-weight', 'normal')
       .text('Social Problem Solving Rank');
 
     // Draw connections and points — group each row so we can show labels on hover
-    data.forEach((d, i) => {
-      const y = i * barHeight;
-      // Get the position on the right based on social ranking
-      const socialY = socialRank[d.country] * barHeight;
+    data.forEach((d) => {
+      // Use the creativity index (based on unique creativity values) for left axis position
+      const creativityIdx = (creativityIndex[d.overallScore] !== undefined) ? creativityIndex[d.overallScore] : 0;
+      const y = creativityIdx * leftBarHeight;
+      // Use the social index ( based on unique social values) for right axis position
+      const socialIdx = (socialIndex[d.socialSuccess] !== undefined) ? socialIndex[d.socialSuccess] : 0;
+      const socialY = socialIdx * barHeight;
 
-      const row = g.append('g').attr('class', 'row').attr('data-country', d.country);
+      // // Get the position on the right based on social ranking (from socialRank built above)
+      // const socialY = (socialRank[d.country] !== undefined) ? socialRank[d.country] * barHeight : 0;
+
+      // Attach data attributes so we can find rows sharing the same numeric values on hover
+      const row = g.append('g')
+        .attr('class', 'row')
+        .attr('data-country', d.country)
+        .attr('data-overall', String(d.overallScore))
+        .attr('data-social', String(d.socialSuccess))
+        .attr('data-iskorea', String(d.isKorea));
 
       // Connecting line
       row.append('line')
@@ -129,6 +124,7 @@ export default function SlopeChart() {
         .attr('stroke', d.isKorea ? '#d73027' : '#ccc')
         .attr('stroke-width', d.isKorea ? 2 : 0.5)
         .attr('opacity', d.isKorea ? 1 : 0.5)
+        .attr('class', 'connector')
         .style('pointer-events', 'stroke');
 
       // Left point (overall score)
@@ -152,13 +148,14 @@ export default function SlopeChart() {
 
       // Country label (left) — hidden by default
       row.append('text')
-        .attr('x', -10)
-        .attr('y', y + barHeight / 2 + 3)
+        .attr('x', d.isKorea ? -10 : -10)
+        .attr('y', d.isKorea? y+barHeight/2+3 : (y + socialY) / 2 + barHeight / 2 + 3)
         .attr('text-anchor', 'end')
         .attr('font-size', d.isKorea ? '1.2rem' : '0.8rem')
         .attr('font-weight', d.isKorea ? 'bold' : 'normal')
         .attr('fill', d.isKorea ? '#d73027' : '#333')
         .attr('class', 'label-country')
+        .attr('padding', '20px')
         .style('opacity', d.isKorea ? 1 : 0)
         .text(d.country);
 
@@ -166,7 +163,7 @@ export default function SlopeChart() {
       row.append('text')
         .attr('x', 5)
         .attr('y', y + barHeight / 2 + 3)
-        .attr('font-size', '0.8rem')
+        .attr('font-size', d.isKorea ? '1.2rem' : '0.8rem')
         .style('opacity', d.isKorea ? 1 : 0)
         .attr('class', 'label-overall')
         .attr('fill', '#333')
@@ -176,20 +173,77 @@ export default function SlopeChart() {
       row.append('text')
         .attr('x', width - margin.left - margin.right + 5)
         .attr('y', socialY + barHeight / 2 + 3)
-        .attr('font-size', '0.8rem')
+        .attr('font-size', d.isKorea ? '1.2rem' : '0.8rem')
         .attr('fill', '#333')
         .attr('class', 'label-social')
         .style('opacity', d.isKorea ? 1 : 0)
         .text(d.socialSuccess.toFixed(1) + '%');
 
-      // Hover handlers: show labels on mouseover and hide on mouseout
+      // Hover handlers: show labels for matching rows and stack them to avoid overlap
       row.on('mouseover', function() {
-        d3.select(this).selectAll('.label-country, .label-social, .label-overall')
-          .transition().duration(120).style('opacity', 1);
+        const ov = String(d.overallScore);
+        const soc = String(d.socialSuccess);
+        const labelSpacing = 14; // px between stacked labels
+
+        // find rows that match either overall OR social
+        const matched = g.selectAll('.row').filter(function() {
+          const ro = d3.select(this).attr('data-overall');
+          return ro === ov;
+        });
+
+        // For rows grouped by the same overall value, stack their left labels vertically
+        const groupsByOverall = {};
+        matched.each(function() {
+          const el = d3.select(this);
+          const ro = el.attr('data-overall');
+          if (!groupsByOverall[ro]) groupsByOverall[ro] = [];
+          groupsByOverall[ro].push(this);
+        });
+
+        Object.keys(groupsByOverall).forEach(key => {
+          const nodes = groupsByOverall[key];
+          const n = nodes.length;
+          // base y for this overall value
+          const val = Number(key);
+          const baseIdx = (creativityIndex[val] !== undefined) ? creativityIndex[val] : 0;
+          const baseY = baseIdx * leftBarHeight + barHeight / 2 + 3;
+          nodes.forEach((node, idx) => {
+            const offset = (idx - (n - 1) / 2) * labelSpacing;
+            d3.select(node).selectAll('.label-country')
+              .transition().duration(120)
+              .attr('y', baseY + offset)
+              .style('opacity', 1);
+            // also show the numeric labels for these rows
+            d3.select(node).selectAll('.label-social, .label-overall')
+              .transition().duration(120).style('opacity', 1);
+            // highlight connector
+            d3.select(node).selectAll('.connector')
+              .transition().duration(120).style('opacity', 1).style('stroke', '#000');
+          });
+        });
       }).on('mouseout', function() {
-        d3.select(this).selectAll('.label-country, .label-social, .label-overall')
+        // restore labels to hidden (except Korea)
+        g.selectAll('.row').selectAll('.label-country')
+          .transition().duration(120)
+          // reset y to the original base position for that row
+          .attr('y', function() {
+            const el = d3.select(this.parentNode);
+            const ro = Number(el.attr('data-overall'));
+            const baseIdx = (creativityIndex[ro] !== undefined) ? creativityIndex[ro] : 0;
+            return baseIdx * leftBarHeight + barHeight / 2 + 3;
+          })
+          .style('opacity', 0);
+
+        // hide numeric labels and reset connectors
+        g.selectAll('.row').selectAll('.label-social, .label-overall')
           .transition().duration(120).style('opacity', 0);
-        d.isKorea && d3.select(this).selectAll('.label-country, .label-social, .label-overall')
+        g.selectAll('.row').selectAll('.connector')
+          .transition().duration(120).style('opacity', 0.5).style('stroke', '#ccc');
+
+        // keep Korea labels visible
+        g.selectAll('.row')
+          .filter(function() { return d3.select(this).attr('data-iskorea') === 'true'; })
+          .selectAll('.label-country, .label-social, .label-overall')
           .transition().duration(120).style('opacity', 1);
       });
     });
@@ -198,44 +252,37 @@ export default function SlopeChart() {
     const legendY = height - 30;
     
     svg.append('circle')
-      .attr('cx', margin.left + 20)
-      .attr('cy', legendY)
-      .attr('r', 4)
-      .attr('fill', '#4575b4');
-    svg.append('text')
-      .attr('x', margin.left + 35)
-      .attr('y', legendY + 3)
-      .attr('font-size', '11px')
-      .text('Overall Creative Thinking');
-
-    svg.append('circle')
-      .attr('cx', margin.left + 250)
+      .attr('cx', margin.left)
       .attr('cy', legendY)
       .attr('r', 4)
       .attr('fill', '#2ca02c');
     svg.append('text')
-      .attr('x', margin.left + 265)
+      .attr('x', margin.left + 15)
       .attr('y', legendY + 3)
-      .attr('font-size', '11px')
+      .attr('font-size', '15px')
       .text('Positive Social Problem Solving');
 
     svg.append('circle')
-      .attr('cx', margin.left + 500)
+      .attr('cx', margin.left + 330)
       .attr('cy', legendY)
       .attr('r', 4)
       .attr('fill', '#d73027');
     svg.append('text')
-      .attr('x', margin.left + 515)
+      .attr('x', margin.left + 345)
       .attr('y', legendY + 3)
-      .attr('font-size', '11px')
+      .attr('font-size', '15px')
       .text('Negative Social Problem Solving');
+
+  }).catch(err => {
+        console.error('Failed to load CSV for SlopeChart:', err);
+      });
 
   }, []);
 
   return (
-    <div style={{ width: '100%', padding: '20px', backgroundColor: '#f5f5f5', minHeight: '80vh' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', backgroundColor: '#fafafa', padding: '15px', borderRadius: '4px' }}>
+    <div style={{ width: '100%', padding: '20px',  minHeight: '80vh' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '30px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', padding: '15px', borderRadius: '4px' }}>
           <svg ref={svgRef}></svg>
         </div>
 

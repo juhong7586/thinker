@@ -14,7 +14,7 @@ export default function LollipopChart() {
       });
     const data = csv;
 
-    const margin = { top: 30, right: 30, bottom: 100, left: 60 };
+    const margin = { top: 30, right: 30, bottom: 60, left: 60 };
     const width = 800 - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
 
@@ -36,34 +36,44 @@ export default function LollipopChart() {
       .padding(0.5);
 
     const yScale = d3.scaleLinear()
-      .domain([0, 0.3])
+      .domain([0, 0.24])
       .range([height, 0]);
 
     // Axes
-    const xAxis = d3.axisBottom(xScale);
+    const xAxis = d3.axisBottom(xScale).tickSize(0);
     const yAxis = d3.axisLeft(yScale);
 
-    g.append('g')
+
+    // Render x axis and rotate tick labels for readability
+    const xAxisG = g.append('g')
       .attr('transform', `translate(0,${height})`)
-      .call(xAxis)
-      .append('text')
-      .attr('y', 90)
+      .call(xAxis);
+
+    xAxisG.selectAll('text')
+      .attr('transform', 'rotate(-45)')
+      .style('text-anchor', 'end')
+      .attr('dx', '-0.6em')
+      .attr('dy', '0.25em');
+
+    // Axis label
+    xAxisG.append('text')
+      .attr('y', margin.bottom - 10)
       .attr('x', width / 2)
       .attr('fill', 'black')
       .attr('text-anchor', 'middle')
-      .attr('font-size', '14px')
+      .attr('font-size', '1.2rem')
       .text('Country');
 
     g.append('g')
       .call(yAxis)
       .append('text')
       .attr('transform', 'rotate(-90)')
-      .attr('y', 0 - margin.left)
+      .attr('y', 0 - margin.bottom)
       .attr('x', 0 - (height / 2))
       .attr('dy', '1em')
       .attr('fill', 'black')
       .attr('text-anchor', 'middle')
-      .attr('font-size', '14px')
+      .attr('font-size', '1.2rem')
       .text('Self-Directed Learning Index');
 
     // Add grid lines
@@ -74,7 +84,7 @@ export default function LollipopChart() {
         .tickSize(-width)
         .tickFormat('')
       );
-
+    
     // Add lines (stems)
     g.selectAll('.line')
       .data(data)
@@ -106,12 +116,15 @@ export default function LollipopChart() {
         else if (d.country === 'OECD average') return '#000000';
         else return '#9e9e9e';
       })
-      
+
+ 
+
       .on('mouseover', function(event, d) {
         d3.select(this)
           .transition()
           .duration(200)
           .attr('r', 9);
+
         g.append('text')
           .attr('class', 'tooltip')
           .attr('x', xScale(d.country) + xScale.bandwidth() / 2)
@@ -120,22 +133,25 @@ export default function LollipopChart() {
           .attr('font-size', '12px')
           .attr('fill', '#333')
           .text(d.empathy_score.toFixed(2));
+
+        g.append('text')
+          .attr('class', 'country-label')
+          .attr('x', xScale(d.country) -20)
+          .attr('y', yScale(d.empathy_score) + 15)
+          .attr('font-size', '1rem')
+          .attr('fill', '#333')
+          .text(d.country);
       })
       .on('mouseout', function() {
         d3.select(this)
           .transition()
           .duration(200)
           .attr('r', 6);
-        g.selectAll('.tooltip').remove();
+        g.selectAll('.tooltip, .country-label').remove();
       });
 
-    // Rotate x-axis labels
-    g.selectAll('.tick text')
-      .attr('transform', 'rotate(-45)')
-      .style('text-anchor', 'end')
-      .attr('dx', '-5px')
-      .attr('dy', '5px');
-
+    
+  
     // Add title
     svg.append('text')
       .attr('x', (width + margin.left + margin.right) / 2)
@@ -152,8 +168,8 @@ export default function LollipopChart() {
   }, []);
 
   return (
-  <div style={{ width: '100%', padding: '20px', backgroundColor: '#f5f5f5', minHeight: '80vh' }}>
-       <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
+  <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '80vh' }}>
+       <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px' }}>
         <svg ref={svgRef}></svg>
       </div>
     </div>

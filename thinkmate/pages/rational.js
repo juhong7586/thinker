@@ -3,6 +3,10 @@ import BubbleMenu from '../components/BubbleMenu';
 import styles from '../styles/Home.module.css';
 import SlopeChart from '../components/visualization/slopeChart';
 import LollipopChart from '../components/visualization/lollipopChart';
+import ScatterPlot from '../components/visualization/scatterPlot'; 
+import CreativityScatter from '../components/visualization/creativityScatter';
+import GravityScatterPlot from '../components/visualization/gravity';
+import CurvyChart from '../components/visualization/curvyChart';
 
 const items = [
   {
@@ -50,10 +54,10 @@ export default function RationalPage() {
         <meta name="description" content="Rational info: how empathy and creativity relate" />
       </Head>
     <div className={styles.title} style={{ maxWidth: '100%', margin: '3rem auto', textAlign: 'center' }}>
- <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
+      <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
          
     </div>
-      <div style={{ padding: '2rem' }}>
+    <div style={{ maxWidth: '100%', margin: '1rem auto'}}>
         {/* BubbleMenu placed at the top of the page */}
         <BubbleMenu
           logo={<span style={{ fontWeight: 700 }}>RB</span>}
@@ -67,24 +71,44 @@ export default function RationalPage() {
           animationDuration={0.5}
           staggerDelay={0.12}
         />
-
-        <main style={{ maxWidth: 900, margin: '3rem auto' }}>
-           <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
-           What would these issues mean for our students? They do think these problems are important, however, they do not think they should make a difference.
+    </div>
+    <div style={{  alignItems: 'center' , textAlign: 'center' }}>
+     
+          <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+          What would these issues mean for our students? 
+          <br />They do think these problems are important, however, they do not think they should make a difference.
           <br />How would these problems impact on them? Would it be okay to let them ignore these issues?
           <br />As someone to guide our students, how can we solve them?</p>
-            <SlopeChart />
+          <curvyChart />
+          <SlopeChart />
+          <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+          IT is really a problem, especially comparing between students. </p>
+      
+        <CreativityScatter />
+        <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+          
+          Look at the distribution of empathy and creativity scores among students.
+          <br />Compare number of students between overall creativity and social problem solving creativity.
+          <br /> Although they possess high creativity, they struggle when the problems narrow down to social problems.
+          <br /> This is directly related to the unsolved conflicts within our society.</p>
 
-            <h3 className={styles.subtitle} style={{ fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>How can we solve this problem?</h3>
-            <LollipopChart />
-            <p style={{ lineHeight: 1.6 }}>
-              We can find hint in empathy. Chart above is about confidence in self-directed learning, and social and emotional skills.
-              <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
-              <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
-            </p>
-
-        </main>
-      </div>
+        <h3 className={styles.subtitle} style={{ fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>How can we solve this problem?</h3>
+        <LollipopChart />
+        <p style={{ lineHeight: 1.6 }}>
+          We can find hint in empathy. Chart above is about confidence in self-directed learning, and social and emotional skills.
+          <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
+          <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
+        </p>
+        <ScatterPlot />
+          
+    </div>
+    <div style={{ background: 'linear-gradient(to bottom, #ffffff, #0e0e0e)', width: '100vw', padding: '40px 0' , height: '30vh'}}>
+      <h1 style={{ textAlign: 'center', color: '#333' }}>What can we do for students' future?</h1>
+    </div>
+    <div style={{ background: '#0e0e0e', width: '100vw' }}>
+      <GravityScatterPlot />
+    </div>
+    
     </>
   );
 }
