@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
 
 import styles from '../styles/Rational.module.css';
 
@@ -62,6 +61,7 @@ export default function BubbleMenu({
   const overlayRef = useRef(null);
   const bubblesRef = useRef([]);
   const labelRefs = useRef([]);
+  const gsapRef = useRef(null);
 
   const menuItems = items?.length ? items : DEFAULT_ITEMS;
   const containerClassName = [styles['bubble-menu'], useFixedPosition ? styles.fixed : styles.absolute, className]
@@ -82,65 +82,96 @@ export default function BubbleMenu({
 
     if (!overlay || !bubbles.length) return;
 
-    if (isMenuOpen) {
-      gsap.set(overlay, { display: 'flex' });
-      gsap.killTweensOf([...bubbles, ...labels]);
-      gsap.set(bubbles, { scale: 0, transformOrigin: '50% 50%' });
-      gsap.set(labels, { y: 100, autoAlpha: 0 });
+    let active = true;
 
-      bubbles.forEach((bubble, i) => {
-        const delay = i * staggerDelay + gsap.utils.random(-0.05, 0.05);
-        const tl = gsap.timeline({ delay });
+    const init = async () => {
+      if (!gsapRef.current) {
+        try {
+          const mod = await import('gsap');
+          gsapRef.current = mod.gsap;
+        } catch (e) {
+          // If dynamic import fails, bail silently (no animation)
+          console.warn('GSAP failed to load dynamically', e);
+          return;
+        }
+      }
 
-        tl.to(bubble, {
-          scale: 1,
-          duration: animationDuration,
-          ease: animationEase
+      if (!active) return;
+      const gs = gsapRef.current;
+
+      if (isMenuOpen) {
+        gs.set(overlay, { display: 'flex' });
+        gs.killTweensOf([...bubbles, ...labels]);
+        gs.set(bubbles, { scale: 0, transformOrigin: '50% 50%' });
+        gs.set(labels, { y: 100, autoAlpha: 0 });
+
+        bubbles.forEach((bubble, i) => {
+          const delay = i * staggerDelay + gs.utils.random(-0.05, 0.05);
+          const tl = gs.timeline({ delay });
+
+          tl.to(bubble, {
+            scale: 1,
+            duration: animationDuration,
+            ease: animationEase
+          });
+          if (labels[i]) {
+            tl.to(
+              labels[i],
+              {
+                y: 0,
+                autoAlpha: 1,
+                duration: animationDuration,
+                ease: 'power3.out'
+              },
+              `-=${animationDuration * 0.9}`
+            );
+          }
         });
-        if (labels[i]) {
-          tl.to(
-            labels[i],
-            {
-              y: 0,
-              autoAlpha: 1,
-              duration: animationDuration,
-              ease: 'power3.out'
-            },
-            `-=${animationDuration * 0.9}`
-          );
-        }
-      });
-    } else if (showOverlay) {
-      gsap.killTweensOf([...bubbles, ...labels]);
-      gsap.to(labels, {
-        y: 24,
-        autoAlpha: 0,
-        duration: 0.2,
-        ease: 'power3.in'
-      });
-      gsap.to(bubbles, {
-        scale: 0,
-        duration: 0.2,
-        ease: 'power3.in',
-        onComplete: () => {
-          gsap.set(overlay, { display: 'none' });
-          setShowOverlay(false);
-        }
-      });
-    }
+      } else if (showOverlay) {
+        gs.killTweensOf([...bubbles, ...labels]);
+        gs.to(labels, {
+          y: 24,
+          autoAlpha: 0,
+          duration: 0.2,
+          ease: 'power3.in'
+        });
+        gs.to(bubbles, {
+          scale: 0,
+          duration: 0.2,
+          ease: 'power3.in',
+          onComplete: () => {
+            gs.set(overlay, { display: 'none' });
+            setShowOverlay(false);
+          }
+        });
+      }
+    };
+
+    init();
+    return () => { active = false; };
   }, [isMenuOpen, showOverlay, animationEase, animationDuration, staggerDelay]);
 
   useEffect(() => {
-    const handleResize = () => {
+    const handleResize = async () => {
       if (isMenuOpen) {
         const bubbles = bubblesRef.current.filter(Boolean);
         const isDesktop = window.innerWidth >= 900;
+
+        if (!gsapRef.current) {
+          try {
+            const mod = await import('gsap');
+            gsapRef.current = mod.gsap;
+          } catch (e) {
+            return;
+          }
+        }
+        const gs = gsapRef.current;
 
         bubbles.forEach((bubble, i) => {
           const item = menuItems[i];
           if (bubble && item) {
             const rotation = isDesktop ? (item.rotation ?? 0) : 0;
-            gsap.set(bubble, { rotation });
+            gs.set(bubble, { rotation });
           }
         });
       }

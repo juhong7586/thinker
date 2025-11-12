@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 export default function BeesSwarmPlot() {
   const svgRef = useRef();
 
   useEffect(() => {
-    d3.csv('/data/kr_students.csv').then(csv => {
+    d3.csv('/data/all_students.csv').then(csv => {
       csv.forEach(function(d) {
         d.ave_cr = +d.ave_cr;
         d.ave_cr_social = +d.ave_cr_social;
@@ -24,7 +24,7 @@ export default function BeesSwarmPlot() {
       const allData = [...dataCr, ...datacrSocial];
 
       const margin = { top: 60, right: 100, bottom: 0, left: 150 };
-      const width = 1500 - margin.left - margin.right;
+      const width = 900 - margin.left - margin.right;
       const height = 350 - margin.top - margin.bottom;
 
       // Clear previous content
@@ -50,10 +50,18 @@ export default function BeesSwarmPlot() {
         .padding(0.5);
 
       // Add x-axis
-      const xAxis = d3.axisBottom(xScale).tickSize(10).tickPadding(5);
+      const xAxis = d3.axisBottom(xScale).tickSize(0).tickPadding(5);
       g.append('g')
-        .attr('transform', `translate(0,110)`)
-        .call(xAxis);
+        .attr('transform', `translate(0,150)`)
+        .call(xAxis)
+        // .append('text')
+        // .attr('y', 40)
+        // .attr('x', width / 2)
+        // .attr('fill', 'black')
+        // .attr('text-anchor', 'middle')
+        // .attr('font-size', '14px')
+        // .text('Creativity Score');
+
 
 
       // Add type labels on the left
@@ -64,64 +72,19 @@ export default function BeesSwarmPlot() {
         .attr('x', -60)
         .attr('y', d => yScale(d) + yScale.bandwidth() / 2 + 4)
         .attr('text-anchor', 'end')
-        .attr('font-size', '1rem')
+        .attr('font-size', '13px')
+        .attr('font-weight', 'bold')
         .text(d => `${d}`);
 
       // Force simulation for jittering
       const simulation = d3.forceSimulation(allData)
         .force('x', d3.forceX(d => xScale(d.value)).strength(0.9))
-        .force('y', d3.forceY(d => yScale(d.type)).strength(0.9))
-        .force('collide', d3.forceCollide(5))
+        .force('y', d3.forceY(d => yScale(d.type) + yScale.bandwidth() / 2).strength(1))
+        .force('collide', d3.forceCollide(2.5))
         .stop();
 
       // Run simulation
       for (let i = 0; i < 120; i++) simulation.tick();
-      // Prepare counts for identical scores (student-level counts)
-      const overallCounts = d3.rollup(data, v => v.length, d => d.ave_cr);
-      const socialCounts = d3.rollup(data, v => v.length, d => d.ave_cr_social);
-
-      // Tooltip group (reused)
-      const tooltip = svg.append('g')
-        .attr('class', 'tooltip')
-        .style('display', 'none');
-
-
-      // Guide line (vertical) and per-band tooltips
-      const guideLine = g.append('line')
-        .attr('class', 'hover-line')
-        .attr('y1', height/4-20)
-        .attr('y2', height/4*3-20)
-        .attr('stroke', '#000')
-        .attr('stroke-width', 1)
-        .style('opacity', 0);
-
-      const tooltipOverall = svg.append('g')
-        .attr('class', 'tooltip-overall')
-        .style('display', 'none');
-      tooltipOverall.append('rect')
-        .attr('width', 150)
-        .attr('height', 28)
-        .attr('rx', 6)
-        .attr('fill', 'rgba(0,0,0,0.75)');
-      const tooltipOverallText = tooltipOverall.append('text')
-        .attr('x', 8)
-        .attr('y', 18)
-        .attr('fill', '#fff')
-        .attr('font-size', '15px');
-
-      const tooltipSocial = svg.append('g')
-        .attr('class', 'tooltip-social')
-        .style('display', 'none');
-      tooltipSocial.append('rect')
-        .attr('width', 150)
-        .attr('height', 28)
-        .attr('rx', 6)
-        .attr('fill', 'rgba(0,0,0,0.75)');
-      const tooltipSocialText = tooltipSocial.append('text')
-        .attr('x', 8)
-        .attr('y', 18)
-        .attr('fill', '#fff')
-        .attr('font-size', '15px');
 
       // Add circles (bees)
       g.selectAll('.dot')
@@ -132,7 +95,7 @@ export default function BeesSwarmPlot() {
         .attr('cx', d => d.x)
         .attr('cy', d => d.y)
         .attr('r', 5)
-        .attr('fill', d => d.type === 'Overall' ? '#aaa' : '#FFD700')
+        .attr('fill', d => d.type === 'Overall' ? '#8884d8' : '#FFD700')
         .attr('opacity', 0.6)
         .on('mouseover', function(event, d) {
           d3.select(this)
@@ -140,48 +103,25 @@ export default function BeesSwarmPlot() {
             .duration(200)
             .attr('r', 7)
             .attr('opacity', 1);
-
-
-            // lookup count depending on type
-            const count = d.type === 'Overall' ? (overallCounts.get(d.value) || 0) : (socialCounts.get(d.value) || 0);
-            const label = ` student${count === 1 ? '' : 's'} • `;
-
-            // position tooltip near the point (transform relative to svg)
-            const xPos = xScale(d.value);
-            const absX = margin.left + xPos;
-            const overallCenter = margin.top + yScale('Overall') + yScale.bandwidth() / 2;
-            const socialCenter = margin.top + yScale('Social') + yScale.bandwidth() / 2;
-
-            // show single tooltip near hovered point (existing) for quick info
-            tooltip.attr('transform', `translate(${absX}, ${margin.top + d.y - 36})`).style('display', null);
-
-            // show guide line at x (within g coordinates)
-            guideLine.attr('x1', xPos).attr('x2', xPos).transition().duration(80).style('opacity', 1);
-
-            // show per-band tooltips with counts for the same score
-            const overallCount = overallCounts.get(d.value) || 0;
-            const socialCount = socialCounts.get(d.value) || 0;
-            tooltipOverallText.text(`${overallCount}`+label+`${d.value.toFixed(2)}`);
-            tooltipSocialText.text(`${socialCount}`+label+`${d.value.toFixed(2)}`);
-
-            // position these tooltips centered on the vertical line, above each band
-            const tWidth = 120;
-            tooltipOverall.attr('transform', `translate(${absX - tWidth/2}, ${overallCenter - 110})`).style('display', null);
-            tooltipSocial.attr('transform', `translate(${absX - tWidth/2}, ${socialCenter + 36})`).style('display', null);
-
-        
+          
+          // Show tooltip
+          g.append('text')
+            .attr('class', 'tooltip')
+            .attr('x', d.x)
+            .attr('y', d.y - 15)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '11px')
+            .attr('fill', '#333')
+            .attr('background', 'white')
+            .text(d.value.toFixed(2));
         })
         .on('mouseout', function() {
           d3.select(this)
             .transition()
             .duration(200)
-            .attr('r', 5)
+            .attr('r', 4.5)
             .attr('opacity', 0.6);
-          tooltip.style('display', 'none');
-          // hide guide line and per-band tooltips
-          guideLine.transition().duration(80).style('opacity', 0);
-          tooltipOverall.style('display', 'none');
-          tooltipSocial.style('display', 'none');
+          g.selectAll('.tooltip').remove();
         });
 
       // Add title
@@ -194,6 +134,28 @@ export default function BeesSwarmPlot() {
         .attr('fill', '#333')
         .text('Creativity Distribution Comparison');
 
+      // Add legend
+      const legend = svg.append('g')
+        .attr('transform', `translate(${width + margin.left - 200}, ${margin.top})`);
+
+      legend.append('circle')
+        .attr('r', 4.5)
+        .attr('fill', '#8884d8');
+      legend.append('text')
+        .attr('x', 12)
+        .attr('y', 5)
+        .attr('font-size', '12px')
+        .text('Overall');
+
+      legend.append('circle')
+        .attr('r', 4.5)
+        .attr('cy', 20)
+        .attr('fill', '#FFD700');
+      legend.append('text')
+        .attr('x', 12)
+        .attr('y', 25)
+        .attr('font-size', '12px')
+        .text('Social');
 
     }).catch(err => {
       console.error('Failed to load CSV:', err);
@@ -203,7 +165,7 @@ export default function BeesSwarmPlot() {
 
   return (
     <div style={{ width: '100%', minHeight: '40vh', backgroundColor: '#ffffff', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px' }}>
+      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
         <svg ref={svgRef}></svg>
       </div>
     </div>

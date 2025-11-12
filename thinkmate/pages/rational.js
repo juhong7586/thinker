@@ -7,8 +7,11 @@ import ScatterPlot from '../components/visualization/scatterPlot';
 import CreativityScatter from '../components/visualization/creativityScatter';
 import GravityScatterPlot from '../components/visualization/gravity';
 import CurvyChart from '../components/visualization/curvyChart';
+import { useState, useEffect } from 'react';
+import * as d3 from 'd3';
 
 const items = [
+
   {
     label: '‘Men don’t know why they became unhappy’: the toxic gender war dividing South Korea',
     href: 'https://www.theguardian.com/society/2025/sep/20/inside-saturday-south-korea-gender-war',
@@ -47,8 +50,26 @@ const items = [
 ];
 
 export default function RationalPage() {
+  // Component state must be created inside the component using hooks
+  const [country, setCountry] = useState(null);
+  const [countries, setCountries] = useState([]);
+
+  useEffect(() => {
+    // load country list from CSV so labels match the charts
+    d3.csv('/data/emp_cr_by_country.csv')
+      .then(rows => {
+        const list = rows.map(r => r.country).filter(Boolean);
+        const unique = Array.from(new Set(list));
+        setCountries(unique);
+      })
+      .catch(err => console.error('Failed to load country list:', err));
+  }, []);
+
+
+  
   return (
     <>
+    
       <Head>
         <title>Rational — ThinkMate</title>
         <meta name="description" content="Rational info: how empathy and creativity relate" />
@@ -79,12 +100,41 @@ export default function RationalPage() {
           <br />They do think these problems are important, however, they do not think they should make a difference.
           <br />How would these problems impact on them? Would it be okay to let them ignore these issues?
           <br />As someone to guide our students, how can we solve them?</p>
-          <curvyChart />
-          <SlopeChart />
+
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 900 }}>
+            {countries.length === 0 ? (
+              <div style={{ color: '#666' }}>Loading countries…</div>
+            ) : (
+              countries.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setCountry(c)}
+                  aria-pressed={country === c}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: 18,
+                    border: country === c ? '2px solid #111' : '1px solid #ddd',
+                    background: country === c ? '#f3f4f6' : '#fff',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  {c}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        {country && (
+          <p style={{ textAlign: 'center', marginTop: 8 }}><strong>Selected country:</strong> {country}</p>
+        )}
+          <SlopeChart currentCountry={country} />
           <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
-      
-        <CreativityScatter />
+
+        <CreativityScatter currentCountry={country} />
         <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           
           Look at the distribution of empathy and creativity scores among students.
@@ -93,20 +143,20 @@ export default function RationalPage() {
           <br /> This is directly related to the unsolved conflicts within our society.</p>
 
         <h3 className={styles.subtitle} style={{ fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>How can we solve this problem?</h3>
-        <LollipopChart />
+        <LollipopChart currentCountry={country} />
         <p style={{ lineHeight: 1.6 }}>
           We can find hint in empathy. Chart above is about confidence in self-directed learning, and social and emotional skills.
           <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
         </p>
-        <ScatterPlot />
+        <ScatterPlot currentCountry={country} />
           
     </div>
     <div style={{ background: 'linear-gradient(to bottom, #ffffff, #0e0e0e)', width: '100vw', padding: '40px 0' , height: '30vh'}}>
       <h1 style={{ textAlign: 'center', color: '#333' }}>What can we do for students' future?</h1>
     </div>
     <div style={{ background: '#0e0e0e', width: '100vw' }}>
-      <GravityScatterPlot />
+      <GravityScatterPlot currentCountry={country} />
     </div>
     
     </>
