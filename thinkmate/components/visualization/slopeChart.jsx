@@ -51,11 +51,11 @@ export default function SlopeChart({ currentCountry }) {
       socialRank[d.country] = socialIndex[d.socialSuccess];
     });
 
-    const margin = { top: 40, right: 60, bottom: 10, left: 150 };
+    const margin = { top: 40, right: 220, bottom: 10, left: 220 };
     const leftBarHeight = 20;  
     const barHeight = 11;
     const height = 420;
-    const width = 800;
+    const width = 1000;
 
     d3.select(svgRef.current).selectAll("*").remove();
 

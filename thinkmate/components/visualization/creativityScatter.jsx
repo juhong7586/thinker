@@ -23,7 +23,7 @@ export default function BeesSwarmPlot() {
 
       const allData = [...dataCr, ...datacrSocial];
 
-      const margin = { top: 60, right: 100, bottom: 0, left: 150 };
+      const margin = { top: 60, right: 150, bottom: 0, left: 150 };
       const width = 1500 - margin.left - margin.right;
       const height = 350 - margin.top - margin.bottom;
 

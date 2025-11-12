@@ -8,6 +8,7 @@ import CreativityScatter from '../components/visualization/creativityScatter';
 import GravityScatterPlot from '../components/visualization/gravity';
 import CurvyChart from '../components/visualization/curvyChart';
 import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import * as d3 from 'd3';
 
 const items = [
@@ -78,7 +79,7 @@ export default function RationalPage() {
       <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
          
     </div>
-    <div style={{ maxWidth: '100%', margin: '1rem auto'}}>
+    <div style={{ maxWidth: '100%', margin: '1rem auto', padding: '4rem 0' }}>
         {/* BubbleMenu placed at the top of the page */}
         <BubbleMenu
           logo={<span style={{ fontWeight: 700 }}>RB</span>}
@@ -93,35 +94,39 @@ export default function RationalPage() {
           staggerDelay={0.12}
         />
     </div>
-    <div style={{  alignItems: 'center' , textAlign: 'center' }}>
+    <div style={{  alignItems: 'center' , textAlign: 'center'}}>
      
-          <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+          <p className={styles.subtitle} style={{ fontSize: '1.3rem', lineHeight: 2, padding: '5rem 0'}}>
           What would these issues mean for our students? 
           <br />They do think these problems are important, however, they do not think they should make a difference.
           <br />How would these problems impact on them? Would it be okay to let them ignore these issues?
           <br />As someone to guide our students, how can we solve them?</p>
+          <p className={styles.subtitle} style={{ fontSize: '1.3rem'}}><i>Please select your country.</i></p>
 
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 900 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0', padding: '2rem 0' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', maxWidth: '100%' }}>
             {countries.length === 0 ? (
               <div style={{ color: '#666' }}>Loading countries…</div>
             ) : (
               countries.map(c => (
-                <button
+                <motion.button
                   key={c}
                   onClick={() => setCountry(c)}
                   aria-pressed={country === c}
                   style={{
-                    padding: '6px 12px',
+                    padding: country === c ? '8px 16px' : '6px 12px',
                     borderRadius: 18,
                     border: country === c ? '2px solid #111' : '1px solid #ddd',
                     background: country === c ? '#f3f4f6' : '#fff',
                     cursor: 'pointer',
-                    fontSize: '0.9rem'
+                    fontSize: '1rem',
+                    transformOrigin: 'center'
                   }}
-                >
-                  {c}
-                </button>
+                  animate={country === c ? { scale: 1.1 } : { scale: 1 }}
+                  transition ={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  >
+                    {c}
+                  </motion.button>
               ))
             )}
           </div>
