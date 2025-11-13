@@ -6,10 +6,10 @@ import LollipopChart from '../components/visualization/lollipopChart';
 import ScatterPlot from '../components/visualization/scatterPlot'; 
 import CreativityScatter from '../components/visualization/creativityScatter';
 import GravityScatterPlot from '../components/visualization/gravity';
-import CurvyChart from '../components/visualization/curvyChart';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import * as d3 from 'd3';
+import useCountryStats from '../hooks/useCountryStats';
+import { mutate } from 'swr';
 
 const items = [
 
@@ -50,24 +50,39 @@ const items = [
   }
 ];
 
-export default function RationalPage() {
+const serverHostName = process.env.DATABRICKS_SERVER_HOSTNAME;
+const token = process.env.DATABRICKS_TOKEN;
+const httpPath = process.env.DATABRICKS_HTTP_PATH;
+
+export default function RationalPage({ countries = [] }) {
   // Component state must be created inside the component using hooks
   const [country, setCountry] = useState(null);
-  const [countries, setCountries] = useState([]);
+  // Ensure we render strings for country buttons 
+  const countryList = Array.isArray(countries)
+    ? countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)))
+    : [];
+
+  const { data: studentRows, loading: studentLoading, error: studentError } = useCountryStats(country);
 
   useEffect(() => {
-    // load country list from CSV so labels match the charts
-    d3.csv('/data/emp_cr_by_country.csv')
-      .then(rows => {
-        const list = rows.map(r => r.country).filter(Boolean);
-        const unique = Array.from(new Set(list));
-        setCountries(unique);
-      })
-      .catch(err => console.error('Failed to load country list:', err));
-  }, []);
+    if (!country) return;
+    const key = `/api/data/getStudentsByCountry?country=${encodeURIComponent(country)}`;
+    // Prefetch server data for the selected country and prime the SWR cache
+    // We fetch and populate the cache immediately (no revalidation) so
+    // components that consume `useCountryStats` get data as soon as possible.
+    (async () => {
+      try {
+        const res = await fetch(key);
+        if (!res.ok) throw new Error('Network response was not ok');
+        const json = await res.json();
+        // Populate SWR cache for the key without revalidating (fast path)
+        await mutate(key, json, false);
+      } catch (err) {
+        console.warn('prefetch failed', err);
+      }
+    })();
+  }, [country]);
 
-
-  
   return (
     <>
     
@@ -86,7 +101,6 @@ export default function RationalPage() {
           items={items}
           menuAriaLabel="Toggle navigation"
           menuBg="#ffffff"
-          menuContentColor="#111111"
           useFixedPosition={false}
           alwaysVisible={true}
           animationEase="back.out(1.5)"
@@ -105,12 +119,12 @@ export default function RationalPage() {
 
         <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0', padding: '2rem 0' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center', maxWidth: '100%' }}>
-            {countries.length === 0 ? (
+            {countryList.length === 0 ? (
               <div style={{ color: '#666' }}>Loading countries…</div>
             ) : (
-              countries.map(c => (
+              countryList.map((c, idx) => (
                 <motion.button
-                  key={c}
+                  key={`${c}-${idx}`}
                   onClick={() => setCountry(c)}
                   aria-pressed={country === c}
                   style={{
@@ -139,7 +153,7 @@ export default function RationalPage() {
           <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
 
-        <CreativityScatter currentCountry={country} />
+          <CreativityScatter studentRows={studentRows} />
         <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           
           Look at the distribution of empathy and creativity scores among students.
@@ -154,17 +168,131 @@ export default function RationalPage() {
           <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
         </p>
-        <ScatterPlot currentCountry={country} />
+        <ScatterPlot studentRows={studentRows} />
           
     </div>
     <div style={{ background: 'linear-gradient(to bottom, #ffffff, #0e0e0e)', width: '100vw', padding: '40px 0' , height: '30vh'}}>
       <h1 style={{ textAlign: 'center', color: '#333' }}>What can we do for students' future?</h1>
     </div>
     <div style={{ background: '#0e0e0e', width: '100vw' }}>
-      <GravityScatterPlot currentCountry={country} />
+      <GravityScatterPlot currentCountry={country} studentRows={studentRows} />
     </div>
     
     </>
   );
 }
 
+export async function getStaticProps() {
+  // SQL used to build the country summary. Keep this local so it's easy to reuse.
+  const sql = `
+    SELECT *
+    FROM workspace.students.emp_cr_by_country
+  `;
+  // const sql_student = `
+  //     SELECT *
+  //     FROM workspace.students.all_students
+  //   `;
+  try {
+    let rows = [];
+    //  let studentData = [];
+
+    
+
+    if (serverHostName && token && httpPath) {
+      // Try using the @databricks/sql client if env vars are provided.
+      // Use await to ensure the query completes before returning props.
+      try {
+        const { DBSQLClient } = require('@databricks/sql');
+        const client = new DBSQLClient();
+        const connectOptions = { token, host: serverHostName, path: httpPath };
+        await client.connect(connectOptions);
+        const session = await client.openSession();
+        const queryOperation = await session.executeStatement(sql, { runAsync: true });
+        const result = await queryOperation.fetchAll();
+        // const queryOperation_student = await session.executeStatement(sql_student, { runAsync: true });
+        // const result_student = await queryOperation_student.fetchAll();
+        await queryOperation.close();
+        await session.close();
+        await client.close();
+        rows = result || [];
+        // studentData = result_student || [];
+        // console.log('awesome');
+      } catch (err) {
+        console.error('Databricks client query failed, falling back to API route:', err.message || err);
+        rows = [];
+        studentData = [];
+      }
+    }
+
+    // Normalize returned rows (support both array-of-objects and array-of-arrays)
+    const countries = (rows || [])
+      .map(r => {
+        if (!r) return null;
+        // If row is an object with keys
+        if (typeof r === 'object' && !Array.isArray(r) && r.country) {
+          return {
+            country: r.country,
+            overallScore: Number(r.overallScore ?? r.overall_score ?? 0),
+            socialSuccess: Number(r.socialSuccess ?? r.social_success ?? 0),
+            count: Number(r.cnt ?? r.count ?? r.Count ?? 0)
+          };
+        }
+        // If row is an array-like result [country, overallScore, socialSuccess, cnt]
+        if (Array.isArray(r)) {
+          return {
+            country: r[0],
+            overallScore: Number(r[1] ?? 0),
+            socialSuccess: Number(r[2] ?? 0),
+            count: Number(r[3] ?? 0)
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+      //  const studentRows = (studentData || [])
+      // .map(r => {
+      //   if (!r) return null;
+      //   // If row is an object with keys
+      //   if (typeof r === 'object' && !Array.isArray(r) && r.country) {
+      //     return {
+      //       country: r.country,
+      //       studentID: r.CNTSTUID,
+      //       grade: r.ST001D01T,
+      //       gender: r.ST004D01T,
+      //       school: r.STRATUM,
+      //       ave_emp: Number(r.ave_emp ?? r.empathy_score ?? r.empathy ?? NaN),
+      //       ave_cr: Number(r.ave_cr ?? r.overall_cr ?? r.cr ?? NaN),
+      //       ave_cr_social: Number(r.ave_cr_social ?? r.social_cr ?? NaN)
+      //     };
+      //   }
+      //   // If row is an array-like result [country, studentID, grade, gender, school, ave_emp, ave_cr, ave_cr_social]
+      //   if (Array.isArray(r)) {
+      //     return {
+      //       country: r[0],
+      //       studentID: r[1],
+      //       grade: r[2],
+      //       gender: r[3],
+      //       school: r[4],
+      //       ave_emp: Number(r[5] ?? NaN),
+      //       ave_cr: Number(r[6] ?? NaN),
+      //       ave_cr_social: Number(r[7] ?? NaN)
+      //     };
+      //   }
+      //   return null;
+      // })
+      // .filter(Boolean);
+
+    return {
+      props: { countries },
+      revalidate: 86400
+    };
+
+
+   
+
+  } catch (err) {
+    console.error('getStaticProps unexpected error:', err);
+    return { props: { countries: [] } };
+  }
+}
