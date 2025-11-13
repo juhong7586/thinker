@@ -8,9 +8,9 @@ import CreativityScatter from '../components/visualization/creativityScatter';
 import GravityScatterPlot from '../components/visualization/gravity';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import useCountryStats from '../pages/api/data/useCountryStats';
 import { mutate } from 'swr';
 import items from './api/data/news';
+import useCountryStats from '../hooks/useCountryStats';
 
 // items are imported from `data/news.js`
 
@@ -21,12 +21,14 @@ const httpPath = process.env.DATABRICKS_HTTP_PATH;
 export default function RationalPage({ countries = [] }) {
   // Component state must be created inside the component using hooks
   const [country, setCountry] = useState(null);
-  // Ensure we render strings for country buttons 
+
+  // Ensure we render strings for country buttons
   const countryList = Array.isArray(countries)
     ? countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)))
     : [];
 
-  const { data: studentRows, loading: studentLoading, error: studentError } = useCountryStats(country);
+  // Use the SWR hook to fetch per-country student rows (client-safe)
+  const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
 
   useEffect(() => {
     if (!country) return;
@@ -115,7 +117,7 @@ export default function RationalPage({ countries = [] }) {
           <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
 
-          <CreativityScatter studentRows={studentRows} />
+          <CreativityScatter studentRows={studentData} />
         <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           
           Look at the distribution of empathy and creativity scores among students.
@@ -130,14 +132,14 @@ export default function RationalPage({ countries = [] }) {
           <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
         </p>
-        <ScatterPlot studentRows={studentRows} />
+        <ScatterPlot studentRows={studentData} />
           
     </div>
     <div style={{ background: 'linear-gradient(to bottom, #ffffff, #0e0e0e)', width: '100vw', padding: '40px 0' , height: '30vh'}}>
       <h1 style={{ textAlign: 'center', color: '#333' }}>What can we do for students' future?</h1>
     </div>
     <div style={{ background: '#0e0e0e', width: '100vw' }}>
-      <GravityScatterPlot currentCountry={country} studentRows={studentRows} />
+      <GravityScatterPlot currentCountry={country} studentRows={studentData} />
     </div>
     
     </>

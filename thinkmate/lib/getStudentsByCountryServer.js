@@ -24,6 +24,7 @@ export default async function getStudentsByCountryServer(country) {
         await session.close();
         await client.close();
         studentData = result || [];
+        console.log(`Fetched ${studentData.length} student records for country: ${country}`);
       } catch (err) {
         console.error('Databricks client query failed for student data:', err.message || err);
         studentData = [];

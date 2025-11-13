@@ -10,7 +10,6 @@ export default function SlopeChart({ currentCountry, countryData }) {
     const uniqueCreativity = new Set();
 
     const loadData = async () => {
-    const thisCountry = currentCountry;
 
     let csv = null;
     if (Array.isArray(countryData) && countryData.length) {
@@ -19,10 +18,9 @@ export default function SlopeChart({ currentCountry, countryData }) {
       console.error('No countryData available for LollipopChart');
       return;
     }
-    d3.select(svgRef.current).selectAll("*").remove();
     
     let rawData = csv || [];
-
+    
     // Keep data sorted by overall score for iteration (display order)
     const data = [...rawData].sort((a, b) => b.overallScore - a.overallScore);
 
@@ -34,9 +32,8 @@ export default function SlopeChart({ currentCountry, countryData }) {
       if (!isNaN(ov)) uniqueCreativity.add(ov);
       if (!isNaN(sv)) uniqueSocial.add(sv);
 
-      // ensure a boolean isCountry flag (mark rows that match currentCountry)
-      r.isCountry = Boolean(r.isCountry) || (currentCountry && String(r.country) === String(currentCountry));
     });
+
 
     // These maps let us place rows on discrete bands for each unique score value.
     const creativityValues = Array.from(uniqueCreativity).filter(v => !isNaN(v)).sort((a, b) => b - a);
@@ -53,7 +50,7 @@ export default function SlopeChart({ currentCountry, countryData }) {
       socialRank[d.country] = socialIndex[d.socialSuccess];
     });
 
-    const margin = { top: 40, right: 220, bottom: 10, left: 220 };
+    const margin = { top: 40, right: 50, bottom: 10, left: 220 };
     const leftBarHeight = 20;  
     const barHeight = 11;
     const height = 420;
@@ -62,8 +59,8 @@ export default function SlopeChart({ currentCountry, countryData }) {
     d3.select(svgRef.current).selectAll("*").remove();
 
     const svg = d3.select(svgRef.current)
-      .attr('width', width)
-      .attr('height', height);
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom);
 
     const g = svg.append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
@@ -117,9 +114,9 @@ export default function SlopeChart({ currentCountry, countryData }) {
         .attr('y1', y + barHeight / 2)
         .attr('x2', width - margin.left - margin.right-20)
         .attr('y2', socialY + barHeight / 2)
-        .attr('stroke', d.isCountry ? '#d73027' : '#ccc')
-        .attr('stroke-width', d.isCountry ? 2 : 0.5)
-        .attr('opacity', d.isCountry ? 1 : 0.5)
+        .attr('stroke',d.country === currentCountry ? '#d73027' : '#ccc')
+        .attr('stroke-width', d.country === currentCountry ? 2 : 0.5)
+        .attr('opacity', d.country === currentCountry ? 1 : 0.5)
         .attr('class', 'connector')
         .style('pointer-events', 'stroke');
 
@@ -127,9 +124,9 @@ export default function SlopeChart({ currentCountry, countryData }) {
       row.append('circle')
         .attr('cx', 0)
         .attr('cy', y + barHeight / 2)
-        .attr('r', d.isCountry ? 5 : 3)
+        .attr('r', d.country === currentCountry ? 5 : 3)
         .attr('fill', '#4575b4')
-        .attr('opacity', d.isCountry ? 1 : 0.7)
+        .attr('opacity', d.country === currentCountry ? 1 : 0.7)
         .style('cursor', 'pointer');
 
       // Right point (social problem solving)
@@ -137,30 +134,30 @@ export default function SlopeChart({ currentCountry, countryData }) {
       row.append('circle')
         .attr('cx', width - margin.left - margin.right-20)
         .attr('cy', socialY + barHeight/2 )
-        .attr('r', d.isCountry ? 5 : 3)
+        .attr('r', d.country === currentCountry ? 5 : 3)
         .attr('fill', pointColor)
         .attr('opacity', d.isCountry ? 1 : 0.7)
         .style('cursor', 'pointer');
 
       // Country label (left) — hidden by default
       row.append('text')
-        .attr('x', d.isCountry ? -10 : -10)
-        .attr('y', d.isCountry ? y+barHeight/2+3 : (y + socialY) / 2 + barHeight / 2 + 3)
+        .attr('x', d.country === currentCountry ? -10 : -10)
+        .attr('y', d.country === currentCountry? y+barHeight/2+3 : (y + socialY) / 2 + barHeight / 2 + 3)
         .attr('text-anchor', 'end')
-        .attr('font-size', d.isCountry ? '1.2rem' : '0.8rem')
-        .attr('font-weight', d.isCountry ? 'bold' : 'normal')
-        .attr('fill', d.isCountry ? '#d73027' : '#333')
+        .attr('font-size', d.country === currentCountry ? '1.2rem' : '0.8rem')
+        .attr('font-weight', d.country === currentCountry ? 'bold' : 'normal')
+        .attr('fill', d.country === currentCountry ? '#d73027' : '#333')
         .attr('class', 'label-country')
         .attr('padding', '20px')
-        .style('opacity', d.isCountry ? 1 : 0)
+        .style('opacity', d.country === currentCountry ? 1 : 0)
         .text(d.country);
 
       // Overall score label
       row.append('text')
         .attr('x', 5)
         .attr('y', y + barHeight / 2 + 3)
-        .attr('font-size', d.isCountry ? '1.2rem' : '0.8rem')
-        .style('opacity', d.isCountry ? 1 : 0)
+        .attr('font-size', d.country === currentCountry ? '1.2rem' : '0.8rem')
+        .style('opacity', d.country === currentCountry ? 1 : 0)
         .attr('class', 'label-overall')
         .attr('fill', '#333')
         .text(d.overallScore);
@@ -169,10 +166,10 @@ export default function SlopeChart({ currentCountry, countryData }) {
       row.append('text')
         .attr('x', width - margin.left - margin.right + 5)
         .attr('y', socialY + barHeight / 2 + 3)
-        .attr('font-size', d.isCountry ? '1.2rem' : '0.8rem')
+        .attr('font-size', d.country === currentCountry ? '1.2rem' : '0.8rem')
         .attr('fill', '#333')
         .attr('class', 'label-social')
-        .style('opacity', d.isCountry ? 1 : 0)
+        .style('opacity', d.country === currentCountry ? 1 : 0)
         .text(d.socialSuccess.toFixed(1) + '%');
 
       // Hover handlers: show labels for matching rows and stack them to avoid overlap

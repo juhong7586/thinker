@@ -26,8 +26,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
       const svg = d3.select(svgRef.current)
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
-        .attr('style', 'background-color: white; border-radius: 8px;');
-
+      
       const g = svg.append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
