@@ -1,13 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-export default function SlopeChart({ currentCountry }) {
+export default function SlopeChart({ currentCountry, countryData }) {
   const svgRef = useRef();
 
   useEffect(() => {
     // recreate these per-draw so changes to currentCountry trigger a fresh render
     const uniqueSocial = new Set();
     const uniqueCreativity = new Set();
+
+    const loadData = async () => {
     const thisCountry = currentCountry;
 
     console.log('SlopeChart currentCountry:', thisCountry);
@@ -270,8 +272,10 @@ export default function SlopeChart({ currentCountry }) {
   }).catch(err => {
         console.error('Failed to load CSV for SlopeChart:', err);
       });
+    };
+    loadData().catch(err => console.error('Failed to load data for SlopeChart:', err));
 
-  }, [currentCountry]);
+  }, [currentCountry, countryData]);
 
   return (
     <div style={{ width: '100%', padding: '20px',  minHeight: '80vh' }}>

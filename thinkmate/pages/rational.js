@@ -68,8 +68,6 @@ export default function RationalPage({ countries = [] }) {
     if (!country) return;
     const key = `/api/data/getStudentsByCountry?country=${encodeURIComponent(country)}`;
     // Prefetch server data for the selected country and prime the SWR cache
-    // We fetch and populate the cache immediately (no revalidation) so
-    // components that consume `useCountryStats` get data as soon as possible.
     (async () => {
       try {
         const res = await fetch(key);
@@ -149,7 +147,7 @@ export default function RationalPage({ countries = [] }) {
         {country && (
           <p style={{ textAlign: 'center', marginTop: 8 }}><strong>Selected country:</strong> {country}</p>
         )}
-          <SlopeChart currentCountry={country} />
+          <SlopeChart currentCountry={country} countryData={countries} />
           <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
 
@@ -162,7 +160,7 @@ export default function RationalPage({ countries = [] }) {
           <br /> This is directly related to the unsolved conflicts within our society.</p>
 
         <h3 className={styles.subtitle} style={{ fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>How can we solve this problem?</h3>
-        <LollipopChart currentCountry={country} />
+        <LollipopChart currentCountry={country} countryData={countries} />
         <p style={{ lineHeight: 1.6 }}>
           We can find hint in empathy. Chart above is about confidence in self-directed learning, and social and emotional skills.
           <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
@@ -188,10 +186,7 @@ export async function getStaticProps() {
     SELECT *
     FROM workspace.students.emp_cr_by_country
   `;
-  // const sql_student = `
-  //     SELECT *
-  //     FROM workspace.students.all_students
-  //   `;
+
   try {
     let rows = [];
     //  let studentData = [];
@@ -209,14 +204,11 @@ export async function getStaticProps() {
         const session = await client.openSession();
         const queryOperation = await session.executeStatement(sql, { runAsync: true });
         const result = await queryOperation.fetchAll();
-        // const queryOperation_student = await session.executeStatement(sql_student, { runAsync: true });
-        // const result_student = await queryOperation_student.fetchAll();
         await queryOperation.close();
         await session.close();
         await client.close();
         rows = result || [];
-        // studentData = result_student || [];
-        // console.log('awesome');
+
       } catch (err) {
         console.error('Databricks client query failed, falling back to API route:', err.message || err);
         rows = [];
@@ -234,7 +226,7 @@ export async function getStaticProps() {
             country: r.country,
             overallScore: Number(r.overallScore ?? r.overall_score ?? 0),
             socialSuccess: Number(r.socialSuccess ?? r.social_success ?? 0),
-            count: Number(r.cnt ?? r.count ?? r.Count ?? 0)
+            empathyScore: Number(r.empathy_score ?? r.empathy_score ?? 0)
           };
         }
         // If row is an array-like result [country, overallScore, socialSuccess, cnt]
@@ -243,53 +235,17 @@ export async function getStaticProps() {
             country: r[0],
             overallScore: Number(r[1] ?? 0),
             socialSuccess: Number(r[2] ?? 0),
-            count: Number(r[3] ?? 0)
+            empathyScore: Number(r[3] ?? 0)
           };
         }
         return null;
       })
       .filter(Boolean);
 
-      //  const studentRows = (studentData || [])
-      // .map(r => {
-      //   if (!r) return null;
-      //   // If row is an object with keys
-      //   if (typeof r === 'object' && !Array.isArray(r) && r.country) {
-      //     return {
-      //       country: r.country,
-      //       studentID: r.CNTSTUID,
-      //       grade: r.ST001D01T,
-      //       gender: r.ST004D01T,
-      //       school: r.STRATUM,
-      //       ave_emp: Number(r.ave_emp ?? r.empathy_score ?? r.empathy ?? NaN),
-      //       ave_cr: Number(r.ave_cr ?? r.overall_cr ?? r.cr ?? NaN),
-      //       ave_cr_social: Number(r.ave_cr_social ?? r.social_cr ?? NaN)
-      //     };
-      //   }
-      //   // If row is an array-like result [country, studentID, grade, gender, school, ave_emp, ave_cr, ave_cr_social]
-      //   if (Array.isArray(r)) {
-      //     return {
-      //       country: r[0],
-      //       studentID: r[1],
-      //       grade: r[2],
-      //       gender: r[3],
-      //       school: r[4],
-      //       ave_emp: Number(r[5] ?? NaN),
-      //       ave_cr: Number(r[6] ?? NaN),
-      //       ave_cr_social: Number(r[7] ?? NaN)
-      //     };
-      //   }
-      //   return null;
-      // })
-      // .filter(Boolean);
-
     return {
       props: { countries },
       revalidate: 86400
     };
-
-
-   
 
   } catch (err) {
     console.error('getStaticProps unexpected error:', err);

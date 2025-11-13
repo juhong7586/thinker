@@ -11,7 +11,9 @@ export default function BeesSwarmPlot({ studentRows }) {
           rawData = studentRows;
         } else {
           console.error('No studentRows data available for ScatterPlot');
-          }
+          return;
+        }
+
         const data = rawData.filter(item => !isNaN(item.ave_cr) && !isNaN(item.ave_cr_social));
         
         // Prepare data with type labels
@@ -24,8 +26,8 @@ export default function BeesSwarmPlot({ studentRows }) {
         const allData = [...dataCr, ...datacrSocial];
 
         const margin = { top: 60, right: 150, bottom: 0, left: 150 };
-        const width = 1500 - margin.left - margin.right;
-        const height = 350 - margin.top - margin.bottom;
+        const width = 1200 - margin.left - margin.right;
+        const height = 600 - margin.top - margin.bottom;
 
         // Clear previous content
         d3.select(svgRef.current).selectAll("*").remove();
@@ -50,20 +52,21 @@ export default function BeesSwarmPlot({ studentRows }) {
           .padding(0.5);
 
         // Add x-axis
-        const xAxis = d3.axisBottom(xScale).tickSize(10).tickPadding(5);
+        const xAxis = d3.axisBottom(xScale).tickSize(17).tickPadding(5);
         g.append('g')
-          .attr('transform', `translate(0,110)`)
+          .attr('transform', `translate(0,200)`)
           .call(xAxis);
 
 
         // Add type labels on the left
         g.selectAll('.type-label')
-          .data(['Overall', 'Social'])
+          .data(['Overall', 'Social Problem'])
           .enter()
           .append('text')
           .attr('x', -60)
-          .attr('y', d => yScale(d) + yScale.bandwidth() / 2 + 4)
+          .attr('y', d => yScale(d) + 200)
           .attr('text-anchor', 'end')
+          .attr('text-wrap', 'wrap')
           .attr('font-size', '1rem')
           .text(d => `${d}`);
 
@@ -79,6 +82,7 @@ export default function BeesSwarmPlot({ studentRows }) {
         // Prepare counts for identical scores (student-level counts)
         const overallCounts = d3.rollup(data, v => v.length, d => d.ave_cr);
         const socialCounts = d3.rollup(data, v => v.length, d => d.ave_cr_social);
+  const totalStudents = data.length || 0;
 
         // Tooltip group (reused)
         const tooltip = svg.append('g')
@@ -89,8 +93,8 @@ export default function BeesSwarmPlot({ studentRows }) {
         // Guide line (vertical) and per-band tooltips
         const guideLine = g.append('line')
           .attr('class', 'hover-line')
-          .attr('y1', height/4-20)
-          .attr('y2', height/4*3-20)
+          .attr('y1', height/4 -60)
+          .attr('y2', height/4*3 -60)
           .attr('stroke', '#000')
           .attr('stroke-width', 1)
           .style('opacity', 0);
@@ -118,6 +122,22 @@ export default function BeesSwarmPlot({ studentRows }) {
           .attr('rx', 6)
           .attr('fill', 'rgba(0,0,0,0.75)');
         const tooltipSocialText = tooltipSocial.append('text')
+          .attr('x', 8)
+          .attr('y', 18)
+          .attr('fill', '#fff')
+          .attr('font-size', '15px');
+
+
+        const tooltipScore = svg.append('g')
+          .attr('class', 'tooltip-score')
+          .style('display', 'none');
+        tooltipScore.append('rect')
+          .attr('width', 60)
+          .attr('text-align', 'center')
+          .attr('height', 28)
+          .attr('rx', 6)
+          .attr('fill', 'rgba(0,0,0,0.75)');
+        const tooltipScoreText = tooltipScore.append('text')
           .attr('x', 8)
           .attr('y', 18)
           .attr('fill', '#fff')
@@ -161,12 +181,18 @@ export default function BeesSwarmPlot({ studentRows }) {
               // show per-band tooltips with counts for the same score
               const overallCount = overallCounts.get(d.value) || 0;
               const socialCount = socialCounts.get(d.value) || 0;
-              tooltipOverallText.text(`${overallCount}`+label+`${d.value.toFixed(2)}`);
-              tooltipSocialText.text(`${socialCount}`+label+`${d.value.toFixed(2)}`);
+              const padNum = (n) => String(n);
+              const pct = (count) => totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
+              const padPct = (p) => String(Math.round(p));
+
+              tooltipOverallText.text(`${padNum(overallCount)} students (${padPct(pct(overallCount))}%)`);
+              tooltipScoreText.text(`${d.value.toFixed(2)}`);
+              tooltipSocialText.text(`${padNum(socialCount)} students (${padPct(pct(socialCount))}%)`);
 
               // position these tooltips centered on the vertical line, above each band
               const tWidth = 120;
               tooltipOverall.attr('transform', `translate(${absX - tWidth/2}, ${overallCenter - 110})`).style('display', null);
+              tooltipScore.attr('transform', `translate(${absX - tWidth/2+28}, ${overallCenter})`).style('display', null);
               tooltipSocial.attr('transform', `translate(${absX - tWidth/2}, ${socialCenter + 36})`).style('display', null);
 
           
@@ -181,6 +207,7 @@ export default function BeesSwarmPlot({ studentRows }) {
             // hide guide line and per-band tooltips
             guideLine.transition().duration(80).style('opacity', 0);
             tooltipOverall.style('display', 'none');
+            tooltipScore.style('display', 'none');
             tooltipSocial.style('display', 'none');
           });
 

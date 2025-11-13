@@ -7,14 +7,14 @@ export default function CreativityScatter({ studentRows }) {
 
   useEffect(() => {
     const loadData = async () => {
-      let csv = null;
+      let rawData = null;
       if (Array.isArray(studentRows) && studentRows.length) {
-        csv = studentRows;
+        rawData = studentRows;
       } else {
         console.error('No studentRows data available for ScatterPlot');
+        return;
         }
       
-      const rawData = csv;
       let data, yLabel, yDomain, regression;
 
       if (selectedMetric === 'ave_cr') {

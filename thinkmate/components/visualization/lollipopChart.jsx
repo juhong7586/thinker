@@ -3,30 +3,24 @@ import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 
-export default function LollipopChart({ currentCountry, studentRows }) {
+export default function LollipopChart({ currentCountry, countryData }) {
   const svgRef = useRef();
-
   useEffect(() => {
     const loadData = async () => {
       let csv = null;
-      if (Array.isArray(studentRows) && studentRows.length) {
-        csv = studentRows;
+      if (Array.isArray(countryData) && countryData.length) {
+        csv = countryData;
       } else {
-        console.error('No studentRows data available for ScatterPlot');
+        console.error('No countryData available for LollipopChart');
+        return;
       }
 
       const data = csv || [];
-      // If there's no data, clear any previous drawing and exit early
-      if (!data || !data.length) {
-        d3.select(svgRef.current).selectAll("*").remove();
-        console.warn('LollipopChart: no data available to render for', currentCountry);
-        return;
-      }
-      const margin = { top: 30, right: 30, bottom: 60, left: 60 };
-      const width = 800 - margin.left - margin.right;
+
+      const margin = { top: 30, right: 30, bottom: 60, left: 30 };
+      const width = 1000 - margin.left - margin.right;
       const height = 500 - margin.top - margin.bottom;
-      console.log(data);
-      // Clear previous content
+   
       d3.select(svgRef.current).selectAll("*").remove();
 
       const svg = d3.select(svgRef.current)
@@ -102,9 +96,9 @@ export default function LollipopChart({ currentCountry, studentRows }) {
         .attr('x1', d => xScale(d.country) + xScale.bandwidth() / 2)
         .attr('y1', height)
         .attr('x2', d => xScale(d.country) + xScale.bandwidth() / 2)
-        .attr('y2', d => yScale(d.empathy_score))
+        .attr('y2', d => yScale(d.empathyScore))
         .attr('stroke', d => {
-          if (d.country === 'Korea') return '#d32f2f';
+          if (d.country === currentCountry) return '#d32f2f';
           else if (d.country === 'OECD average') return '#000000';
           else return '#9e9e9e';
         })
@@ -117,10 +111,10 @@ export default function LollipopChart({ currentCountry, studentRows }) {
         .append('circle')
         .attr('class', 'circle')
         .attr('cx', d => xScale(d.country) + xScale.bandwidth() / 2)
-        .attr('cy', d => yScale(d.empathy_score))
+        .attr('cy', d => yScale(d.empathyScore))
         .attr('r', 6)
         .attr('fill', d => {
-          if (d.country === 'Korea') return '#d32f2f';
+          if (d.country === currentCountry) return '#d32f2f';
           else if (d.country === 'OECD average') return '#000000';
           else return '#9e9e9e';
         })
@@ -136,16 +130,16 @@ export default function LollipopChart({ currentCountry, studentRows }) {
           g.append('text')
             .attr('class', 'tooltip')
             .attr('x', xScale(d.country) + xScale.bandwidth() / 2)
-            .attr('y', yScale(d.empathy_score) - 15)
+            .attr('y', yScale(d.empathyScore) - 20)
             .attr('text-anchor', 'middle')
-            .attr('font-size', '12px')
+            .attr('font-size', '20px')
             .attr('fill', '#333')
-            .text(d.empathy_score.toFixed(2));
+            .text(d.empathyScore.toFixed(2));
 
           g.append('text')
             .attr('class', 'country-label')
             .attr('x', xScale(d.country) -20)
-            .attr('y', yScale(d.empathy_score) + 15)
+            .attr('y', yScale(d.empathyScore) + 30)
             .attr('font-size', '1rem')
             .attr('fill', '#333')
             .text(d.country);
@@ -172,7 +166,7 @@ export default function LollipopChart({ currentCountry, studentRows }) {
         
       };  
       loadData().catch(err => console.error('Failed to load data for LollipopChart:', err));
-  }, [currentCountry, studentRows]);
+  }, [currentCountry]);
   return (
   <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '80vh' }}>
        <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px' }}>
