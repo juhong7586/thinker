@@ -8,7 +8,7 @@ import CreativityScatter from '../components/visualization/creativityScatter';
 import GravityScatterPlot from '../components/visualization/gravity';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import useCountryStats from '../hooks/useCountryStats';
+import useCountryStats from '../pages/api/data/useCountryStats';
 import { mutate } from 'swr';
 import items from './api/data/news';
 
@@ -153,9 +153,6 @@ export async function getStaticProps() {
 
   try {
     let rows = [];
-    //  let studentData = [];
-
-    
 
     if (serverHostName && token && httpPath) {
       // Try using the @databricks/sql client if env vars are provided.

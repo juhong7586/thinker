@@ -12,32 +12,32 @@ export default function SlopeChart({ currentCountry, countryData }) {
     const loadData = async () => {
     const thisCountry = currentCountry;
 
-    console.log('SlopeChart currentCountry:', thisCountry);
-
-    d3.csv('/data/emp_cr_by_country.csv').then(csv => {
-      csv.forEach(function(d) {
-         // CSV has columns: country,overallScore,socialSuccess
-         d.overallScore = d.overallScore === '' ? NaN : +d.overallScore;
-         d.socialSuccess = d.socialSuccess === '' ? NaN : +d.socialSuccess;
-         d.country = d.country && d.country.trim();
-        if (!isNaN(d.socialSuccess)) uniqueSocial.add(d.socialSuccess);
-        if (!isNaN(d.overallScore)) uniqueCreativity.add(d.overallScore);
-       });
-
-       const rawData = csv;
-       const allData = rawData
-         .filter(item => item.country && !isNaN(item.overallScore) && !isNaN(item.socialSuccess))
-         .map(d => ({
-           country: d.country,
-           overallScore: d.overallScore,
-           socialSuccess: d.socialSuccess,
-           isCountry: d.country === thisCountry
-         }));
+    let csv = null;
+    if (Array.isArray(countryData) && countryData.length) {
+      csv = countryData;
+    } else {
+      console.error('No countryData available for LollipopChart');
+      return;
+    }
+    d3.select(svgRef.current).selectAll("*").remove();
+    
+    let rawData = csv || [];
 
     // Keep data sorted by overall score for iteration (display order)
-    const data = [...allData].sort((a, b) => b.overallScore - a.overallScore);
+    const data = [...rawData].sort((a, b) => b.overallScore - a.overallScore);
 
-    // Build index maps from the unique value sets (sorted high -> low).
+    
+    // Populate unique value sets from the incoming rows so indexes are meaningful
+    rawData.forEach(r => {
+      const ov = Number(r.overallScore ?? r.overall_score ?? r.overall);
+      const sv = Number(r.socialSuccess ?? r.social_success ?? r.social);
+      if (!isNaN(ov)) uniqueCreativity.add(ov);
+      if (!isNaN(sv)) uniqueSocial.add(sv);
+
+      // ensure a boolean isCountry flag (mark rows that match currentCountry)
+      r.isCountry = Boolean(r.isCountry) || (currentCountry && String(r.country) === String(currentCountry));
+    });
+
     // These maps let us place rows on discrete bands for each unique score value.
     const creativityValues = Array.from(uniqueCreativity).filter(v => !isNaN(v)).sort((a, b) => b - a);
     const creativityIndex = {};
@@ -269,9 +269,7 @@ export default function SlopeChart({ currentCountry, countryData }) {
       .attr('font-size', '15px')
       .text('Negative Social Problem Solving');
 
-  }).catch(err => {
-        console.error('Failed to load CSV for SlopeChart:', err);
-      });
+
     };
     loadData().catch(err => console.error('Failed to load data for SlopeChart:', err));
 
