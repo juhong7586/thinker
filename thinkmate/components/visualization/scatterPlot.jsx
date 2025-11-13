@@ -1,35 +1,32 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
-export default function CreativityScatter() {
+export default function CreativityScatter({ studentRows }) {
   const svgRef = useRef();
   const [selectedMetric, setSelectedMetric] = useState('ave_cr');
 
   useEffect(() => {
-    d3.csv('/data/kr_students.csv').then(csv => {
-      csv.forEach(function(d) {
-        d.empathy_score = +d.empathy_score;
-        d.country = d.country;
-        d.ave_emp = +d.ave_emp;
-        d.ave_cr = +d.ave_cr;
-        d.ave_cr_social = +d.ave_cr_social;
-      });
-
-      const rawData = csv;
+    const loadData = async () => {
+      let rawData = null;
+      if (Array.isArray(studentRows) && studentRows.length) {
+        rawData = studentRows;
+      } else {
+        console.error('No studentRows data available for ScatterPlot');
+        return;
+        }
+      
       let data, yLabel, yDomain, regression;
 
       if (selectedMetric === 'ave_cr') {
         data = rawData.filter(item => !isNaN(item.ave_cr) && !isNaN(item.ave_emp));
         yLabel = 'Creativity (Overall)';
         yDomain = [0, 2.2];
-        // Use requested regression for overall creativity
-        regression = { slope: 0.04, intercept: 1.12 };
+        regression = { slope: 0.11, intercept: 0.86 };
       } else {
         data = rawData.filter(item => !isNaN(item.ave_cr_social) && !isNaN(item.ave_emp));
         yLabel = 'Creativity (Social Problem Solving)';
         yDomain = [0, 2.2];
-        // Use requested regression for social problem solving
-        regression = { slope: 0.11, intercept: 0.86 };
+        regression = { slope: 0.09, intercept: 0.75 };
       }
 
       const { slope, intercept } = regression;
@@ -228,11 +225,9 @@ export default function CreativityScatter() {
         .attr('font-size', '12px')
         .text('Trend Line');
 
-    }).catch(err => {
-      console.error('Failed to load CSV for ScatterPlot:', err);
-    });
-
-  }, [selectedMetric]);
+    };
+    loadData().catch(err => console.error('Failed to load data for ScatterPlot:', err));
+  }, [selectedMetric, studentRows]);
 
   return (
     <div style={{ width: '100%', minHeight: '80vh', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

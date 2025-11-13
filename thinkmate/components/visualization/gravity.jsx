@@ -1,16 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-export default function GravityScatterPlot() {
+export default function GravityScatterPlot({ currentCountry, studentRows }) {
   const svgRef = useRef();
 
   useEffect(() => {
-    d3.csv('/data/kr_students.csv').then(csv => {
-      csv.forEach(function(d) {
-        d.ave_emp = +d.ave_emp;
-      });
+    const loadData = async () => {
+    // If there's no studentRows yet (no country selected), clear any SVG and exit quietly.
+    if (!Array.isArray(studentRows) || studentRows.length === 0) {
+      try {
+        d3.select(svgRef.current).selectAll('*').remove();
+      } catch (e) {
+        // ignore during quick unmounts
+      }
+      return;
+    }
 
-      const rawData = csv.filter(item => !isNaN(item.ave_emp));
+    let rawData = studentRows;
+    rawData = rawData.filter(item => !isNaN(item.ave_emp));
 
       const width = 700;
       const height = 700;
@@ -81,10 +88,19 @@ export default function GravityScatterPlot() {
 
       // Add scatter points (universe particles)
       // We'll support different entrance directions and a scale/fade-in effect.
-      const startDir = 'bottom'; // options: 'bottom' | 'top' | 'left' | 'right' | 'center'
+      // Start positions: support fixed directions or a 'random' mode where each
+      // particle starts far outside the scene at a random angle and large radius.
+      const startDir = 'random'; // options: 'bottom' | 'top' | 'left' | 'right' | 'center' | 'random'
       const startOffset = maxRadius * 1.6;
 
       const getStartPos = (d) => {
+        if (startDir === 'random') {
+          // pick a random angle and a radius outside the scene
+          const angle = Math.random() * Math.PI * 2;
+          // radius between startOffset and startOffset * 2 to vary distances
+          const radius = startOffset + Math.random() * startOffset;
+          return { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+        }
         switch (startDir) {
           case 'top':
             return { x: d.x, y: centerY - startOffset };
@@ -114,7 +130,7 @@ export default function GravityScatterPlot() {
         .on('mouseover', function(event, d) {
           d3.select(this)
             .transition()
-            .duration(200)
+            .duration(100)
             .attr('r', 7)
             .attr('opacity', 1);
 
@@ -151,7 +167,7 @@ export default function GravityScatterPlot() {
         }
 
         sel.transition()
-          .duration(900)
+          .duration(100)
           .delay((d, i) => i * 6)
           .ease(d3.easeCubicOut)
           .attr('cx', d => d.x)
@@ -235,11 +251,12 @@ export default function GravityScatterPlot() {
         .attr('fill', '#333')
         .text('Empathy (white = center / low → black = outer / high)');
 
-    }).catch(err => {
-      console.error('Failed to load CSV:', err);
-    });
+    
 
-  }, []);
+  };
+  loadData().catch(err => console.error('Error in loadData:', err));
+
+  }, [currentCountry, studentRows]);
 
   return (
     <div style={{ width: '100%', minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

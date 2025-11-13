@@ -1,20 +1,27 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-export default function SlopeChart() {
+export default function SlopeChart({ currentCountry, countryData }) {
   const svgRef = useRef();
-  const uniqueSocial = new Set();
-  const uniqueCreativity = new Set();
 
   useEffect(() => {
-     d3.csv('/data/global_creativity.csv').then(csv => {
-       csv.forEach(function(d) {
+    // recreate these per-draw so changes to currentCountry trigger a fresh render
+    const uniqueSocial = new Set();
+    const uniqueCreativity = new Set();
+
+    const loadData = async () => {
+    const thisCountry = currentCountry;
+
+    console.log('SlopeChart currentCountry:', thisCountry);
+
+    d3.csv('/data/emp_cr_by_country.csv').then(csv => {
+      csv.forEach(function(d) {
          // CSV has columns: country,overallScore,socialSuccess
          d.overallScore = d.overallScore === '' ? NaN : +d.overallScore;
          d.socialSuccess = d.socialSuccess === '' ? NaN : +d.socialSuccess;
          d.country = d.country && d.country.trim();
-          if (!isNaN(d.socialSuccess)) uniqueSocial.add(d.socialSuccess);
-          if (!isNaN(d.overallScore)) uniqueCreativity.add(d.overallScore);
+        if (!isNaN(d.socialSuccess)) uniqueSocial.add(d.socialSuccess);
+        if (!isNaN(d.overallScore)) uniqueCreativity.add(d.overallScore);
        });
 
        const rawData = csv;
@@ -24,7 +31,7 @@ export default function SlopeChart() {
            country: d.country,
            overallScore: d.overallScore,
            socialSuccess: d.socialSuccess,
-           isKorea: d.country === 'Korea'
+           isCountry: d.country === thisCountry
          }));
 
     // Keep data sorted by overall score for iteration (display order)
@@ -46,11 +53,11 @@ export default function SlopeChart() {
       socialRank[d.country] = socialIndex[d.socialSuccess];
     });
 
-    const margin = { top: 80, right: 60, bottom: 10, left: 150 };
-    const leftBarHeight = 18;  
-    const barHeight = 8;
-    const height = data.length * barHeight + margin.top + margin.bottom;
-    const width = 800;
+    const margin = { top: 40, right: 220, bottom: 10, left: 220 };
+    const leftBarHeight = 20;  
+    const barHeight = 11;
+    const height = 420;
+    const width = 1000;
 
     d3.select(svgRef.current).selectAll("*").remove();
 
@@ -65,33 +72,22 @@ export default function SlopeChart() {
     const xScale = d3.scaleLinear().domain([0, maxScore]).range([0, width - margin.left - margin.right]);
     const socialScale = d3.scaleLinear().domain([-15, 10]).range([0, width - margin.left - margin.right]);
 
-    // Title
-    // svg.append('text')
-    //   .attr('x', width / 2)      
-    //   .attr('y', 40)
-    //   .attr('text-anchor', 'middle')
-    //   .attr('font-size', '1.5rem')
-    //   .attr('font-weight', 'bold')
-    //   .attr('margin', '10px')
-    //   .text('Overall vs Social Problem Solving')
-    //   ;
-
     // Left axis label
     svg.append('text')
       .attr('x', margin.left-20)
-      .attr('y', 65)
+      .attr('y',15)
       .attr('text-anchor', 'start')
-      .attr('font-size', '1.2rem')
+      .attr('font-size', '1rem')
       .attr('font-weight', 'normal')
       .text('Overall Creative Thinking Rank');
 
     // Right axis label
     svg.append('text')
       .attr('x', width - margin.right )
-      .attr('y', 65)
+      .attr('y', 15)
       .attr('text-wrap', 'wrap')
       .attr('text-anchor', 'end')
-      .attr('font-size', '1.2rem')
+      .attr('font-size', '1rem')
       .attr('font-weight', 'normal')
       .text('Social Problem Solving Rank');
 
@@ -113,7 +109,7 @@ export default function SlopeChart() {
         .attr('data-country', d.country)
         .attr('data-overall', String(d.overallScore))
         .attr('data-social', String(d.socialSuccess))
-        .attr('data-iskorea', String(d.isKorea));
+        .attr('data-isCountry', String(d.isCountry));
 
       // Connecting line
       row.append('line')
@@ -121,9 +117,9 @@ export default function SlopeChart() {
         .attr('y1', y + barHeight / 2)
         .attr('x2', width - margin.left - margin.right-20)
         .attr('y2', socialY + barHeight / 2)
-        .attr('stroke', d.isKorea ? '#d73027' : '#ccc')
-        .attr('stroke-width', d.isKorea ? 2 : 0.5)
-        .attr('opacity', d.isKorea ? 1 : 0.5)
+        .attr('stroke', d.isCountry ? '#d73027' : '#ccc')
+        .attr('stroke-width', d.isCountry ? 2 : 0.5)
+        .attr('opacity', d.isCountry ? 1 : 0.5)
         .attr('class', 'connector')
         .style('pointer-events', 'stroke');
 
@@ -131,40 +127,40 @@ export default function SlopeChart() {
       row.append('circle')
         .attr('cx', 0)
         .attr('cy', y + barHeight / 2)
-        .attr('r', d.isKorea ? 5 : 3)
+        .attr('r', d.isCountry ? 5 : 3)
         .attr('fill', '#4575b4')
-        .attr('opacity', d.isKorea ? 1 : 0.7)
+        .attr('opacity', d.isCountry ? 1 : 0.7)
         .style('cursor', 'pointer');
 
       // Right point (social problem solving)
       const pointColor = d.socialSuccess > 0 ? '#2ca02c' : '#d73027';
       row.append('circle')
         .attr('cx', width - margin.left - margin.right-20)
-        .attr('cy', socialY + barHeight / 2)
-        .attr('r', d.isKorea ? 5 : 3)
+        .attr('cy', socialY + barHeight/2 )
+        .attr('r', d.isCountry ? 5 : 3)
         .attr('fill', pointColor)
-        .attr('opacity', d.isKorea ? 1 : 0.7)
+        .attr('opacity', d.isCountry ? 1 : 0.7)
         .style('cursor', 'pointer');
 
       // Country label (left) — hidden by default
       row.append('text')
-        .attr('x', d.isKorea ? -10 : -10)
-        .attr('y', d.isKorea? y+barHeight/2+3 : (y + socialY) / 2 + barHeight / 2 + 3)
+        .attr('x', d.isCountry ? -10 : -10)
+        .attr('y', d.isCountry ? y+barHeight/2+3 : (y + socialY) / 2 + barHeight / 2 + 3)
         .attr('text-anchor', 'end')
-        .attr('font-size', d.isKorea ? '1.2rem' : '0.8rem')
-        .attr('font-weight', d.isKorea ? 'bold' : 'normal')
-        .attr('fill', d.isKorea ? '#d73027' : '#333')
+        .attr('font-size', d.isCountry ? '1.2rem' : '0.8rem')
+        .attr('font-weight', d.isCountry ? 'bold' : 'normal')
+        .attr('fill', d.isCountry ? '#d73027' : '#333')
         .attr('class', 'label-country')
         .attr('padding', '20px')
-        .style('opacity', d.isKorea ? 1 : 0)
+        .style('opacity', d.isCountry ? 1 : 0)
         .text(d.country);
 
       // Overall score label
       row.append('text')
         .attr('x', 5)
         .attr('y', y + barHeight / 2 + 3)
-        .attr('font-size', d.isKorea ? '1.2rem' : '0.8rem')
-        .style('opacity', d.isKorea ? 1 : 0)
+        .attr('font-size', d.isCountry ? '1.2rem' : '0.8rem')
+        .style('opacity', d.isCountry ? 1 : 0)
         .attr('class', 'label-overall')
         .attr('fill', '#333')
         .text(d.overallScore);
@@ -173,10 +169,10 @@ export default function SlopeChart() {
       row.append('text')
         .attr('x', width - margin.left - margin.right + 5)
         .attr('y', socialY + barHeight / 2 + 3)
-        .attr('font-size', d.isKorea ? '1.2rem' : '0.8rem')
+        .attr('font-size', d.isCountry ? '1.2rem' : '0.8rem')
         .attr('fill', '#333')
         .attr('class', 'label-social')
-        .style('opacity', d.isKorea ? 1 : 0)
+        .style('opacity', d.isCountry ? 1 : 0)
         .text(d.socialSuccess.toFixed(1) + '%');
 
       // Hover handlers: show labels for matching rows and stack them to avoid overlap
@@ -222,7 +218,7 @@ export default function SlopeChart() {
           });
         });
       }).on('mouseout', function() {
-        // restore labels to hidden (except Korea)
+        // restore labels to hidden (except current country)
         g.selectAll('.row').selectAll('.label-country')
           .transition().duration(120)
           // reset y to the original base position for that row
@@ -240,9 +236,9 @@ export default function SlopeChart() {
         g.selectAll('.row').selectAll('.connector')
           .transition().duration(120).style('opacity', 0.5).style('stroke', '#ccc');
 
-        // keep Korea labels visible
+        // keep current country labels visible
         g.selectAll('.row')
-          .filter(function() { return d3.select(this).attr('data-iskorea') === 'true'; })
+          .filter(function() { return d3.select(this).attr('data-isCountry') === 'true'; })
           .selectAll('.label-country, .label-social, .label-overall')
           .transition().duration(120).style('opacity', 1);
       });
@@ -276,8 +272,10 @@ export default function SlopeChart() {
   }).catch(err => {
         console.error('Failed to load CSV for SlopeChart:', err);
       });
+    };
+    loadData().catch(err => console.error('Failed to load data for SlopeChart:', err));
 
-  }, []);
+  }, [currentCountry, countryData]);
 
   return (
     <div style={{ width: '100%', padding: '20px',  minHeight: '80vh' }}>
