@@ -152,7 +152,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           .attr('cx', d => d.x)
           .attr('cy', d => d.y)
           .attr('r', 5)
-          .attr('fill', d => d.type === 'Overall' ? '#aaa' : '#FFD700')
+          .attr('fill', d => d.type === 'Overall' ? '#86525E' : '#85908D')
           .attr('opacity', 0.6)
           .on('mouseover', function(event, d) {
             d3.select(this)
