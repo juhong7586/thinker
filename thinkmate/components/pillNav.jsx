@@ -10,10 +10,10 @@ const PillNav = ({
   activeHref,
   className = '',
   ease = 'power3.easeOut',
-  baseColor = '#fff',
-  pillColor = '#060010',
-  hoveredPillTextColor = '#060010',
-  pillTextColor,
+  baseColor = '#333',
+  pillColor = '#ddd',
+  hoveredPillTextColor = '#333',
+  pillTextColor = '#3333',
   onMobileMenuClick,
   initialLoadAnimation = true
 }) => {
@@ -225,7 +225,7 @@ const PillNav = ({
   return (
     <div className={styles['pill-nav-container']}>
       <nav className={`${styles['pill-nav']} ${className}`} aria-label="Primary" style={cssVars}>
-        {isRouterLink(items?.[0]?.href) ? (
+        {/* {isRouterLink(items?.[0]?.href) ? (
           <Link href={items[0].href} legacyBehavior>
             <a
               className={styles['pill-logo']}
@@ -251,7 +251,7 @@ const PillNav = ({
           >
             <img src={logo} alt={logoAlt} ref={logoImgRef} />
           </a>
-        )}
+        )} */}
 
         <div className={`${styles['pill-nav-items']} ${styles['desktop-only']}`} ref={navItemsRef}>
           <ul className={styles['pill-list']} role="menubar">

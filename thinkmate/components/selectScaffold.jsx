@@ -17,17 +17,16 @@ const SelectScaffold = ({ selection = null }) => {
         width: '85%',
         margin: 'auto',
         }}>
-        <strong
+        <div
         style={{ 
-            marginTop: 8,
-            color: '#333333',
-            fontSize: '1.2rem',
+            color: '#eee',
+            fontSize: '1rem',
             }}
-            >Current selection:</strong>
+            >Current selection:</div>
         <div style={{ 
             marginTop: 8,
-            color: '#555555',
-            fontSize: '1.1rem',
+            color: '#eee',
+            fontSize: '1.5rem',
             fontWeight: '500',
             }}>{selection ?? 'none'}</div>
     </div>

@@ -7,18 +7,18 @@ import PillNav from '../components/pillNav'
 export default function NavBar({ signedUser }) {
   const router = useRouter()
 
-  const logo = '/logo.png';
+  //const logo = '/logo.png';
   return (
     <header className={styles.nav}>
       <div className={styles.left} onClick={() => router.push('/')}>ThinkMate</div>
       <div className={styles.right}>
       
   <PillNav
-      logo={logo}
+      // logo={logo}
 
-      logoAlt="Company Logo"
+      // logoAlt="Company Logo"
       items={[
-          { label: 'Home', href: '/' },
+          { label: 'Graph', href: '/graph' },
           { label: 'Rational', href: '/rational' },
           { label: 'Register Group', href: '/register-group' },
           { label: 'Survey', href: '/survey' },

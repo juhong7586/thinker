@@ -8,7 +8,7 @@ import Bubbles from '../components/bubbles'
 
 export default function Analysis() {
   const containerRef = useRef();
-  const [size, setSize] = useState({ width: '97vw', height: '97vh' });
+  const [size, setSize] = useState({ width: '97vw', height: '95vh' });
   const [selectedOption, setSelectedOption] = useState(null);
   const question = "What ideas are emerging?";
   const particleCount = 30;
@@ -50,7 +50,8 @@ export default function Analysis() {
       </Head>
       
   <div className={styles.wrapper} ref={containerRef} style={{
-      backgroundImage: "url('/water.jpg')",
+      background: 'radial-gradient(#715356 0%, #B7989A 50%, #FFF 100%)',
+      height: size.height,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
@@ -61,25 +62,25 @@ export default function Analysis() {
       <div className={styles.question}>
         {question}
       </div>
-      <div className={homeStyles.mainContent} style={{width: '100vw'}}> 
+      <div className={homeStyles.mainContent} style={{width: '98vw'}}> 
           <div id="selectBox" className={styles.selectBox}>
             <button
               className={`${styles.selectButton} ${selectedOption === 'own' ? styles.selected : ''}`}
               onClick={() => setSelectedOption('own')}
-              style={{ color: selectedOption === 'own' ? 'rgba(141, 47, 87, 0.8)' : '' }}
+              style={{ color: selectedOption === 'own' ? 'rgba(61, 14, 20, 0.8)' : '' }}
             >I have my own idea</button>
 
             <button
               className={`${styles.selectButton} ${selectedOption === 'example' ? styles.selected : ''}`}
               onClick={() => setSelectedOption('example')}
-              style={{ color: selectedOption === 'example' ? 'rgba(176, 88, 125, 0.8)' : '' }}
+              style={{ color: selectedOption === 'example' ? 'rgba(75, 37, 42, 0.8)' : '' }}
             >I need example</button>
 
             <button
               className={`${styles.selectButton} ${selectedOption === 'none' ? styles.selected : ''}`}
               onClick={() => setSelectedOption('none')}
               style={{ 
-                color: selectedOption === 'none' ? 'rgba(210, 138, 168, 0.8)' : '' }}
+                color: selectedOption === 'none' ? 'rgba(113, 83, 86, 0.8)' : '' }}
             >I don't have an idea</button>
           </div>
         </div>
@@ -88,11 +89,13 @@ export default function Analysis() {
           <div>
             <Link href="/result">
               <button className={homeStyles.pageButton} style={{
+                backgroundColor: 'rgba(75, 37, 42, 0.5)',
                 position: 'absolute',
                 width: '12rem',
                 height: '3rem',
                 bottom: '11rem',
-                right: '3rem',
+                right: '5rem',
+                color: '#eee',
                 fontFamily: 'Georgia, Times New Roman, Times, serif',
               }}>Let's get started</button>
             </Link>
