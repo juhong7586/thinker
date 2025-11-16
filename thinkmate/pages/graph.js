@@ -212,7 +212,7 @@ export default function Home() {
             </div>
           ) : (
             <Link href="/login">
-              <button className={styles.pageButton} style={{border: '2px solid rgba(94, 77, 77, 0.8)'}}>Login</button>
+              <button className={styles.pageButton} style={{border: '1px solid rgba(64, 74, 37, 0.8)'}}>Login</button>
             </Link>
           )}</div>
           

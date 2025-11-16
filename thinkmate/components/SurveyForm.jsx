@@ -29,90 +29,90 @@ const questionsData = [
     ,
     invert: true
   },
-//   {
-//     id: 3,
-//     type: 'slider',
-//     question: "It is difficult for me to sense what my friends think.",
-//     label: 'Please rate your empathy on a scale of 1 to 7',
-//     name: 'empathy3',
-//     required: true,
-//     errorMessage: 'This field is required',
-//     min: 1,
-//     max: 7
-//     ,
-//     invert: true
-//   },
-//   {
-//     id: 4,
-//     type: 'slider',
-//     question: "It is difficult for me to sense what my neighbors think.",
-//     label: 'Please rate your empathy on a scale of 1 to 7',
-//     name: 'empathy4',
-//     required: true,
-//     errorMessage: 'This field is required',
-//     min: 1,
-//     max: 7,
-//     invert: true
-//   },
-//   {
-//     id: 5,
-//     type: 'checkbox',
-//     question: 'It is important to me that (      ) are okay.',
-//     label: 'Please select at least one option',
-//     name: 'empathy5',
-//     required: true,
-//     errorMessage: 'Please select at least one interest',
-//     options: [
-//       { value: 'self', label: 'Myself' },
-//       { value: 'family', label: 'My family' },
-//       { value: 'friends', label: 'My friends' },
-//       { value: 'classmates', label: 'My classmates and my teacher' },
-//       { value: 'school', label: 'My school' },
-//       { value: 'community', label: 'My community' },
-//       { value: 'country', label: 'My country' },
-//       { value: 'world', label: 'The world' }
-//     ]
-//   },
-//   {
-//     id: 6,
-//     type: 'slider',
-//     question: "I can see situations from my friends' perspectives.",
-//     label: 'Please rate your empathy on a scale of 1 to 7',
-//     name: 'empathy6',
-//     required: true,
-//     errorMessage: 'This field is required',
-//     min: 1,
-//     max: 7,
-//     invert: true
-//   },
-//  {
-//     id: 7,
-//     type: 'checkbox',
-//     question: 'I can predict the needs of (      ).',
-//     label: 'Please select at least one option',
-//     name: 'empathy7',
-//     required: true,
-//     errorMessage: 'Please select at least one interest',
-//     options: [
-//       { value: 'self', label: 'Myself' },
-//       { value: 'family', label: 'My family' },
-//       { value: 'friends', label: 'My friends' },
-//       { value: 'classmates', label: 'My classmates and my teacher' },
-//       { value: 'school', label: 'My school' },
-//       { value: 'community', label: 'My community' },
-//       { value: 'country', label: 'My country' },
-//       { value: 'world', label: 'The world' }
-//     ]
-//   },
-//   {
-//     id: 8,
-//     type: 'text',
-//     question: "Please write three words when you are thinking about others.",
-//     label: 'It could be feelings, objects, or situations.',
-//     name: 'empathy8',
-//     required: true,
-//     errorMessage: 'This field is required'
-//   }
+  {
+    id: 3,
+    type: 'slider',
+    question: "It is difficult for me to sense what my friends think.",
+    label: 'Please rate your empathy on a scale of 1 to 7',
+    name: 'empathy3',
+    required: true,
+    errorMessage: 'This field is required',
+    min: 1,
+    max: 7
+    ,
+    invert: true
+  },
+  {
+    id: 4,
+    type: 'slider',
+    question: "It is difficult for me to sense what my neighbors think.",
+    label: 'Please rate your empathy on a scale of 1 to 7',
+    name: 'empathy4',
+    required: true,
+    errorMessage: 'This field is required',
+    min: 1,
+    max: 7,
+    invert: true
+  },
+  {
+    id: 5,
+    type: 'checkbox',
+    question: 'It is important to me that (      ) are okay.',
+    label: 'Please select at least one option',
+    name: 'empathy5',
+    required: true,
+    errorMessage: 'Please select at least one interest',
+    options: [
+      { value: 'self', label: 'Myself' },
+      { value: 'family', label: 'My family' },
+      { value: 'friends', label: 'My friends' },
+      { value: 'classmates', label: 'My classmates and my teacher' },
+      { value: 'school', label: 'My school' },
+      { value: 'community', label: 'My community' },
+      { value: 'country', label: 'My country' },
+      { value: 'world', label: 'The world' }
+    ]
+  },
+  {
+    id: 6,
+    type: 'slider',
+    question: "I can see situations from my friends' perspectives.",
+    label: 'Please rate your empathy on a scale of 1 to 7',
+    name: 'empathy6',
+    required: true,
+    errorMessage: 'This field is required',
+    min: 1,
+    max: 7,
+    invert: true
+  },
+ {
+    id: 7,
+    type: 'checkbox',
+    question: 'I can predict the needs of (      ).',
+    label: 'Please select at least one option',
+    name: 'empathy7',
+    required: true,
+    errorMessage: 'Please select at least one interest',
+    options: [
+      { value: 'self', label: 'Myself' },
+      { value: 'family', label: 'My family' },
+      { value: 'friends', label: 'My friends' },
+      { value: 'classmates', label: 'My classmates and my teacher' },
+      { value: 'school', label: 'My school' },
+      { value: 'community', label: 'My community' },
+      { value: 'country', label: 'My country' },
+      { value: 'world', label: 'The world' }
+    ]
+  },
+  {
+    id: 8,
+    type: 'text',
+    question: "Please write three words when you are thinking about others.",
+    label: 'It could be feelings, objects, or situations.',
+    name: 'empathy8',
+    required: true,
+    errorMessage: 'This field is required'
+  }
 ];
 
 // Data handler functions
@@ -341,7 +341,7 @@ const SurveyForm = () => {
         {!isSubmitted ? (
           <>
             {!hasCurrentUser && (
-              <div style={{ marginBottom: 12, padding: 12, background: '#fff7ed', border: '1px solid #f5c6a5', borderRadius: 8 }}>
+              <div style={{ marginBottom: 12, padding: 12, background: '#fff7ed', border: '1px solid #715356', borderRadius: 8 }}>
                 <strong>Please sign in to submit the survey.</strong>
                 <div style={{ marginTop: 6 }}>Your responses are saved to your account so you can access AI feedback across devices.</div>
               </div>
@@ -352,7 +352,7 @@ const SurveyForm = () => {
                 Question {currentQuestion} of {totalQuestions}
               </span>
 
-              <h2 className={styles.surveyTitle}>
+              <h2 className={styles.surveyQuestion}>
                 {currentQuestionData.question}
               </h2>
 

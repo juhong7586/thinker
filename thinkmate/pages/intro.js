@@ -24,7 +24,7 @@ export default function HomeIntro() {
         <div style={{ position: 'absolute', left: 80, bottom: -300, zIndex: 10 }}>
           <div style={{ height: 600, position: 'relative' }}>
               <CardSwap cardDistance={200} verticalDistance={70} delay={4500} pauseOnHover={false} autoSwap={false}>
-                <Card style={{ background: 'rgba(255,255,255,0.95)', color: '#111' }}>
+                <Card style={{ background: 'rgba(255,255,255,0.95)', color: '#170a2e' }}>
                   <h3 style={{ margin: 0 }}>
                     <span
                       role="link"
@@ -32,7 +32,7 @@ export default function HomeIntro() {
                       onClick={(e) => { router.push('/graph') }}
                       style={{ cursor: 'pointer', textDecoration: 'underline' }}
                     >
-                      Home
+                      Graph
                     </span>
                   </h3>
                   <p style={{ marginTop: 8 }}>Open the interactive graph view</p>

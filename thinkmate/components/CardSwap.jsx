@@ -91,10 +91,15 @@ const CardSwap = ({
   // swap function defined here so it can be called on card clicks
   const swap = () => {
     const total = refs.length
+    // need at least two cards to perform a meaningful swap
+    if (total < 2) return
     if (order.current.length < 2) return
+    // prevent overlapping swaps while a timeline is active
+    if (tlRef.current?.isActive && tlRef.current.isActive()) return
 
     const [front, ...rest] = order.current
-    const elFront = refs[front].current
+    const elFront = refs[front]?.current
+    if (!elFront) return
     const tl = gsap.timeline()
     tlRef.current = tl
 
@@ -151,6 +156,11 @@ const CardSwap = ({
   useEffect(() => {
     const total = refs.length
     refs.forEach((r, i) => placeNow(r.current, makeSlot(i, cardDistance, verticalDistance, total), skewAmount))
+
+    // keep the logical order in sync when children change dynamically
+    if (order.current.length !== childArr.length) {
+      order.current = Array.from({ length: childArr.length }, (_, i) => i)
+    }
 
     // if autoSwap is enabled, start automatic swapping
     if (autoSwap) {

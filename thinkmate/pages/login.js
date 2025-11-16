@@ -61,18 +61,18 @@ export default function Login() {
       <Head>
         <title>Login - ThinkMate</title>
       </Head>
-      <div className={styles.container} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 360, background: 'rgba(255,255,255,0.95)', padding: '1rem', borderRadius: '2rem', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '0.5rem' }}>Sign in</h2>
-          <p style={{ marginTop: 0, color: '#555', marginBottom: '1rem' }}>Enter your name and email. We'll remember you on this device.</p>
+      <div className={styles.container} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' , background: 'linear-gradient(135deg, #f5f7fa 0%, #BFB1B3 100%)', height: '100vh' }}>
+        <div style={{ width: '30vw', background: 'rgba(255,255,255,0.95)', padding: '2rem', borderRadius: '2rem', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
+          <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>Sign in</h2>
+          <p style={{ marginTop: 0, color: '#555', marginBottom: '1rem', lineHeight: '1.5' }}>Enter your name and email. <br /> We'll remember you on this device.</p>
 
           {error && <div style={{ color: 'crimson', marginBottom: 8 }}>{error}</div>}
 
-          <label style={{ display: 'block', fontSize: 13, color: '#333', marginBottom: 6 }}>Name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Your name" style={{ width: '90%', padding: '10px', borderRadius: 6, border: '1px solid #ddd', marginBottom: 12 }} />
+          <label className={styles.loginLabel}>Name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Your name" className={styles.loginInput} />
 
-          <label style={{ display: 'block', fontSize: 13, color: '#333', marginBottom: 6 }}>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" style={{ width: '90%', padding: '10px', borderRadius: 6, border: '1px solid #ddd', marginBottom: 14 }} />
+          <label className={styles.loginLabel}>Email</label>
+          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" className={styles.loginInput} />
 
           <div style={{ display: 'flex', gap:'1rem' }}>
             
