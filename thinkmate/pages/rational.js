@@ -58,7 +58,7 @@ export default function RationalPage({ countries = [] }) {
       <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
          
     </div>
-    <div style={{ maxWidth: '90%', margin: '1rem auto', padding: '4rem 0' }}>
+    <div style={{ maxWidth: '90%', margin: '1rem auto', padding: '4rem 0', fontFamily: 'NanumSquareNeo' }}>
         {/* BubbleMenu placed at the top of the page */}
         <BubbleMenu
           logo={<span style={{ fontWeight: 700 }}>RB</span>}
@@ -72,7 +72,7 @@ export default function RationalPage({ countries = [] }) {
           staggerDelay={0.12}
         />
     </div>
-    <div style={{  alignItems: 'center' , textAlign: 'center'}}>
+    <div style={{  alignItems: 'center' , textAlign: 'center', fontFamily: 'NanumSquareNeo', maxWidth: '90%', margin: '1rem auto', paddingBottom: '4rem' }}>
      
           <p className={styles.subtitle} style={{ fontSize: '1.3rem', lineHeight: 2, padding: '5rem 0'}}>
           What would these issues mean for our students? 
