@@ -97,8 +97,8 @@ export default function LollipopChart({ currentCountry, countryData }) {
         .attr('x2', d => xScale(d.country) + xScale.bandwidth() / 2)
         .attr('y2', d => yScale(d.empathyScore))
         .attr('stroke', d => {
-          if (d.country === currentCountry) return '#d32f2f';
-          else if (d.country === 'OECD average') return '#000000';
+          if (d.country === currentCountry) return '#3D0E14ff';
+          else if (d.country === 'OECD average') return '#020101ff';
           else return '#9e9e9e';
         })
         .attr('stroke-width', 3);

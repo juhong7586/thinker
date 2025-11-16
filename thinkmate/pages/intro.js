@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import CardSwap, { Card } from '../components/CardSwap'
 
 // Dynamic client-only import: the gallery uses WebGL and must run in the browser.
-const CircularGallery = dynamic(() => import('../components/CircularGallery'), { ssr: false })
+const CircularGallery = dynamic(() => import('../components/circularGallery'), { ssr: false })
 
 export default function HomeIntro() {
   const router = useRouter()

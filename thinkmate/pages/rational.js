@@ -58,7 +58,7 @@ export default function RationalPage({ countries = [] }) {
       <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
          
     </div>
-    <div style={{ maxWidth: '100%', margin: '1rem auto', padding: '4rem 0' }}>
+    <div style={{ maxWidth: '90%', margin: '1rem auto', padding: '4rem 0' }}>
         {/* BubbleMenu placed at the top of the page */}
         <BubbleMenu
           logo={<span style={{ fontWeight: 700 }}>RB</span>}

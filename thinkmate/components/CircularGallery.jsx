@@ -24,7 +24,7 @@ function autoBind(instance) {
   });
 }
 
-function createTextTexture(gl, text, font = 'bold 30px monospace', color = 'black') {
+function createTextTexture(gl, text, font = 'bold 60vh monospace', color = 'black') {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   context.font = font;
@@ -32,7 +32,7 @@ function createTextTexture(gl, text, font = 'bold 30px monospace', color = 'blac
   const textWidth = Math.ceil(metrics.width);
   const textHeight = Math.ceil(parseInt(font, 10) * 1.2);
   canvas.width = textWidth + 20;
-  canvas.height = textHeight + 20;
+  canvas.height = '200vh';
   context.font = font;
   context.fillStyle = color;
   context.textBaseline = 'middle';
@@ -328,8 +328,8 @@ class App {
   }
   createGeometry() {
     this.planeGeometry = new Plane(this.gl, {
-      heightSegments: 50,
-      widthSegments: 100
+      heightSegments: 200,
+      widthSegments: 200
     });
   }
   createMedias(items, bend = 1, textColor, borderRadius, font) {
@@ -460,9 +460,9 @@ export default function CircularGallery({
   bend = 3,
   textColor = '#ffffff',
   borderRadius = 0.05,
-  font = 'bold 30px Figtree',
-  scrollSpeed = 2,
-  scrollEase = 0.05
+  font = 'bold 80vh Figtree',
+  scrollSpeed = 3,
+  scrollEase = 0
 }) {
   const containerRef = useRef(null);
   useEffect(() => {
