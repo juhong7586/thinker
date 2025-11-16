@@ -97,8 +97,8 @@ export default function LollipopChart({ currentCountry, countryData }) {
         .attr('x2', d => xScale(d.country) + xScale.bandwidth() / 2)
         .attr('y2', d => yScale(d.empathyScore))
         .attr('stroke', d => {
-          if (d.country === currentCountry) return '#3D0E14ff';
-          else if (d.country === 'OECD average') return '#020101ff';
+          if (d.country === currentCountry) return '#6C5838';
+          else if (d.country === 'average') return '#9E8C6C';
           else return '#9e9e9e';
         })
         .attr('stroke-width', 3);
@@ -113,8 +113,8 @@ export default function LollipopChart({ currentCountry, countryData }) {
         .attr('cy', d => yScale(d.empathyScore))
         .attr('r', 6)
         .attr('fill', d => {
-          if (d.country === currentCountry) return '#d32f2f';
-          else if (d.country === 'OECD average') return '#000000';
+          if (d.country === currentCountry) return '#6C5938';
+          else if (d.country === 'average') return '#9E8C6C';
           else return '#9e9e9e';
         })
 
