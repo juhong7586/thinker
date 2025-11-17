@@ -146,7 +146,12 @@ export default function RationalPage({ countries = [] }) {
   );
 }
 
-
+export async function getStaticProps() {
+  // SQL used to build the country summary. Keep this local so it's easy to reuse.
+  const sql = `
+    SELECT *
+    FROM workspace.students.emp_cr_by_country
+  `;
 
   try {
     let rows = [];
@@ -205,8 +210,8 @@ export default function RationalPage({ countries = [] }) {
       revalidate: 86400
     };
 
-} catch (err) {
-  console.error('getStaticProps unexpected error:', err);
-  return { props: { countries: [] } };
+  } catch (err) {
+    console.error('getStaticProps unexpected error:', err);
+    return { props: { countries: [] } };
+  }
 }
-
