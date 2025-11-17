@@ -9,8 +9,12 @@ import GravityScatterPlot from '../components/visualization/gravity';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { mutate } from 'swr';
-import items from './api/data/news';
+// Default export from `pages/api/data/news` is now the gallery-shaped items
+// (array of { image, text }). The original `items` is available as a
+// named export if we still need the news objects for the menu.
+import galleryItems, { items as newsItems } from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
+import CircularGallery from '../components/circularGallery';
 
 // items are imported from `data/news.js`
 
@@ -58,11 +62,14 @@ export default function RationalPage({ countries = [] }) {
       <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
          
     </div>
-    <div style={{ maxWidth: '90%', margin: '1rem auto', padding: '4rem 0', fontFamily: 'NanumSquareNeo' }}>
-        {/* BubbleMenu placed at the top of the page */}
-        <BubbleMenu
+    <div>
+      <CircularGallery items={galleryItems} bend={0} heightScale={1.1} font={'normal 30px Times New Roman'} />
+    </div>
+    {/* <div style={{ maxWidth: '90%', margin: '1rem auto', padding: '4rem 0', fontFamily: 'NanumSquareNeo' }}>
+
+          <BubbleMenu
           logo={<span style={{ fontWeight: 700 }}>RB</span>}
-          items={items}
+          items={newsItems}
           menuAriaLabel="Toggle navigation"
           menuBg="#ffffff"
           useFixedPosition={false}
@@ -71,7 +78,7 @@ export default function RationalPage({ countries = [] }) {
           animationDuration={0.5}
           staggerDelay={0.12}
         />
-    </div>
+    </div> */}
     <div style={{  alignItems: 'center' , textAlign: 'center', fontFamily: 'NanumSquareNeo', maxWidth: '90%', margin: '1rem auto', paddingBottom: '4rem' }}>
      
           <p className={styles.subtitle} style={{ fontSize: '1.3rem', lineHeight: 2, padding: '5rem 0'}}>
@@ -135,10 +142,12 @@ export default function RationalPage({ countries = [] }) {
         <ScatterPlot studentRows={studentData} />
           
     </div>
-    <div style={{ background: 'linear-gradient(to bottom, #ffffff, #0e0e0e)', width: '100vw', padding: '40px 0' , height: '30vh'}}>
-      <h1 style={{ textAlign: 'center', color: '#333' }}>What can we do for students' future?</h1>
+    <div style={{ background: 'linear-gradient(to bottom, #ffffff 30%, #020202 70%)', width: '100vw', padding: '20px 0' , height: '30vh', fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center' }}>
+      <h3 style={{ color: '#333' }}>What can we do for students' future?</h3>
+      <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
+        <br /> For that, we need to provide learning experiences to think about their society. </p>
     </div>
-    <div style={{ background: '#0e0e0e', width: '100vw' }}>
+    <div style={{ background: '#020202', width: '100vw' }}>
       <GravityScatterPlot currentCountry={country} studentRows={studentData} />
     </div>
     

@@ -63,9 +63,9 @@ export default function BeesSwarmPlot({ studentRows }) {
           .data(['Overall', 'Social Problem'])
           .enter()
           .append('text')
-          .attr('x', -60)
-          .attr('y', d => yScale(d) + 200)
-          .attr('text-anchor', 'end')
+          .attr('x', -150)
+          .attr('y', d => yScale(d)*2 + 100)
+          .attr('text-anchor', 'start')
           .attr('text-wrap', 'wrap')
           .attr('font-size', '1rem')
           .text(d => `${d}`);

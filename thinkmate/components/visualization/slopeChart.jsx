@@ -390,32 +390,6 @@ export default function SlopeChart({ currentCountry, countryData, colorScheme = 
       });
     });
 
-    // Legend
-    const legendY = height - 30;
-    
-    svg.append('circle')
-      .attr('cx', margin.left)
-      .attr('cy', legendY)
-      .attr('r', 4)
-      .attr('fill', '#2ca02c');
-    svg.append('text')
-      .attr('x', margin.left + 15)
-      .attr('y', legendY + 3)
-      .attr('font-size', '15px')
-      .text('Positive Social Problem Solving');
-
-    svg.append('circle')
-      .attr('cx', margin.left + 330)
-      .attr('cy', legendY)
-      .attr('r', 4)
-      .attr('fill', '#d73027');
-    svg.append('text')
-      .attr('x', margin.left + 345)
-      .attr('y', legendY + 3)
-      .attr('font-size', '15px')
-      .text('Negative Social Problem Solving');
-
-
     };
     loadData().catch(err => console.error('Failed to load data for SlopeChart:', err));
 

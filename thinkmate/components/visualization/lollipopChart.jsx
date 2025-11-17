@@ -17,7 +17,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
 
       const data = csv || [];
 
-      const margin = { top: 30, right: 30, bottom: 60, left: 30 };
+      const margin = { top: 30, right: 30, bottom: 100, left: 30 };
       const width = 1000 - margin.left - margin.right;
       const height = 500 - margin.top - margin.bottom;
    
@@ -53,17 +53,10 @@ export default function LollipopChart({ currentCountry, countryData }) {
       xAxisG.selectAll('text')
         .attr('transform', 'rotate(-45)')
         .style('text-anchor', 'end')
+        .style('font-size', '0.8rem')
         .attr('dx', '-0.6em')
         .attr('dy', '0.25em');
 
-      // Axis label
-      xAxisG.append('text')
-        .attr('y', margin.bottom - 10)
-        .attr('x', width / 2)
-        .attr('fill', 'black')
-        .attr('text-anchor', 'middle')
-        .attr('font-size', '1.2rem')
-        .text('Country');
 
       g.append('g')
         .call(yAxis)
@@ -156,9 +149,9 @@ export default function LollipopChart({ currentCountry, countryData }) {
       // Add title
       svg.append('text')
         .attr('x', (width + margin.left + margin.right) / 2)
-        .attr('y', 20)
+        .attr('y', 15)
         .attr('text-anchor', 'middle')
-        .attr('font-size', '18px')
+        .attr('font-size', '1rem')
         .attr('font-weight', 'bold')
         .attr('fill', '#333')
         .text('Power of Empathy on Self-Directed Learning');
@@ -167,8 +160,8 @@ export default function LollipopChart({ currentCountry, countryData }) {
       loadData().catch(err => console.error('Failed to load data for LollipopChart:', err));
   }, [currentCountry]);
   return (
-  <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '80vh' }}>
-       <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px' }}>
+  <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '60vh' }}>
+       <div style={{ backgroundColor: 'white', padding: '10px', borderRadius: '8px' }}>
         <svg ref={svgRef}></svg>
       </div>
     </div>

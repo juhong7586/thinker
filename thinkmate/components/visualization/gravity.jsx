@@ -84,7 +84,7 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
       // Continuous color scale: white at center (low values) → black at outer (high values)
       const colorScale = d3.scaleLinear()
         .domain([0, 5])
-        .range(['#ffffff', '#000000']);
+        .range(['#f5e2be', '#2E2E2E']);
 
       // Add scatter points (universe particles)
       // We'll support different entrance directions and a scale/fade-in effect.
@@ -192,15 +192,6 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
         animateParticles(true);
       }
 
-      // Add title
-      svg.append('text')
-        .attr('x', centerX)
-        .attr('y', 30)
-        .attr('text-anchor', 'middle')
-        .attr('font-size', '22px')
-        .attr('font-weight', 'bold')
-        .attr('fill', '#333')
-        .text('Empathy Universe');
 
       // Add center label
       svg.append('text')

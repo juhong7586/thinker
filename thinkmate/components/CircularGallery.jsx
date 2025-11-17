@@ -24,28 +24,68 @@ function autoBind(instance) {
   });
 }
 
-function createTextTexture(gl, text, font = 'bold 60vh monospace', color = 'black') {
+function createTextTexture(gl, text, font = 'bold 20px monospace', color = 'black', maxWidth = 1000) {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
+  // Ensure we use a px-based font so we can compute canvas dimensions reliably
   context.font = font;
-  const metrics = context.measureText(text);
-  const textWidth = Math.ceil(metrics.width);
-  const textHeight = Math.ceil(parseInt(font, 10) * 1.2);
-  canvas.width = textWidth + 20;
-  canvas.height = '200vh';
+  // extract numeric px size from font string (fallback to 60)
+  const pxMatch = String(font).match(/(\d+)px/);
+  const fontSize = pxMatch ? parseInt(pxMatch[1], 10) : 20;
+
+  // Word-wrap the text to fit within maxWidth (in pixels)
+  const words = String(text).split(/\s+/);
+  const lines = [];
+  let current = '';
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    const test = current ? current + ' ' + word : word;
+    const testWidth = Math.ceil(context.measureText(test).width);
+    if (testWidth > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+
+  // compute canvas size based on measured line widths
+  const lineWidths = lines.map(l => Math.ceil(context.measureText(l).width));
+  const textWidth = Math.max(...lineWidths, 0);
+  const lineHeight = Math.ceil(fontSize * 1.2);
+  const textHeight = lineHeight * lines.length;
+  // add small padding so text isn't flush to edges
+  const padding = 10;
+  canvas.width = textWidth + padding/2;
+  canvas.height = textHeight + padding * 10;
   context.font = font;
   context.fillStyle = color;
   context.textBaseline = 'middle';
   context.textAlign = 'center';
   context.clearRect(0, 0, canvas.width, canvas.height);
-  context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+  // draw each line centered horizontally
+  const cx = canvas.width / 2;
+  const startY = padding + lineHeight / 2;
+  for (let i = 0; i < lines.length; i++) {
+    const y = startY + i * lineHeight;
+    context.fillText(lines[i], cx, y);
+  }
+
   const texture = new Texture(gl, { generateMipmaps: false });
   texture.image = canvas;
-  return { texture, width: canvas.width, height: canvas.height };
+  return {
+    texture,
+    width: canvas.width,
+    height: canvas.height,
+    lineCount: lines.length,
+    lineHeightPx: lineHeight
+  };
 }
 
 class Title {
-  constructor({ gl, plane, renderer, text, textColor = '#545050', font = '30px sans-serif' }) {
+  constructor({ gl, plane, renderer, text, textColor = '#545050', font = '20px sans-serif' }) {
     autoBind(this);
     this.gl = gl;
     this.plane = plane;
@@ -56,7 +96,11 @@ class Title {
     this.createMesh();
   }
   createMesh() {
-    const { texture, width, height } = createTextTexture(this.gl, this.text, this.font, this.textColor);
+    // Derive a sensible pixel max width from the font size so long labels wrap.
+    const pxMatch = String(this.font).match(/(\d+)px/);
+    const fontSize = 30;
+    const maxWidth = Math.max(120, fontSize * 12); // e.g., 30px -> 360px, 80px -> 960px
+    const { texture, width, height, lineCount } = createTextTexture(this.gl, this.text, this.font, this.textColor, maxWidth);
     const geometry = new Plane(this.gl);
     const program = new Program(this.gl, {
       vertex: `
@@ -85,12 +129,18 @@ class Title {
     });
     this.mesh = new Mesh(this.gl, { geometry, program });
     const aspect = width / height;
-    const textHeight = this.plane.scale.y * 0.15;
-    const textWidth = textHeight * aspect;
-    this.mesh.scale.set(textWidth, textHeight, 1);
-    this.mesh.position.y = -this.plane.scale.y * 0.5 - textHeight * 0.5 - 0.05;
+    // Keep per-line text height consistent across items by making the
+    // mesh height proportional to the number of lines. `perLineRatio`
+    // controls how tall one line appears relative to the plane height.
+    const perLineRatio = 0.12; // fraction of plane.scale.y per line
+    const perLineWorld = this.plane.scale.y * perLineRatio;
+    const totalTextHeight = perLineWorld * Math.max(1, lineCount);
+    const textWidth = totalTextHeight * aspect;
+    this.mesh.scale.set(textWidth, totalTextHeight, 1);
+    this.mesh.position.y = -this.plane.scale.y * 0.5 - totalTextHeight * 0.5 - 0.05;
     this.mesh.setParent(this.plane);
   }
+
 }
 
 class Media {
@@ -108,7 +158,9 @@ class Media {
     bend,
     textColor,
     borderRadius = 0,
-    font
+    font,
+    titleFont,
+    wobble = 0
   }) {
     this.extra = 0;
     this.geometry = geometry;
@@ -125,6 +177,8 @@ class Media {
     this.textColor = textColor;
     this.borderRadius = borderRadius;
     this.font = font;
+    this.titleFont = titleFont;
+    this.wobble = wobble;
     this.createShader();
     this.createMesh();
     this.createTitle();
@@ -145,11 +199,13 @@ class Media {
         uniform mat4 projectionMatrix;
         uniform float uTime;
         uniform float uSpeed;
+        uniform float uWobble;
         varying vec2 vUv;
         void main() {
           vUv = uv;
           vec3 p = position;
-          p.z = (sin(p.x * 4.0 + uTime) * 1.5 + cos(p.y * 2.0 + uTime) * 1.5) * (0.1 + uSpeed * 0.5);
+          // apply subtle waving only when uWobble > 0
+          p.z = (sin(p.x * 4.0 + uTime) * 1.5 + cos(p.y * 2.0 + uTime) * 1.5) * (0.1 + uSpeed * 0.5) * uWobble;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
         }
       `,
@@ -192,7 +248,8 @@ class Media {
         uImageSizes: { value: [0, 0] },
         uSpeed: { value: 0 },
         uTime: { value: 100 * Math.random() },
-        uBorderRadius: { value: this.borderRadius }
+        uBorderRadius: { value: this.borderRadius },
+        uWobble: { value: this.wobble ? 1 : 0 }
       },
       transparent: true
     });
@@ -202,6 +259,8 @@ class Media {
     img.onload = () => {
       texture.image = img;
       this.program.uniforms.uImageSizes.value = [img.naturalWidth, img.naturalHeight];
+      // ensure wobble uniform is set (in case it was updated)
+      if (this.program.uniforms.uWobble) this.program.uniforms.uWobble.value = this.wobble ? 1 : 0;
     };
   }
   createMesh() {
@@ -218,7 +277,7 @@ class Media {
       renderer: this.renderer,
       text: this.text,
       textColor: this.textColor,
-      fontFamily: this.font
+      font: this.titleFont || this.font
     });
   }
   update(scroll, direction) {
@@ -270,11 +329,12 @@ class Media {
         this.plane.program.uniforms.uViewportSizes.value = [this.viewport.width, this.viewport.height];
       }
     }
-    this.scale = this.screen.height / 1500;
-    this.plane.scale.y = (this.viewport.height * (900 * this.scale)) / this.screen.height;
-    this.plane.scale.x = (this.viewport.width * (700 * this.scale)) / this.screen.width;
+    this.scale = this.screen.height / 2000;
+    // Apply heightScale so callers can increase/decrease gallery height
+    this.plane.scale.y = (this.viewport.height * (1200 * this.scale)) / this.screen.height * (this.heightScale || 1);
+    this.plane.scale.x = (this.viewport.width * (1200 * this.scale)) / this.screen.width;
     this.plane.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y];
-    this.padding = 2;
+    this.padding = 3;
     this.width = this.plane.scale.x + this.padding;
     this.widthTotal = this.width * this.length;
     this.x = this.width * this.index;
@@ -286,12 +346,15 @@ class App {
     container,
     {
       items,
-      bend,
+      bend = 10,
       textColor = '#ffffff',
       borderRadius = 0,
-      font = 'bold 30px Figtree',
+      font = 'normal 40px Figtree',
+      titleFont,
+      wobble = false,
+      heightScale = 1.2,
       scrollSpeed = 2,
-      scrollEase = 0.05
+      scrollEase = 0.1
     } = {}
   ) {
     document.documentElement.classList.remove('no-js');
@@ -305,6 +368,9 @@ class App {
     this.onResize();
     this.createGeometry();
     this.createMedias(items, bend, textColor, borderRadius, font);
+    this.titleFont = titleFont || font;
+    this.wobble = wobble;
+    this.heightScale = heightScale;
     this.update();
     this.addEventListeners();
   }
@@ -320,6 +386,7 @@ class App {
   }
   createCamera() {
     this.camera = new Camera(this.gl);
+    // sensible default vertical field of view (degrees)
     this.camera.fov = 45;
     this.camera.position.z = 20;
   }
@@ -328,25 +395,11 @@ class App {
   }
   createGeometry() {
     this.planeGeometry = new Plane(this.gl, {
-      heightSegments: 200,
-      widthSegments: 200
+      heightSegments: 2000,
+      widthSegments: 1000
     });
   }
   createMedias(items, bend = 1, textColor, borderRadius, font) {
-    const defaultItems = [
-      { image: `https://picsum.photos/seed/1/800/600?grayscale`, text: 'Bridge' },
-      { image: `https://picsum.photos/seed/2/800/600?grayscale`, text: 'Desk Setup' },
-      { image: `https://picsum.photos/seed/3/800/600?grayscale`, text: 'Waterfall' },
-      { image: `https://picsum.photos/seed/4/800/600?grayscale`, text: 'Strawberries' },
-      { image: `https://picsum.photos/seed/5/800/600?grayscale`, text: 'Deep Diving' },
-      { image: `https://picsum.photos/seed/16/800/600?grayscale`, text: 'Train Track' },
-      { image: `https://picsum.photos/seed/17/800/600?grayscale`, text: 'Santorini' },
-      { image: `https://picsum.photos/seed/8/800/600?grayscale`, text: 'Blurry Lights' },
-      { image: `https://picsum.photos/seed/9/800/600?grayscale`, text: 'New York' },
-      { image: `https://picsum.photos/seed/10/800/600?grayscale`, text: 'Good Boy' },
-      { image: `https://picsum.photos/seed/21/800/600?grayscale`, text: 'Coastline' },
-      { image: `https://picsum.photos/seed/12/800/600?grayscale`, text: 'Palm Trees' }
-    ];
     const galleryItems = items && items.length ? items : defaultItems;
     this.mediasImages = galleryItems.concat(galleryItems);
     this.medias = this.mediasImages.map((data, index) => {
@@ -364,7 +417,9 @@ class App {
         bend,
         textColor,
         borderRadius,
-        font
+        font,
+        titleFont: this.titleFont,
+        wobble: this.wobble ? 1 : 0
       });
     });
   }
@@ -384,8 +439,11 @@ class App {
     this.onCheck();
   }
   onWheel(e) {
-    const delta = e.deltaY || e.wheelDelta || e.detail;
-    this.scroll.target += (delta > 0 ? this.scrollSpeed : -this.scrollSpeed) * 0.2;
+    const delta = e.deltaY || e.wheelDelta || e.detail || 0;
+    // Use the magnitude of delta to move proportionally. Scale down to
+    // reasonable units so scrolling feels natural across devices.
+    const scaled = delta * 0.02; // typical mouse wheel delta ~100 -> ~2 units
+    this.scroll.target += scaled;
     this.onCheckDebounce();
   }
   onCheck() {
@@ -458,18 +516,29 @@ class App {
 export default function CircularGallery({
   items,
   bend = 3,
-  textColor = '#ffffff',
+  textColor = '#000',
   borderRadius = 0.05,
-  font = 'bold 80vh Figtree',
+  // use px-based default font so canvas/text metrics compute correctly
+  font = 'bold 80px Figtree',
+  // titleFont forces a uniform font for all item titles (e.g. 'bold 28px Figtree')
+  titleFont = undefined,
+  // wobble: when false, images do not wave; when true, subtle wave is applied
+  wobble = false,
+  // multiplier to scale gallery height (1 = default). Values >1 increase height.
+  heightScale = 1,
   scrollSpeed = 3,
-  scrollEase = 0
+  scrollEase = 0.05
 }) {
   const containerRef = useRef(null);
   useEffect(() => {
-    const app = new App(containerRef.current, { items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase });
+    const app = new App(containerRef.current, { items, bend, textColor, borderRadius, font, titleFont, wobble, heightScale, scrollSpeed, scrollEase });
     return () => {
       app.destroy();
     };
-  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
-  return <div className="circular-gallery" ref={containerRef} />;
+  }, [items, bend, textColor, borderRadius, font, titleFont, wobble, scrollSpeed, scrollEase, heightScale]);
+  // Ensure the container has an explicit CSS height so the renderer's
+  // `container.clientHeight` is meaningful. We map `heightScale` to a
+  // viewport-height value (50vh base) so callers can easily enlarge area.
+  const containerHeightVh = Math.round(50 * heightScale);
+  return <div className="circular-gallery" ref={containerRef} style={{ height: `${containerHeightVh}vh` }} />;
 }
