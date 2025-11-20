@@ -4,7 +4,7 @@
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
     border-radius: 2rem;
-    border: 1.5px solid rgba(255, 255, 255, 1);
+    border: 1px solid rgba(255, 255, 255, 1);
     padding: 1rem;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     height: fit-content;
@@ -67,7 +67,7 @@
   .input {
     width: 90%;
     padding: 0.75rem;
-    border: 2px solid #d1d5db;
+    border: 1px solid #d1d5db;
     border-radius: 2rem;
     font-size: 0.875rem;
     transition: all 0.2s ease;
@@ -75,7 +75,8 @@
   
   .input:focus {
     outline: none;
-    border-color: #947C7C;
+    border-color: #121900;
+    border: 2px solid #404A25;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
   }
   
@@ -83,7 +84,7 @@
     width: 100%;
     padding: 0.75rem;
     margin-right: 2rem;
-    border: 2px solid #d1d5db;
+    border: 1px solid #d1d5db;
     border-radius: 2rem;
     background: white;
     font-size: 0.875rem;
@@ -103,18 +104,18 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: radial-gradient(circle, #947C7C, #371A1A);
+    background: radial-gradient(circle, #A3AA90, #404A25);
     cursor: pointer;
   }
   
   .button {
     width: 100%;
     max-height: 3rem;
-    background: linear-gradient(135deg, #C1A9A9 0%, #947C7C 100%);
+    background: linear-gradient(135deg, #A3AA90 0%, #677052 100%);
     color: white;
     padding: 0.7rem;
     border: none;
-    border-radius: 2rem;
+    border-radius: 1rem;
     font-size: 1.2rem;
     font-weight: 500;
     cursor: pointer;
@@ -124,7 +125,7 @@
   
   .button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 8px 25px rgba(64, 74, 37, 0.3);
   }
   
   .studentList {
@@ -174,7 +175,7 @@
   .inputGroup label {
     display: grid;
     place-items: center;
-    color: #374151;
+    color: #404A25;
     font-size: 0.875rem;
     font-weight: 400;
     width: 50%;

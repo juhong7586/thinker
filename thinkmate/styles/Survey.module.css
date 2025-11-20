@@ -1,6 +1,6 @@
 .btnNext,
 .btnSubmit {
-    background: linear-gradient(135deg, #565902 0%, #3E400C 100%);
+    background: linear-gradient(135deg, #374B47 0%, #092923 100%);
     color: white;
     flex: 0.2;
 }
@@ -65,8 +65,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
-    margin-top: 10vw;
+    padding: 10px;
+    margin-top: 5vw;
 }
 
 .errorMessage {
@@ -112,7 +112,7 @@
 .input[type="text"]:focus,
 .textarea:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #19322D;
 }
 
 .label {
@@ -133,7 +133,7 @@
 
 .progressFill {
     height: 100%;
-    background: linear-gradient(90deg, #F3EDDD 0%, #F2CB05 100%);
+    background: linear-gradient(90deg, #F3EDDD 0%, #19322D 100%);
     transition: width 0.3s ease;
     border-radius: 10px;
 }
@@ -243,7 +243,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: radial-gradient(circle at 50%, #B5A748 0%, #766D2F 100%);
+    background: radial-gradient(circle at 50%, #ffffff 0%, #bbb 100%);
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
@@ -252,7 +252,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #DB9EB1 0%, #A85871 100%);
+    background: linear-gradient(135deg, #fff 0%, #bbb 100%);
     cursor: pointer;
     border: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -269,7 +269,7 @@
 .sliderCurrent {
     font-size: 30px;
     font-weight: 600;
-    color: #667eea;
+    color: #333;
     text-align: center;
     margin-top: 15px;
 }
@@ -281,8 +281,8 @@
 
 .sliderUntouchedHint {
     margin-top: 8px;
-    font-size: 13px;
-    color: #b33;
+    font-size: 1.2rem;
+    color: #4B252A;
     text-align: center;
 }
 
@@ -297,7 +297,7 @@
 }
 
 .successMessage h2 {
-    color: #27ae60;
+    color: #404A25;
     margin-bottom: 15px;
 }
 
@@ -320,11 +320,11 @@
     transition: all 0.3s;
 }
 
-.surveyTitle {
-    color: #222;
+.surveyQuestion {
+    color: #fff;
     margin-bottom: 10px;
     background-size: auto;
-    background-color: rgba(255, 255, 255, 0.1);
+
     font-size: 28px;
 }
 

@@ -6,11 +6,18 @@ import LollipopChart from '../components/visualization/lollipopChart';
 import ScatterPlot from '../components/visualization/scatterPlot'; 
 import CreativityScatter from '../components/visualization/creativityScatter';
 import GravityScatterPlot from '../components/visualization/gravity';
+import GroupBarChart from '../components/visualization/groupBarChart';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import useCountryStats from '../pages/api/data/useCountryStats';
-import { mutate } from 'swr';
-import items from './api/data/news';
+// Default export from `pages/api/data/news` is now the gallery-shaped items
+// (array of { image, text }). The original `items` is available as a
+// named export if we still need the news objects for the menu.
+import galleryItems, { items as newsItems } from './api/data/news';
+import useCountryStats from '../hooks/useCountryStats';
+import CircularGallery from '../components/circularGallery';
+// Server-only helpers must not be imported into client pages.
+// Use the client-safe `useCountryStats` hook (below) which calls
+// the API route instead of pulling server-only modules into the bundle.
 
 // items are imported from `data/news.js`
 
@@ -18,32 +25,54 @@ const serverHostName = process.env.DATABRICKS_SERVER_HOSTNAME;
 const token = process.env.DATABRICKS_TOKEN;
 const httpPath = process.env.DATABRICKS_HTTP_PATH;
 
-export default function RationalPage({ countries = [] }) {
+export default function RationalPage({ countries = []}) {
   // Component state must be created inside the component using hooks
   const [country, setCountry] = useState(null);
-  // Ensure we render strings for country buttons 
+  // Use the client-safe SWR hook which fetches from `/api/data/getStudentsByCountry`
+  // This avoids importing server-only modules into the browser bundle.
+  const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
+  
+
+  // Ensure we render strings for country buttons
   const countryList = Array.isArray(countries)
     ? countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)))
     : [];
 
-  const { data: studentRows, loading: studentLoading, error: studentError } = useCountryStats(country);
+  // // Use the SWR hook to fetch per-country student rows (client-safe)
+  // const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
+  // // Filter studentData by the selected `country` when one is chosen.
+  // // If `country` is falsy we pass through the original array (show all).
+  let filteredStudentData = [];
+  if (Array.isArray(studentData)) {
+    if (!country) {
+      filteredStudentData = studentData;
+    } else {
+      filteredStudentData = studentData.filter((r) => {
+        if (!r) return false;
+        // Support several possible key names for country in rows
+        const rowCountry = r.country ?? r.Country ?? r.country_name ?? r.countryName ?? null;
+        return rowCountry === country;
+      });
+    }
+  }
+  console.log(filteredStudentData[0]);
 
-  useEffect(() => {
-    if (!country) return;
-    const key = `/api/data/getStudentsByCountry?country=${encodeURIComponent(country)}`;
-    // Prefetch server data for the selected country and prime the SWR cache
-    (async () => {
-      try {
-        const res = await fetch(key);
-        if (!res.ok) throw new Error('Network response was not ok');
-        const json = await res.json();
-        // Populate SWR cache for the key without revalidating (fast path)
-        await mutate(key, json, false);
-      } catch (err) {
-        console.warn('prefetch failed', err);
-      }
-    })();
-  }, [country]);
+  // useEffect(() => {
+  //   if (!country) return;
+  //   const key = `/api/data/getStudentsByCountry?country=${encodeURIComponent(country)}`;
+  //   // Prefetch server data for the selected country and prime the SWR cache
+  //   (async () => {
+  //     try {
+  //       const res = await fetch(key);
+  //       if (!res.ok) throw new Error('Network response was not ok');
+  //       const json = await res.json();
+  //       // Populate SWR cache for the key without revalidating (fast path)
+  //       await mutate(key, json, false);
+  //     } catch (err) {
+  //       console.warn('prefetch failed', err);
+  //     }
+  //   })();
+  // }, [country]);
 
   return (
     <>
@@ -52,15 +81,18 @@ export default function RationalPage({ countries = [] }) {
         <title>Rational — ThinkMate</title>
         <meta name="description" content="Rational info: how empathy and creativity relate" />
       </Head>
-    <div className={styles.title} style={{ maxWidth: '100%', margin: '3rem auto', textAlign: 'center' }}>
+    <div className={styles.title} style={{ maxWidth: '100%', margin: '3rem auto', textAlign: 'center', fontFamily: 'NanumSquareNeo' }}>
       <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
          
     </div>
-    <div style={{ maxWidth: '100%', margin: '1rem auto', padding: '4rem 0' }}>
-        {/* BubbleMenu placed at the top of the page */}
-        <BubbleMenu
+    <div>
+      <CircularGallery items={galleryItems} bend={0} heightScale={1.1} font={'normal 30px Times New Roman'} />
+    </div>
+    {/* <div style={{ maxWidth: '90%', margin: '1rem auto', padding: '4rem 0', fontFamily: 'NanumSquareNeo' }}>
+
+          <BubbleMenu
           logo={<span style={{ fontWeight: 700 }}>RB</span>}
-          items={items}
+          items={newsItems}
           menuAriaLabel="Toggle navigation"
           menuBg="#ffffff"
           useFixedPosition={false}
@@ -69,8 +101,8 @@ export default function RationalPage({ countries = [] }) {
           animationDuration={0.5}
           staggerDelay={0.12}
         />
-    </div>
-    <div style={{  alignItems: 'center' , textAlign: 'center'}}>
+    </div> */}
+    <div style={{  alignItems: 'center' , textAlign: 'center', fontFamily: 'NanumSquareNeo', maxWidth: '90%', margin: '1rem auto', paddingBottom: '4rem' }}>
      
           <p className={styles.subtitle} style={{ fontSize: '1.3rem', lineHeight: 2, padding: '5rem 0'}}>
           What would these issues mean for our students? 
@@ -115,7 +147,7 @@ export default function RationalPage({ countries = [] }) {
           <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
 
-          <CreativityScatter studentRows={studentRows} />
+          <CreativityScatter studentRows={filteredStudentData} />
         <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           
           Look at the distribution of empathy and creativity scores among students.
@@ -130,14 +162,19 @@ export default function RationalPage({ countries = [] }) {
           <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
         </p>
-        <ScatterPlot studentRows={studentRows} />
+        <div style={{alignItems: 'center' , textAlign: 'center'}}>
+          <GroupBarChart studentRows={filteredStudentData} />
+          <ScatterPlot studentRows={filteredStudentData} />
+        </div>
           
     </div>
-    <div style={{ background: 'linear-gradient(to bottom, #ffffff, #0e0e0e)', width: '100vw', padding: '40px 0' , height: '30vh'}}>
-      <h1 style={{ textAlign: 'center', color: '#333' }}>What can we do for students' future?</h1>
+    <div style={{ background: 'linear-gradient(to bottom, #ffffff 30%, #020202 70%)', width: '100vw', height: '30vh', fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center' }}>
+      <h3 style={{ color: '#333' }}>What can we do for students' future?</h3>
+      <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
+        <br /> For that, we need to provide learning experiences to think about their society. </p>
     </div>
-    <div style={{ background: '#0e0e0e', width: '100vw' }}>
-      <GravityScatterPlot currentCountry={country} studentRows={studentRows} />
+    <div style={{ background: '#020202', width: '100vw' }}>
+      <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />
     </div>
     
     </>
@@ -145,6 +182,8 @@ export default function RationalPage({ countries = [] }) {
 }
 
 export async function getStaticProps() {
+    // Use the SWR hook to fetch per-country student rows (client-safe)
+  
   // SQL used to build the country summary. Keep this local so it's easy to reuse.
   const sql = `
     SELECT *
@@ -152,6 +191,7 @@ export async function getStaticProps() {
   `;
 
   try {
+    
     let rows = [];
 
     if (serverHostName && token && httpPath) {
@@ -173,7 +213,6 @@ export async function getStaticProps() {
       } catch (err) {
         console.error('Databricks client query failed, falling back to API route:', err.message || err);
         rows = [];
-        studentData = [];
       }
     }
 

@@ -17,7 +17,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
 
       const data = csv || [];
 
-      const margin = { top: 30, right: 30, bottom: 60, left: 30 };
+      const margin = { top: 30, right: 30, bottom: 100, left: 30 };
       const width = 1000 - margin.left - margin.right;
       const height = 500 - margin.top - margin.bottom;
    
@@ -26,8 +26,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
       const svg = d3.select(svgRef.current)
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
-        .attr('style', 'background-color: white; border-radius: 8px;');
-
+      
       const g = svg.append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -54,17 +53,10 @@ export default function LollipopChart({ currentCountry, countryData }) {
       xAxisG.selectAll('text')
         .attr('transform', 'rotate(-45)')
         .style('text-anchor', 'end')
+        .style('font-size', '0.8rem')
         .attr('dx', '-0.6em')
         .attr('dy', '0.25em');
 
-      // Axis label
-      xAxisG.append('text')
-        .attr('y', margin.bottom - 10)
-        .attr('x', width / 2)
-        .attr('fill', 'black')
-        .attr('text-anchor', 'middle')
-        .attr('font-size', '1.2rem')
-        .text('Country');
 
       g.append('g')
         .call(yAxis)
@@ -98,8 +90,8 @@ export default function LollipopChart({ currentCountry, countryData }) {
         .attr('x2', d => xScale(d.country) + xScale.bandwidth() / 2)
         .attr('y2', d => yScale(d.empathyScore))
         .attr('stroke', d => {
-          if (d.country === currentCountry) return '#d32f2f';
-          else if (d.country === 'OECD average') return '#000000';
+          if (d.country === currentCountry) return '#6C5838';
+          else if (d.country === 'average') return '#9E8C6C';
           else return '#9e9e9e';
         })
         .attr('stroke-width', 3);
@@ -114,8 +106,8 @@ export default function LollipopChart({ currentCountry, countryData }) {
         .attr('cy', d => yScale(d.empathyScore))
         .attr('r', 6)
         .attr('fill', d => {
-          if (d.country === currentCountry) return '#d32f2f';
-          else if (d.country === 'OECD average') return '#000000';
+          if (d.country === currentCountry) return '#6C5938';
+          else if (d.country === 'average') return '#9E8C6C';
           else return '#9e9e9e';
         })
 
@@ -157,9 +149,9 @@ export default function LollipopChart({ currentCountry, countryData }) {
       // Add title
       svg.append('text')
         .attr('x', (width + margin.left + margin.right) / 2)
-        .attr('y', 20)
+        .attr('y', 15)
         .attr('text-anchor', 'middle')
-        .attr('font-size', '18px')
+        .attr('font-size', '1rem')
         .attr('font-weight', 'bold')
         .attr('fill', '#333')
         .text('Power of Empathy on Self-Directed Learning');
@@ -168,8 +160,8 @@ export default function LollipopChart({ currentCountry, countryData }) {
       loadData().catch(err => console.error('Failed to load data for LollipopChart:', err));
   }, [currentCountry]);
   return (
-  <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '80vh' }}>
-       <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px' }}>
+  <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '60vh' }}>
+       <div style={{ backgroundColor: 'white', padding: '10px', borderRadius: '8px' }}>
         <svg ref={svgRef}></svg>
       </div>
     </div>

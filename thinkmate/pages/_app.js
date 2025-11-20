@@ -14,7 +14,7 @@ export default function App({ Component, pageProps }) {
 
   return (
     <>
-      <NavBar signedUser={signedUser} />
+      {!Component.hideNav && <NavBar signedUser={signedUser} />}
       <Component {...pageProps} />
     </>
   )

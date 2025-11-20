@@ -129,11 +129,11 @@ export default function CreativityScatter({ studentRows }) {
         .x(d => xScale(d.x))
         .y0(d => yScale(d.min))
         .y1(d => yScale(d.max))
-        .curve(d3.curveCatmullRom.alpha(0.02));
+        .curve(d3.curveCatmullRom.alpha(0.01));
 
       g.append('path')
         .datum(envelope)
-        .attr('fill', '#888888')
+        .attr('fill', '#DDD')
         .attr('fill-opacity', 0.25)
         .attr('stroke', 'none')
         .attr('d', area);
@@ -157,12 +157,12 @@ export default function CreativityScatter({ studentRows }) {
       const lineMin = d3.line()
         .x(d => xScale(d.x))
         .y(d => yScale(d.min))
-        .curve(d3.curveCatmullRom.alpha(0.02));
+        .curve(d3.curveCatmullRom.alpha(0.01));
 
       g.append('path')
         .datum(envelope)
         .attr('fill', 'none')
-        .attr('stroke', '#AAAAAA')
+        .attr('stroke', '#CCC')
         .attr('stroke-width', 1)
         .attr('stroke-linecap', 'round')
         .attr('d', lineMin);
@@ -189,7 +189,7 @@ export default function CreativityScatter({ studentRows }) {
           .attr('y1', yScale(d.x * slope + intercept))
           .attr('x2', xScale(nextD.x))
           .attr('y2', yScale(nextD.x * slope + intercept))
-          .attr('stroke', '#ff7300')
+          .attr('stroke', '#D1B174')
           .attr('stroke-width', thickness)
           .attr('stroke-linecap', 'round')
           .attr('opacity', 0.95);
@@ -217,7 +217,7 @@ export default function CreativityScatter({ studentRows }) {
         .attr('x2', 20)
         .attr('y1', 20)
         .attr('y2', 20)
-        .attr('stroke', '#ff7300')
+        .attr('stroke', '#D1B174')
         .attr('stroke-width', 2);
       legend.append('text')
         .attr('x', 25)
@@ -230,9 +230,9 @@ export default function CreativityScatter({ studentRows }) {
   }, [selectedMetric, studentRows]);
 
   return (
-    <div style={{ width: '100%', minHeight: '80vh', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ width: '100%', minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ padding: '30px' }}>
-        <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
           <label style={{ marginRight: '20px', fontSize: '16px', fontWeight: 'bold' }}>
             Select Creativity Metric:
           </label>
@@ -240,7 +240,6 @@ export default function CreativityScatter({ studentRows }) {
             value={selectedMetric}
             onChange={(e) => setSelectedMetric(e.target.value)}
             style={{
-              padding: '8px 12px',
               fontSize: '14px',
               cursor: 'pointer'
             }}

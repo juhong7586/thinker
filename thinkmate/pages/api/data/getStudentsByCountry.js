@@ -1,9 +1,9 @@
 import getStudentsByCountryServer from '../../../lib/getStudentsByCountryServer';
 
 export default async function handler(req, res) {
-  const country = req.query.country || req.body?.country;
-  if (!country) return res.status(400).json({ error: 'country is required' });
+
   try {
+    const country = req.query?.country || null;
     const rows = await getStudentsByCountryServer(country);
     return res.status(200).json({ rows });
   } catch (err) {

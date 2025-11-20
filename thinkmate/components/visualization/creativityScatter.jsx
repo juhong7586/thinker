@@ -63,9 +63,9 @@ export default function BeesSwarmPlot({ studentRows }) {
           .data(['Overall', 'Social Problem'])
           .enter()
           .append('text')
-          .attr('x', -60)
-          .attr('y', d => yScale(d) + 200)
-          .attr('text-anchor', 'end')
+          .attr('x', -150)
+          .attr('y', d => yScale(d)*2 + 100)
+          .attr('text-anchor', 'start')
           .attr('text-wrap', 'wrap')
           .attr('font-size', '1rem')
           .text(d => `${d}`);
@@ -152,7 +152,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           .attr('cx', d => d.x)
           .attr('cy', d => d.y)
           .attr('r', 5)
-          .attr('fill', d => d.type === 'Overall' ? '#aaa' : '#FFD700')
+          .attr('fill', d => d.type === 'Overall' ? '#86525E' : '#85908D')
           .attr('opacity', 0.6)
           .on('mouseover', function(event, d) {
             d3.select(this)

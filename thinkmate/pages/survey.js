@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import Link from 'next/link'
 import styles from '../styles/Analysis.module.css'
 import { useEffect, useState, useRef } from 'react'
 import SurveyForm from '../components/SurveyForm'
@@ -52,7 +51,6 @@ export default function Analysis() {
     className={styles.wrapper}
     ref={containerRef}
     style={{
-      backgroundImage: "url('/flower.jpg')",
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'

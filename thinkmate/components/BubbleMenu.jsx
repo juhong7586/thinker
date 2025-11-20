@@ -8,35 +8,35 @@ const DEFAULT_ITEMS = [
     href: '#',
     ariaLabel: 'Home',
     rotation: -8,
-    hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' }
+    hoverStyles: { bgColor: '#4B252A', textColor: '#ffffff' }
   },
   {
     label: 'about',
     href: '#',
     ariaLabel: 'About',
     rotation: 8,
-    hoverStyles: { bgColor: '#10b981', textColor: '#ffffff' }
+    hoverStyles: { bgColor: '#4E3727', textColor: '#ffffff' }
   },
   {
     label: 'projects',
     href: '#',
     ariaLabel: 'Documentation',
     rotation: 8,
-    hoverStyles: { bgColor: '#f59e0b', textColor: '#ffffff' }
+    hoverStyles: { bgColor: '#19322D', textColor: '#ffffff' }
   },
   {
     label: 'blog',
     href: '#',
     ariaLabel: 'Blog',
     rotation: 8,
-    hoverStyles: { bgColor: '#ef4444', textColor: '#ffffff' }
+    hoverStyles: { bgColor: '#284221', textColor: '#ffffff' }
   },
   {
     label: 'contact',
     href: '#',
     ariaLabel: 'Contact',
     rotation: -8,
-    hoverStyles: { bgColor: '#8b5cf6', textColor: '#ffffff' }
+    hoverStyles: { bgColor: '#D1B174', textColor: '#ffffff' }
   }
 ];
 
