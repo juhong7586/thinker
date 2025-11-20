@@ -3,11 +3,14 @@ const token = process.env.DATABRICKS_TOKEN;
 const httpPath = process.env.DATABRICKS_HTTP_PATH;
 
 export default async function getStudentsByCountryServer(country) {
-  const sql_student = `
-    SELECT *
-    FROM workspace.students.all_students
-    WHERE country = '${country}'
-  `;
+  // Build SQL and optionally filter by country to avoid fetching all rows.
+  let where = '';
+  if (country) {
+    // Basic escaping: double single-quotes inside the supplied string
+    const safe = String(country).replace(/'/g, "''");
+    where = ` WHERE country = '${safe}'`;
+  }
+  const sql_student = `SELECT * FROM workspace.students.all_students${where}`;
 
   try {
     let studentData = [];
@@ -24,7 +27,7 @@ export default async function getStudentsByCountryServer(country) {
         await session.close();
         await client.close();
         studentData = result || [];
-        console.log(`Fetched ${studentData.length} student records for country: ${country}`);
+        console.log(`Fetched ${studentData.length} student records${country ? ' for country: ' + country : ''}`);
       } catch (err) {
         console.error('Databricks client query failed for student data:', err.message || err);
         studentData = [];

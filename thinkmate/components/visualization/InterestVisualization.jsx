@@ -56,7 +56,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
       // surface a user-friendly message only once
       if (!window.__thinkmate_notified) {
         window.__thinkmate_notified = true;
-        alert('데이터를 불러오는데 실패했습니다.');
+        alert('Fail to load data.');
       }
     } finally {
       loadingRef.current = false;
@@ -238,7 +238,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
 
   const handleAddInterest = async () => {
     if (!selectedStudentId) {
-      alert('Select a student before adding an interest.');
+      alert('Login before adding an interest.');
       return;
     }
 

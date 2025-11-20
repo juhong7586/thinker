@@ -396,9 +396,9 @@ export default function SlopeChart({ currentCountry, countryData, colorScheme = 
   }, [currentCountry, countryData]);
 
   return (
-    <div style={{ width: '100%', padding: '20px',  minHeight: '80vh' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '30px' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', padding: '15px', borderRadius: '4px' }}>
+    <div style={{ width: '100%',  minHeight: '80vh' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto',  }}>
+        <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', borderRadius: '4px' }}>
           <svg ref={svgRef}></svg>
         </div>
 

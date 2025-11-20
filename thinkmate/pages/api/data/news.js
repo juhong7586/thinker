@@ -13,7 +13,7 @@ const items = [
     href: 'https://koreajoongangdaily.joins.com/news/2025-06-03/national/2025presidential/Gender-generation-gap-on-full-display-in-exit-poll-showing-entrenched-differences/2322105',
     ariaLabel: 'About',
     rotation: 4,
-    imageurl: 'https://picsum.photos/seed/generation/800/600',
+    imageurl: 'https://picsum.photos/seed/generationconlict/800/600',
     hoverStyles: { bgColor: '#10b981', textColor: '#ffffff' }
   },
   {
@@ -21,7 +21,7 @@ const items = [
     href: 'https://www.koreaherald.com/article/10508049',
     ariaLabel: 'Projects',
     rotation: 2,
-    imageurl: 'https://picsum.photos/seed/politics/800/600',
+    imageurl: 'https://picsum.photos/seed/politicaldivide/800/600',
     hoverStyles: { bgColor: '#f59e0b', textColor: '#ffffff' }
   },
   {
@@ -29,15 +29,15 @@ const items = [
     href: 'https://www.npr.org/2021/11/06/1053163060/class-conflict-and-economic-hardship-in-squid-game-is-real-for-many-south-korean',
     ariaLabel: 'Blog',
     rotation: -1,
-    imageurl: 'https://picsum.photos/seed/squidgame/800/600',
+    imageurl: 'https://picsum.photos/seed/economicclassconflict/800/600',
     hoverStyles: { bgColor: '#ef4444', textColor: '#ffffff' }
   },
   {
-    label: 'S. Korea has 3rd highest social conflict index among OECD countries',
+    label: 'South Korea has 3rd highest social conflict index among OECD countries',
     href: 'https://english.hani.co.kr/arti/english_edition/e_national/912156.html',
     ariaLabel: 'Contact',
     rotation: 4,
-    imageurl: 'https://picsum.photos/seed/conflict/800/600',
+    imageurl: 'https://picsum.photos/seed/socialconflict/800/600',
     hoverStyles: { bgColor: '#8b5cf6', textColor: '#ffffff' }
   },
   {
@@ -45,7 +45,7 @@ const items = [
     href: 'https://www.nature.com/articles/s43247-025-02300-6',
     ariaLabel: 'Environment',
     rotation: -3,
-    imageurl: 'https://picsum.photos/seed/environment/800/600',
+    imageurl: 'https://picsum.photos/seed/environmentalproblems/800/600',
     hoverStyles: { bgColor: '#D97706', textColor: '#ffffff' }
   },
   {
@@ -53,7 +53,7 @@ const items = [
     href: 'https://pursuit.unimelb.edu.au/articles/the-gap-between-the-haves-and-have-nots-in-australia-is-at-a-20-year-high',
     ariaLabel: 'Economy',
     rotation: 1,
-    imageurl: 'https://picsum.photos/seed/australia/800/600',
+    imageurl: 'https://picsum.photos/seed/economicgap/800/600',
     hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' }
   }
 

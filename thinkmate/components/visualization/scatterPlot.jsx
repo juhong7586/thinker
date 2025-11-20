@@ -240,7 +240,6 @@ export default function CreativityScatter({ studentRows }) {
             value={selectedMetric}
             onChange={(e) => setSelectedMetric(e.target.value)}
             style={{
-              padding: '8px 12px',
               fontSize: '14px',
               cursor: 'pointer'
             }}

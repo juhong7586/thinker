@@ -6,8 +6,8 @@ const fetcher = (url) => fetch(url).then(res => {
 });
 
 export default function useCountryStats(country) {
-  const key = country ? `/api/country-stats?country=${encodeURIComponent(country)}` : null;
-  const { data, error, isLoading } = useSWR(key, fetcher, { revalidateOnFocus: false });
+  const key = country ? `/api/country-stats}` : null;
+  const { data, error, isLoading } = useSWR(fetcher, { revalidateOnFocus: false });
   // Normalize rows
   const normalized = (data?.rows || null)
     ? (data.rows || []).map(r => ({
