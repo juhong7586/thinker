@@ -29,7 +29,7 @@ export default function BeesSwarmPlot({ studentRows }) {
 
         const margin = { top: 60, right: 150, bottom: 0, left: 150 };
         const width = 1200 - margin.left - margin.right;
-        const height = 600 - margin.top - margin.bottom;
+        const height = 500 - margin.top - margin.bottom;
 
         // Clear previous content
         d3.select(svgRef.current).selectAll("*").remove();
@@ -55,7 +55,7 @@ export default function BeesSwarmPlot({ studentRows }) {
         // Scale for y-axis (type)
         const yScale = d3.scaleBand()
           .domain(['Overall', 'Social'])
-          .range([0, height])
+          .range([0, height+100])
           .padding(0.5);
 
         // Add x-axis
@@ -236,8 +236,8 @@ export default function BeesSwarmPlot({ studentRows }) {
   }, [studentRows]);
 
   return (
-    <div style={{ width: '100%', minHeight: '40vh', backgroundColor: '#ffffff', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px' }}>
+    <div style={{ width: '100%', minHeight: '30vh', backgroundColor: '#ffffff',  display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ backgroundColor: 'white',  borderRadius: '8px' }}>
         <svg ref={svgRef}></svg>
       </div>
     </div>

@@ -136,10 +136,8 @@ export default function RationalPage({ countries = []}) {
           <SlopeChart currentCountry={country} countryData={countries} />
           <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
-
           <CreativityScatter studentRows={filteredStudentData} />
         <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
-          
           Look at the distribution of empathy and creativity scores among students.
           <br />Compare number of students between overall creativity and social problem solving creativity.
           <br /> Although they possess high creativity, they struggle when the problems narrow down to social problems.
