@@ -200,9 +200,9 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 		.attr('transform', `translate(${width - margin.right - 120},${margin.top}-10)`)
 
 		const legendItems = [
-			{ label: 'Overall Average', color: 'rgba(245,226, 190, 0.8)' },
-			{ label: 'Female Average', color: 'rgba(113, 83, 86, 0.5)' },		
-			{ label: 'Male Average', color: 'rgba(55, 75, 71, 0.5)' }
+			{ label: 'Overall Average', color: 'rgba(120, 120, 120, 0.5)' },
+			{ label: 'Female Average', color: 'rgba(0, 0, 0, 0.5)' },		
+			{ label: 'Male Average', color: 'rgba(230, 230, 230, 0.5)' }
 		];
 
 		legendItems.forEach((item, index) => {
