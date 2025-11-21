@@ -16,6 +16,8 @@ export default function BeesSwarmPlot({ studentRows }) {
 
         const data = rawData.filter(item => !isNaN(item.ave_cr) && !isNaN(item.ave_cr_social));
         
+         
+
         // Prepare data with type labels
         const dataCr = data
           .map(d => ({ value: d.ave_cr, type: 'Overall' }));
@@ -23,7 +25,7 @@ export default function BeesSwarmPlot({ studentRows }) {
         const datacrSocial = data
           .map(d => ({ value: d.ave_cr_social, type: 'Social' }));
 
-        const allData = [...dataCr, ...datacrSocial];
+        const allData = [...dataCr, ...datacrSocial];        
 
         const margin = { top: 60, right: 150, bottom: 0, left: 150 };
         const width = 1200 - margin.left - margin.right;
@@ -40,6 +42,11 @@ export default function BeesSwarmPlot({ studentRows }) {
         const g = svg.append('g')
           .attr('transform', `translate(${margin.left},${margin.top})`);
 
+        if (allData.length === 0) {
+            g.append('text').attr('x', width / 2).attr('y', height / 2).attr('text-anchor', 'middle').attr('fill', '#666').text('Please select a country first.');
+            return;
+        } 
+
         // Scale for x-axis (value)
         const xScale = d3.scaleLinear()
           .domain([0, 2])
@@ -55,6 +62,7 @@ export default function BeesSwarmPlot({ studentRows }) {
         const xAxis = d3.axisBottom(xScale).tickSize(17).tickPadding(5);
         g.append('g')
           .attr('transform', `translate(0,200)`)
+          .style("font", "1rem NanumSquareNeo")
           .call(xAxis);
 
 
@@ -191,9 +199,9 @@ export default function BeesSwarmPlot({ studentRows }) {
 
               // position these tooltips centered on the vertical line, above each band
               const tWidth = 120;
-              tooltipOverall.attr('transform', `translate(${absX - tWidth/2}, ${overallCenter - 110})`).style('display', null);
-              tooltipScore.attr('transform', `translate(${absX - tWidth/2+28}, ${overallCenter})`).style('display', null);
-              tooltipSocial.attr('transform', `translate(${absX - tWidth/2}, ${socialCenter + 36})`).style('display', null);
+              tooltipOverall.attr('transform', `translate(${absX - tWidth/2}, ${overallCenter -180})`).style('display', null);
+              tooltipScore.attr('transform', `translate(${absX - tWidth/2+28}, ${overallCenter+10})`).style('display', null);
+              tooltipSocial.attr('transform', `translate(${absX - tWidth/2}, ${socialCenter})`).style('display', null);
 
           
           })
@@ -214,7 +222,7 @@ export default function BeesSwarmPlot({ studentRows }) {
         // Add title
         svg.append('text')
           .attr('x', (width + margin.left + margin.right) / 2)
-          .attr('y', 30)
+          .attr('y', 20)
           .attr('text-anchor', 'middle')
           .attr('font-size', '20px')
           .attr('font-weight', 'bold')

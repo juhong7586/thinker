@@ -9,9 +9,9 @@ import GroupBarChart from '../components/visualization/groupBarChart';
 import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 
-import galleryItems, { items as newsItems } from './api/data/news';
+import itemsList from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
-import CircularGallery from '../components/circularGallery';
+import CardGallery from '../components/cardGallery';
 
 
 
@@ -24,7 +24,7 @@ export default function RationalPage({ countries = []}) {
   const [country, setCountry] = useState(null);
   // Use the client-safe SWR hook which fetches from `/api/data/getStudentsByCountry`
   // This avoids importing server-only modules into the browser bundle.
-  const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
+  const { data: studentData } = useCountryStats(country);
 
   // Ensure we render strings for country buttons
   const countryList = Array.isArray(countries)
@@ -90,7 +90,7 @@ export default function RationalPage({ countries = []}) {
          
     </div>
     <div>
-      <CircularGallery items={galleryItems} bend={0} heightScale={1.1} font={'normal 30px Times New Roman'} />
+      <CardGallery cardsList={itemsList} />
     </div>
     <div style={{  alignItems: 'center' , textAlign: 'center', fontFamily: 'NanumSquareNeo', maxWidth: '90%', margin: '1rem auto', paddingBottom: '4rem' }}>
      

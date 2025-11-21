@@ -225,33 +225,6 @@ const PillNav = ({
   return (
     <div className={styles['pill-nav-container']}>
       <nav className={`${styles['pill-nav']} ${className}`} aria-label="Primary" style={cssVars}>
-        {/* {isRouterLink(items?.[0]?.href) ? (
-          <Link href={items[0].href} legacyBehavior>
-            <a
-              className={styles['pill-logo']}
-              aria-label="Home"
-              onMouseEnter={handleLogoEnter}
-              role="menuitem"
-              ref={el => {
-                logoRef.current = el;
-              }}
-            >
-              <img src={logo} alt={logoAlt} ref={logoImgRef} />
-            </a>
-          </Link>
-        ) : (
-          <a
-            className={styles['pill-logo']}
-            href={items?.[0]?.href || '#'}
-            aria-label="Home"
-            onMouseEnter={handleLogoEnter}
-            ref={el => {
-              logoRef.current = el;
-            }}
-          >
-            <img src={logo} alt={logoAlt} ref={logoImgRef} />
-          </a>
-        )} */}
 
         <div className={`${styles['pill-nav-items']} ${styles['desktop-only']}`} ref={navItemsRef}>
           <ul className={styles['pill-list']} role="menubar">

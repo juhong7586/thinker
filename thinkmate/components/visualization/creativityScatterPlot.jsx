@@ -29,6 +29,8 @@ export default function CreativityScatter({ studentRows }) {
         regression = { slope: 0.09, intercept: 0.75 };
       }
 
+      
+
       const { slope, intercept } = regression;
 
       const margin = { top: 30, right: 30, bottom: 60, left: 60 };
@@ -45,6 +47,11 @@ export default function CreativityScatter({ studentRows }) {
       const g = svg.append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
+      if (data.length === 0) {
+        g.append('text').attr('x', w / 2).attr('y', h / 2).attr('text-anchor', 'middle').attr('fill', '#666').text('Please select a country first.');
+        return;
+      }
+      
       // Scales
       const xScale = d3.scaleLinear()
         .domain([0, 5])

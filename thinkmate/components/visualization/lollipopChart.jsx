@@ -17,6 +17,8 @@ export default function LollipopChart({ currentCountry, countryData }) {
 
       const data = csv || [];
 
+
+
       const margin = { top: 30, right: 30, bottom: 100, left: 30 };
       const width = 1000 - margin.left - margin.right;
       const height = 500 - margin.top - margin.bottom;

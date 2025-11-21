@@ -75,6 +75,9 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 			return String(a.grade).localeCompare(String(b.grade));
 		});
 
+		
+
+
 		// D3 render
 		const svg = d3.select(svgRef.current);
 		svg.selectAll('*').remove();
@@ -90,10 +93,10 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 		const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
 		if (data.length === 0) {
-			g.append('text').attr('x', w / 2).attr('y', h / 2).attr('text-anchor', 'middle').attr('fill', '#666').text('No grade empathy data available');
+			g.append('text').attr('x', w / 2).attr('y', h / 2).attr('text-anchor', 'middle').attr('fill', '#666').text('Please select a country first.');
 			return;
 		}
-
+		
 		const x = d3.scaleBand().domain(data.map((d) => d.grade)).range([0, w]).padding(0.2);
 		const maxVal = d3.max([d3.max(data, (d) => d.avg), d3.max(dataFemale, (d) => d.avg), d3.max(dataMale, (d) => d.avg)]) ?? 1;
 		const y = d3.scaleLinear().domain([0, maxVal]).nice().range([h, 0]);

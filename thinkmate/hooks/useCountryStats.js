@@ -10,9 +10,7 @@ export default function useCountryStats(country) {
   const key = country ? `/api/data/getStudentsByCountry?country=${encodeURIComponent(country)}` : null;
   const { data, error, isLoading } = useSWR(key, fetcher, { revalidateOnFocus: false });
   // Normalize rows once here so all consumers receive a consistent shape.
-  // The API may return either per-student rows (detailed) or per-country
-  // summary rows (ave_emp / ave_cr fields). Detect the shape and map
-  // accordingly so consumers don't see undefined student fields for summaries.
+
   const normalized = (data?.rows || null)
     ? (data.rows || []).map((r) => {
         if (!r) return null;
