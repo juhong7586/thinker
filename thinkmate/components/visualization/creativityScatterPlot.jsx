@@ -17,22 +17,35 @@ export default function CreativityScatter({ studentRows }) {
       
       let data, yLabel, yDomain, regression;
 
+
+
       if (selectedMetric === 'ave_cr') {
         data = rawData.filter(item => !isNaN(item.ave_cr) && !isNaN(item.ave_emp));
         yLabel = 'Creativity (Overall)';
         yDomain = [0, 2.2];
-        regression = { slope: 0.11, intercept: 0.86 };
       } else {
         data = rawData.filter(item => !isNaN(item.ave_cr_social) && !isNaN(item.ave_emp));
         yLabel = 'Creativity (Social Problem Solving)';
         yDomain = [0, 2.2];
-        regression = { slope: 0.09, intercept: 0.75 };
       }
 
-      const { slope, intercept } = regression;
+      // Simple linear regression calculation
+      const n = data.length;
+      if (n >= 2) {
+        const sumX = d3.sum(data, d => d.ave_emp);
+        const sumY = d3.sum(data, d => selectedMetric === 'ave_cr' ? d.ave_cr : d.ave_cr_social);
+        const sumXY = d3.sum(data, d => d.ave_emp * (selectedMetric === 'ave_cr' ? d.ave_cr : d.ave_cr_social));
+        const sumX2 = d3.sum(data, d => d.ave_emp * d.ave_emp);
+
+        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+
+        regression = { slope, intercept };
+      }
+      const { slope = 0, intercept = 0 } = regression || {};
 
       const margin = { top: 30, right: 30, bottom: 60, left: 60 };
-      const width = 800 - margin.left - margin.right;
+      const width = 500 - margin.left - margin.right;
       const height = 550 - margin.top - margin.bottom;
 
       // Clear previous content
@@ -45,6 +58,11 @@ export default function CreativityScatter({ studentRows }) {
       const g = svg.append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
+      if (data.length === 0) {
+        g.append('text').attr('x', w / 2).attr('y', h / 2).attr('text-anchor', 'middle').attr('fill', '#666').text('Please select a country first.');
+        return;
+      }
+      
       // Scales
       const xScale = d3.scaleLinear()
         .domain([0, 5])
@@ -125,47 +143,61 @@ export default function CreativityScatter({ studentRows }) {
         .filter(d => d !== null)
         .sort((a, b) => a.x - b.x);
 
-      const area = d3.area()
-        .x(d => xScale(d.x))
-        .y0(d => yScale(d.min))
-        .y1(d => yScale(d.max))
-        .curve(d3.curveCatmullRom.alpha(0.01));
+      // const area = d3.area()
+      //   .x(d => xScale(d.x))
+      //   .y0(d => yScale(d.min))
+      //   .y1(d => yScale(d.max))
+      //   .curve(d3.curveCatmullRom.alpha(0.01));
 
-      g.append('path')
-        .datum(envelope)
-        .attr('fill', '#DDD')
-        .attr('fill-opacity', 0.25)
-        .attr('stroke', 'none')
-        .attr('d', area);
+      // g.append('path')
+      //   .datum(envelope)
+      //   .attr('fill', '#DDD')
+      //   .attr('fill-opacity', 0.25)
+      //   .attr('stroke', 'none')
+      //   .attr('d', area);
 
 
-      // Add max line 
-      const lineMax = d3.line()
-        .x(d => xScale(d.x))
-        .y(d => yScale(d.max))
-        .curve(d3.curveCatmullRom.alpha(0.02));
+      // // Add max line 
+      // const lineMax = d3.line()
+      //   .x(d => xScale(d.x))
+      //   .y(d => yScale(d.max))
+      //   .curve(d3.curveCatmullRom.alpha(0.02));
 
-      g.append('path')
-        .datum(envelope)
-        .attr('fill', 'none')
-        .attr('stroke', '#CCC')
-        .attr('stroke-width', 1)
-        .attr('stroke-linecap', 'round')
-        .attr('d', lineMax);    
+      // g.append('path')
+      //   .datum(envelope)
+      //   .attr('fill', 'none')
+      //   .attr('stroke', '#CCC')
+      //   .attr('stroke-width', 1)
+      //   .attr('stroke-linecap', 'round')
+      //   .attr('d', lineMax);    
 
-      // Add min line
-      const lineMin = d3.line()
-        .x(d => xScale(d.x))
-        .y(d => yScale(d.min))
-        .curve(d3.curveCatmullRom.alpha(0.01));
+      // // Add min line
+      // const lineMin = d3.line()
+      //   .x(d => xScale(d.x))
+      //   .y(d => yScale(d.min))
+      //   .curve(d3.curveCatmullRom.alpha(0.01));
 
-      g.append('path')
-        .datum(envelope)
-        .attr('fill', 'none')
-        .attr('stroke', '#CCC')
-        .attr('stroke-width', 1)
-        .attr('stroke-linecap', 'round')
-        .attr('d', lineMin);
+      // g.append('path')
+      //   .datum(envelope)
+      //   .attr('fill', 'none')
+      //   .attr('stroke', '#CCC')
+      //   .attr('stroke-width', 1)
+      //   .attr('stroke-linecap', 'round')
+      //   .attr('d', lineMin);
+
+
+      g.selectAll('.dot')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('class', 'dot')
+        .attr('cx', d => xScale(d.ave_emp))
+        .attr('cy', d => yScale(d[yDataKey]))
+        .attr('r', 4)
+        .attr('fill', selectedMetric === 'ave_cr_social' ? '#86525E' : '#85908D')
+        .attr('opacity', 0.6)
+        .attr('fill-opacity', 0.7);
+
 
       // Draw average line as segmented lines with thickness proportional to bin count
       // To make thickness changes smoother, compute a short-window smoothed count per envelope point
@@ -173,7 +205,7 @@ export default function CreativityScatter({ studentRows }) {
       const smoothed = counts.map((c, i) => {
         const prev = counts[i - 1] || 0;
         const next = counts[i + 1] || 0;
-        return (prev + c + next) / 3; // simple 3-point moving average
+        return (prev + c + next) / 10; // simple 3-point moving average
       });
       const maxSmoothed = d3.max(smoothed) || 1;
 
@@ -195,18 +227,6 @@ export default function CreativityScatter({ studentRows }) {
           .attr('opacity', 0.95);
       }
 
-
-
-        // Add title
-      svg.append('text')
-        .attr('x', (width + margin.left + margin.right) / 2)
-        .attr('y', 20)
-        .attr('text-anchor', 'middle')
-        .attr('font-size', '18px')
-        .attr('font-weight', 'bold')
-        .attr('fill', '#333')
-        .text(`Empathy on ${yLabel}`);
-
       // Add legend
       const legend = svg.append('g')
         .attr('transform', `translate(${margin.left + 20}, ${margin.top + 20})`);
@@ -215,13 +235,13 @@ export default function CreativityScatter({ studentRows }) {
       legend.append('line')
         .attr('x1', 0)
         .attr('x2', 20)
-        .attr('y1', 20)
-        .attr('y2', 20)
+        .attr('y1', -2)
+        .attr('y2', -2)
         .attr('stroke', '#D1B174')
-        .attr('stroke-width', 2);
+        .attr('stroke-width', 4);
       legend.append('text')
         .attr('x', 25)
-        .attr('y', 25)
+        .attr('y', 0)
         .attr('font-size', '12px')
         .text('Trend Line');
 
@@ -230,18 +250,23 @@ export default function CreativityScatter({ studentRows }) {
   }, [selectedMetric, studentRows]);
 
   return (
-    <div style={{ width: '100%', minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ padding: '30px' }}>
+    <div style={{ maxWidth: '50%', minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div>
         <div style={{ textAlign: 'center' }}>
-          <label style={{ marginRight: '20px', fontSize: '16px', fontWeight: 'bold' }}>
-            Select Creativity Metric:
+          <label style={{ marginRight: '10px', fontSize: '16px', fontWeight: 'bold' }}>
+            Empathy on
           </label>
           <select 
             value={selectedMetric}
             onChange={(e) => setSelectedMetric(e.target.value)}
             style={{
-              fontSize: '14px',
-              cursor: 'pointer'
+              fontSize: '1rem',
+              cursor: 'pointer', 
+              fontFamily: 'inherit',
+              fontWeight: 'bold',
+              padding: '6px 20px',
+              borderRadius: '20px',
+
             }}
           >
             <option value="ave_cr">Creativity (Overall)</option>

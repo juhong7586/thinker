@@ -1,25 +1,21 @@
 import Head from 'next/head';
-import BubbleMenu from '../components/BubbleMenu';
 import styles from '../styles/Home.module.css';
 import SlopeChart from '../components/visualization/slopeChart';
 import LollipopChart from '../components/visualization/lollipopChart';
-import ScatterPlot from '../components/visualization/scatterPlot'; 
-import CreativityScatter from '../components/visualization/creativityScatter';
+import CreativityScatter from '../components/visualization/creativityScatterPlot'; 
+import BeeSwarmPlot from '../components/visualization/beeSwarmPlot';
 import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
-// Default export from `pages/api/data/news` is now the gallery-shaped items
-// (array of { image, text }). The original `items` is available as a
-// named export if we still need the news objects for the menu.
-import galleryItems, { items as newsItems } from './api/data/news';
-import useCountryStats from '../hooks/useCountryStats';
-import CircularGallery from '../components/circularGallery';
-// Server-only helpers must not be imported into client pages.
-// Use the client-safe `useCountryStats` hook (below) which calls
-// the API route instead of pulling server-only modules into the bundle.
+import ConvergingParticles from '../components/beforeGalaxy';
 
-// items are imported from `data/news.js`
+
+import itemsList from './api/data/news';
+import useCountryStats from '../hooks/useCountryStats';
+import CardGallery from '../components/cardGallery';
+
+
 
 const serverHostName = process.env.DATABRICKS_SERVER_HOSTNAME;
 const token = process.env.DATABRICKS_TOKEN;
@@ -30,17 +26,13 @@ export default function RationalPage({ countries = []}) {
   const [country, setCountry] = useState(null);
   // Use the client-safe SWR hook which fetches from `/api/data/getStudentsByCountry`
   // This avoids importing server-only modules into the browser bundle.
-  const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
+  const { data: studentData } = useCountryStats(country);
   
-
   // Ensure we render strings for country buttons
   const countryList = Array.isArray(countries)
     ? countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)))
     : [];
 
-  // // Use the SWR hook to fetch per-country student rows (client-safe)
-  // const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
-  // // Filter studentData by the selected `country` when one is chosen.
   // // If `country` is falsy we pass through the original array (show all).
   let filteredStudentData = [];
   if (Array.isArray(studentData)) {
@@ -55,24 +47,40 @@ export default function RationalPage({ countries = []}) {
       });
     }
   }
-  console.log(filteredStudentData[0]);
+  const studentNum = filteredStudentData ? filteredStudentData.length : 0;
 
-  // useEffect(() => {
-  //   if (!country) return;
-  //   const key = `/api/data/getStudentsByCountry?country=${encodeURIComponent(country)}`;
-  //   // Prefetch server data for the selected country and prime the SWR cache
-  //   (async () => {
-  //     try {
-  //       const res = await fetch(key);
-  //       if (!res.ok) throw new Error('Network response was not ok');
-  //       const json = await res.json();
-  //       // Populate SWR cache for the key without revalidating (fast path)
-  //       await mutate(key, json, false);
-  //     } catch (err) {
-  //       console.warn('prefetch failed', err);
-  //     }
-  //   })();
-  // }, [country]);
+
+  // Bar filter state: { grade, gender }
+  const [barFilter, setBarFilter] = useState({ grade: null, gender: null });
+
+  const creativityRows = useMemo(() => {
+    if (!Array.isArray(filteredStudentData)) return [];
+    const { grade: fGrade, gender: fGender } = barFilter || {};
+    return filteredStudentData.filter((r) => {
+      if (!r) return false;
+      if (fGrade) {
+        const rowGrade = r.grade ?? r.ST001D01T ?? '';
+        if (String(rowGrade) !== String(fGrade)) return false;
+      }
+      if (fGender) {
+        const rowGender = r.gender ?? r.ST004D01T ?? null;
+        // In dataset gender encoding might be 1 (female) / 2 (male) or strings
+        if (fGender === 'female' && String(rowGender) !== '1') return false;
+        if (fGender === 'male' && String(rowGender) !== '2') return false;
+      }
+      return true;
+    });
+  }, [filteredStudentData, barFilter]);
+
+  const handleBarClick = ({ grade, gender }) => {
+    // toggle same selection
+    if (barFilter.grade === grade && barFilter.gender === gender) {
+      setBarFilter({ grade: null, gender: null });
+    } else {
+      setBarFilter({ grade, gender });
+    }
+  };
+
 
   return (
     <>
@@ -86,25 +94,11 @@ export default function RationalPage({ countries = []}) {
          
     </div>
     <div>
-      <CircularGallery items={galleryItems} bend={0} heightScale={1.1} font={'normal 30px Times New Roman'} />
+      <CardGallery cardsList={itemsList} />
     </div>
-    {/* <div style={{ maxWidth: '90%', margin: '1rem auto', padding: '4rem 0', fontFamily: 'NanumSquareNeo' }}>
-
-          <BubbleMenu
-          logo={<span style={{ fontWeight: 700 }}>RB</span>}
-          items={newsItems}
-          menuAriaLabel="Toggle navigation"
-          menuBg="#ffffff"
-          useFixedPosition={false}
-          alwaysVisible={true}
-          animationEase="back.out(1.5)"
-          animationDuration={0.5}
-          staggerDelay={0.12}
-        />
-    </div> */}
     <div style={{  alignItems: 'center' , textAlign: 'center', fontFamily: 'NanumSquareNeo', maxWidth: '90%', margin: '1rem auto', paddingBottom: '4rem' }}>
      
-          <p className={styles.subtitle} style={{ fontSize: '1.3rem', lineHeight: 2, padding: '5rem 0'}}>
+          <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 2, padding: '5rem 0'}}>
           What would these issues mean for our students? 
           <br />They do think these problems are important, however, they do not think they should make a difference.
           <br />How would these problems impact on them? Would it be okay to let them ignore these issues?
@@ -141,39 +135,42 @@ export default function RationalPage({ countries = []}) {
         </div>
 
         {country && (
-          <p style={{ textAlign: 'center', marginTop: 8 }}><strong>Selected country:</strong> {country}</p>
+          <p style={{ textAlign: 'center', marginTop: 8, fontSize: '1.2rem', paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
         )}
           <SlopeChart currentCountry={country} countryData={countries} />
-          <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+          <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
-
-          <CreativityScatter studentRows={filteredStudentData} />
-        <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
-          
+          <BeeSwarmPlot studentRows={filteredStudentData} />
+        <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
           Look at the distribution of empathy and creativity scores among students.
           <br />Compare number of students between overall creativity and social problem solving creativity.
           <br /> Although they possess high creativity, they struggle when the problems narrow down to social problems.
           <br /> This is directly related to the unsolved conflicts within our society.</p>
 
-        <h3 className={styles.subtitle} style={{ fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>How can we solve this problem?</h3>
+        <h3 style={{ color: '#333', paddingTop: '6rem' }}>
+          How can we solve this problem?</h3>
         <LollipopChart currentCountry={country} countryData={countries} />
         <p style={{ lineHeight: 1.6 }}>
-          We can find hint in empathy. Chart above is about confidence in self-directed learning, and social and emotional skills.
-          <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
+          We can find hint in <strong>empathy.</strong>
+          <br /> Chart above is about confidence in self-directed learning, and social and emotional skills.
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
+        <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
+          < br />
         </p>
-        <div style={{alignItems: 'center' , textAlign: 'center'}}>
-          <GroupBarChart studentRows={filteredStudentData} />
-          <ScatterPlot studentRows={filteredStudentData} />
+        <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem' }}>
+          <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} />
+          <CreativityScatter studentRows={creativityRows} />
         </div>
           
     </div>
-    <div style={{ background: 'linear-gradient(to bottom, #ffffff 30%, #020202 70%)', width: '100vw', height: '30vh', fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center' }}>
+    <div style={{  width: '100vw', height: '30vh', fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center' }}>
       <h3 style={{ color: '#333' }}>What can we do for students' future?</h3>
       <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
         <br /> For that, we need to provide learning experiences to think about their society. </p>
     </div>
+    <ConvergingParticles studentNum={studentNum} />
     <div style={{ background: '#020202', width: '100vw' }}>
+      
       <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />
     </div>
     

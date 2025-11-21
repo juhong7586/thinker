@@ -266,3 +266,82 @@
     transform: scale(0.94);
   }
 }
+
+/* Scroll/Marquee styles for CardGallery */
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0);
+  }
+  /* translate by -50% when content is duplicated once (two copies)
+     moves exactly one set of items and creates a seamless loop */
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scrollRight {
+  /* start shifted left by 50% so the duplicated set sits on the left */
+  0% {
+    transform: translateX(-50%);
+  }
+  /* translate to 0 so the content moves right across the viewport */
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.scrollContainerLeft {
+  display: flex;
+  height: 100px;
+  width: max-content;
+  padding: 2rem;
+  background: rgba(62, 14, 20, 0.7);
+  animation: scrollLeft 80s linear infinite;
+}
+.scrollContainerRight {
+  display: flex;
+  height: 100px;
+  width: max-content;
+  padding: 2rem;
+  background: rgba(62, 14, 20, 0.7);
+  animation: scrollRight 80s linear infinite;
+}
+
+/* Card item visuals moved from component inline classes */
+.cardItem {
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  min-width: 300px;
+  width: 300px;
+  margin: 0 1rem;
+  height: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 1rem;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+/* Ensure anchor cards don't show default underlines and inherit text color */
+.cardItem,
+.cardItem:link,
+.cardItem:visited {
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.cardItem:hover,
+.cardItem:focus {
+  text-decoration: none;
+}
+
+.cardItem:hover{
+  background: rgba(255, 255, 255, 0.1);
+  transition: transform 0.15s ease-in-out; 
+  transform: translate(0%, -5%);
+}

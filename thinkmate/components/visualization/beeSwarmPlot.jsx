@@ -11,11 +11,14 @@ export default function BeesSwarmPlot({ studentRows }) {
           rawData = studentRows;
         } else {
           console.error('No studentRows data available for ScatterPlot');
-          return;
+          
+          return(<div style={{ color: '#666' }}>Please select a country first.</div>);
         }
 
         const data = rawData.filter(item => !isNaN(item.ave_cr) && !isNaN(item.ave_cr_social));
         
+         
+
         // Prepare data with type labels
         const dataCr = data
           .map(d => ({ value: d.ave_cr, type: 'Overall' }));
@@ -23,11 +26,11 @@ export default function BeesSwarmPlot({ studentRows }) {
         const datacrSocial = data
           .map(d => ({ value: d.ave_cr_social, type: 'Social' }));
 
-        const allData = [...dataCr, ...datacrSocial];
+        const allData = [...dataCr, ...datacrSocial];        
 
         const margin = { top: 60, right: 150, bottom: 0, left: 150 };
         const width = 1200 - margin.left - margin.right;
-        const height = 600 - margin.top - margin.bottom;
+        const height = 500 - margin.top - margin.bottom;
 
         // Clear previous content
         d3.select(svgRef.current).selectAll("*").remove();
@@ -40,6 +43,11 @@ export default function BeesSwarmPlot({ studentRows }) {
         const g = svg.append('g')
           .attr('transform', `translate(${margin.left},${margin.top})`);
 
+        if (allData.length === 0) {
+            g.append('text').attr('x', width / 2).attr('y', height / 2).attr('text-anchor', 'middle').attr('fill', '#666').text('Please select a country first.');
+            return;
+        } 
+
         // Scale for x-axis (value)
         const xScale = d3.scaleLinear()
           .domain([0, 2])
@@ -48,13 +56,14 @@ export default function BeesSwarmPlot({ studentRows }) {
         // Scale for y-axis (type)
         const yScale = d3.scaleBand()
           .domain(['Overall', 'Social'])
-          .range([0, height])
+          .range([0, height+100])
           .padding(0.5);
 
         // Add x-axis
         const xAxis = d3.axisBottom(xScale).tickSize(17).tickPadding(5);
         g.append('g')
           .attr('transform', `translate(0,200)`)
+          .style("font", "1rem NanumSquareNeo")
           .call(xAxis);
 
 
@@ -144,7 +153,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           .attr('font-size', '15px');
 
         // Add circles (bees)
-        g.selectAll('.dot')
+        const nodes = g.selectAll('.dot')
           .data(allData)
           .enter()
           .append('circle')
@@ -191,9 +200,9 @@ export default function BeesSwarmPlot({ studentRows }) {
 
               // position these tooltips centered on the vertical line, above each band
               const tWidth = 120;
-              tooltipOverall.attr('transform', `translate(${absX - tWidth/2}, ${overallCenter - 110})`).style('display', null);
-              tooltipScore.attr('transform', `translate(${absX - tWidth/2+28}, ${overallCenter})`).style('display', null);
-              tooltipSocial.attr('transform', `translate(${absX - tWidth/2}, ${socialCenter + 36})`).style('display', null);
+              tooltipOverall.attr('transform', `translate(${absX - tWidth/2}, ${overallCenter -180})`).style('display', null);
+              tooltipScore.attr('transform', `translate(${absX - tWidth/2+28}, ${overallCenter+10})`).style('display', null);
+              tooltipSocial.attr('transform', `translate(${absX - tWidth/2}, ${socialCenter})`).style('display', null);
 
           
           })
@@ -211,10 +220,64 @@ export default function BeesSwarmPlot({ studentRows }) {
             tooltipSocial.style('display', 'none');
           });
 
+        // --- Scroll-based scatter/gather behavior ---
+        // We animate circles away from their simulated positions on scroll down,
+        // and return them on scroll up.
+        let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
+        let scattered = false;
+
+        const scatterAmount = 2000; // max px displacement
+
+        function randomOffset(d, i) {
+          // Use a deterministic-ish offset per datum for consistent feel
+          const seed = (i + 1) * 9301 % 233280;
+          const rx = (Math.sin(seed + i) * 2 - 1) * scatterAmount;
+          const ry = (Math.cos(seed + i) * 2 - 1) * scatterAmount * 0.6;
+          return [rx, ry];
+        }
+
+        function doScatter() {
+          if (scattered) return;
+          scattered = true;
+          g.selectAll('.dot')
+            .transition()
+            .duration(1000)
+            .attr('cx', (d, i) => d.x + randomOffset(d, i)[0])
+            .attr('cy', (d, i) => d.y + randomOffset(d, i)[1])
+            .attr('opacity', 0.9)
+            .attr('r', 6);
+        }
+
+        function doGather() {
+          if (!scattered) return;
+          scattered = false;
+          g.selectAll('.dot')
+            .transition()
+            .duration(600)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('opacity', 0.6)
+            .attr('r', 5);
+        }
+
+        function onScroll() {
+          const y = window.scrollY;
+          const dy = y - lastY;
+          lastY = y;
+          // threshold to avoid tiny scrolls flipping state
+          if (dy > 10) {
+            doScatter();
+          } else if (dy < -10) {
+            doGather();
+          }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+
         // Add title
         svg.append('text')
           .attr('x', (width + margin.left + margin.right) / 2)
-          .attr('y', 30)
+          .attr('y', 20)
           .attr('text-anchor', 'middle')
           .attr('font-size', '20px')
           .attr('font-weight', 'bold')
@@ -228,8 +291,8 @@ export default function BeesSwarmPlot({ studentRows }) {
   }, [studentRows]);
 
   return (
-    <div style={{ width: '100%', minHeight: '40vh', backgroundColor: '#ffffff', padding: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px' }}>
+    <div style={{ width: '100%', minHeight: '30vh', backgroundColor: '#ffffff',  display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ backgroundColor: 'white',  borderRadius: '8px' }}>
         <svg ref={svgRef}></svg>
       </div>
     </div>
