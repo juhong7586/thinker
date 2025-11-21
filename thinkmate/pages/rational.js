@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import BubbleMenu from '../components/BubbleMenu';
 import styles from '../styles/Home.module.css';
 import SlopeChart from '../components/visualization/slopeChart';
 import LollipopChart from '../components/visualization/lollipopChart';
@@ -9,17 +8,12 @@ import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-// Default export from `pages/api/data/news` is now the gallery-shaped items
-// (array of { image, text }). The original `items` is available as a
-// named export if we still need the news objects for the menu.
+
 import galleryItems, { items as newsItems } from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
 import CircularGallery from '../components/circularGallery';
-// Server-only helpers must not be imported into client pages.
-// Use the client-safe `useCountryStats` hook (below) which calls
-// the API route instead of pulling server-only modules into the bundle.
 
-// items are imported from `data/news.js`
+
 
 const serverHostName = process.env.DATABRICKS_SERVER_HOSTNAME;
 const token = process.env.DATABRICKS_TOKEN;
@@ -31,16 +25,12 @@ export default function RationalPage({ countries = []}) {
   // Use the client-safe SWR hook which fetches from `/api/data/getStudentsByCountry`
   // This avoids importing server-only modules into the browser bundle.
   const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
-  console.log(studentData);
 
   // Ensure we render strings for country buttons
   const countryList = Array.isArray(countries)
     ? countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)))
     : [];
 
-  // // Use the SWR hook to fetch per-country student rows (client-safe)
-  // const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
-  // // Filter studentData by the selected `country` when one is chosen.
   // // If `country` is falsy we pass through the original array (show all).
   let filteredStudentData = [];
   if (Array.isArray(studentData)) {
@@ -55,24 +45,7 @@ export default function RationalPage({ countries = []}) {
       });
     }
   }
-  console.log(filteredStudentData[0]);
 
-  // useEffect(() => {
-  //   if (!country) return;
-  //   const key = `/api/data/getStudentsByCountry?country=${encodeURIComponent(country)}`;
-  //   // Prefetch server data for the selected country and prime the SWR cache
-  //   (async () => {
-  //     try {
-  //       const res = await fetch(key);
-  //       if (!res.ok) throw new Error('Network response was not ok');
-  //       const json = await res.json();
-  //       // Populate SWR cache for the key without revalidating (fast path)
-  //       await mutate(key, json, false);
-  //     } catch (err) {
-  //       console.warn('prefetch failed', err);
-  //     }
-  //   })();
-  // }, [country]);
 
   return (
     <>
@@ -88,20 +61,6 @@ export default function RationalPage({ countries = []}) {
     <div>
       <CircularGallery items={galleryItems} bend={0} heightScale={1.1} font={'normal 30px Times New Roman'} />
     </div>
-    {/* <div style={{ maxWidth: '90%', margin: '1rem auto', padding: '4rem 0', fontFamily: 'NanumSquareNeo' }}>
-
-          <BubbleMenu
-          logo={<span style={{ fontWeight: 700 }}>RB</span>}
-          items={newsItems}
-          menuAriaLabel="Toggle navigation"
-          menuBg="#ffffff"
-          useFixedPosition={false}
-          alwaysVisible={true}
-          animationEase="back.out(1.5)"
-          animationDuration={0.5}
-          staggerDelay={0.12}
-        />
-    </div> */}
     <div style={{  alignItems: 'center' , textAlign: 'center', fontFamily: 'NanumSquareNeo', maxWidth: '90%', margin: '1rem auto', paddingBottom: '4rem' }}>
      
           <p className={styles.subtitle} style={{ fontSize: '1.3rem', lineHeight: 2, padding: '5rem 0'}}>

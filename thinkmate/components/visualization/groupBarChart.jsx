@@ -17,7 +17,18 @@ export default function GroupBarChart({ studentRows = [] }) {
 			const ave = Number(r.ave_emp ?? NaN);
 			const grade = r.grade ?? r.ST001D01T ?? '';
 			if (Number.isNaN(ave)) continue;
-			const key = grade;
+			let key = grade;
+			if (grade == 96){
+				key = 'Ungraded';
+			} else if (grade == 97){
+				key = 'Not Applicable';
+			} else if (grade == 98){
+				key = 'Invalid';
+			} else if (grade == 99){
+				key = 'Missing';
+			}
+
+
 			if (!groups.has(key)) groups.set(key, { sum: 0, count: 0 });
 			const g = groups.get(key);
 			g.sum += ave;
@@ -28,8 +39,8 @@ export default function GroupBarChart({ studentRows = [] }) {
 				const gf = groupsFemale.get(key);
 				gf.sum += ave;
 				gf.count += 1;
-			}else if (!groupsFemale.has(key) && gender == 2){
-				if (!groupsMale.has(key)) groupsMale.set(key, { sum: 0, count: 0 });
+			}else if (!groupsMale.has(key) && gender == 2){
+				groupsMale.set(key, { sum: 0, count: 0 });
 				const gm = groupsMale.get(key);
 				gm.sum += ave;
 				gm.count += 1;
@@ -48,7 +59,7 @@ export default function GroupBarChart({ studentRows = [] }) {
 			avg: count > 0 ? sum / count : 0,
 			count
 		}));
-		console.log(dataFemale);
+	
 
 		const dataMale = Array.from(groupsMale.entries()).map(([grade, { sum, count }]) => ({
 			grade,
@@ -69,8 +80,8 @@ export default function GroupBarChart({ studentRows = [] }) {
 		svg.selectAll('*').remove();
 
 		const width = 520;
-		const height = 260;
-		const margin = { top: 20, right: 20, bottom: 50, left: 48 };
+		const height = 360;
+		const margin = { top: 100, right: 20, bottom: 50, left: 48 };
 		const w = width - margin.left - margin.right;
 		const h = height - margin.top - margin.bottom;
 
@@ -84,14 +95,14 @@ export default function GroupBarChart({ studentRows = [] }) {
 		}
 
 		const x = d3.scaleBand().domain(data.map((d) => d.grade)).range([0, w]).padding(0.2);
-		const maxVal = d3.max(data, (d) => d.avg) ?? 1;
+		const maxVal = d3.max([d3.max(data, (d) => d.avg), d3.max(dataFemale, (d) => d.avg), d3.max(dataMale, (d) => d.avg)]) ?? 1;
 		const y = d3.scaleLinear().domain([0, maxVal]).nice().range([h, 0]);
 
 		// x axis
-		g.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x)).selectAll('text').attr('font-size', 11);
+		g.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x)).selectAll('text').attr('font-size', 11).attr('fill', '#111');
 
 		// y axis
-		g.append('g').call(d3.axisLeft(y).ticks(5)).selectAll('text').attr('font-size', 11);
+		g.append('g').call(d3.axisLeft(y).ticks(5)).selectAll('text').attr('font-size', 11).attr('fill', '#111');
 
 		// gridlines
 		g.append('g')
@@ -109,7 +120,7 @@ export default function GroupBarChart({ studentRows = [] }) {
 			.attr('y', (d) => y(d.avg))
 			.attr('width', x.bandwidth())
 			.attr('height', (d) => h - y(d.avg))
-			.attr('fill', '#F8e11F')
+			.attr('fill', 'rgba(245,226, 190, 0.8)')
 			.attr('rx', 4);
 
 		// value labels
@@ -131,11 +142,11 @@ export default function GroupBarChart({ studentRows = [] }) {
 		
 		barsFemale
 			.append('rect')
-			.attr('x', (d) => x(d.grade) + x.bandwidth() / 4)
+			.attr('x', (d) => x(d.grade) + x.bandwidth() / 2)
 			.attr('y', (d) => y(d.avg))
 			.attr('width', x.bandwidth() / 2)
 			.attr('height', (d) => h - y(d.avg))
-			.attr('fill', '#ec4899')
+			.attr('fill', 'rgba(113, 83, 86, 0.5)')
 			.attr('rx', 4);
 
 		barsFemale
@@ -156,7 +167,7 @@ export default function GroupBarChart({ studentRows = [] }) {
 			.attr('y', (d) => y(d.avg))
 			.attr('width', x.bandwidth() / 2)
 			.attr('height', (d) => h - y(d.avg))
-			.attr('fill', '#2563eb')
+			.attr('fill', 'rgba(55, 75, 71, 0.5)')
 			.attr('rx', 4);
 			
 		barsMale
@@ -168,7 +179,31 @@ export default function GroupBarChart({ studentRows = [] }) {
 			.attr('fill', '#111')
 			.text((d) => d.avg.toFixed(1));	
 		
+		// Legend
+		const legend = svg.append('g').attr('transform', `translate(${width - margin.right - 120},${margin.top}-30)`);
 
+		const legendItems = [
+			{ label: 'Overall Average', color: 'rgba(245,226, 190, 0.8)' },
+			{ label: 'Female Average', color: 'rgba(113, 83, 86, 0.5)' },		
+			{ label: 'Male Average', color: 'rgba(55, 75, 71, 0.5)' }
+		];
+
+		legendItems.forEach((item, index) => {
+			const legendRow = legend.append('g').attr('transform', `translate(0, ${index * 20})`);
+			
+			legendRow.append('rect')
+				.attr('width', 12)
+				.attr('height', 12)
+				.attr('fill', item.color)
+				.attr('rx', 2);
+					
+			legendRow.append('text')
+				.attr('x', 18)
+				.attr('y', 10)
+				.attr('font-size', 11)
+				.attr('fill', '#111')
+				.text(item.label);
+		});
 
 		// cleanup on unmount
 		return () => {
