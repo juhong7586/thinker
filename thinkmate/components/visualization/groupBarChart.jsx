@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-export default function GroupBarChart({ studentRows = [] }) {
+export default function GroupBarChart({ studentRows = [], onBarClick }) {
 	const svgRef = useRef(null);
 
 	useEffect(() => {
@@ -34,13 +34,13 @@ export default function GroupBarChart({ studentRows = [] }) {
 			g.sum += ave;
 			g.count += 1;
 			const gender = r.gender ?? r.ST004D01T ?? '';
-			if (!groupsFemale.has(key) && gender == 1){
-				groupsFemale.set(key, { sum: 0, count: 0 });
+			if (String(gender) === '1') {
+				if (!groupsFemale.has(key)) groupsFemale.set(key, { sum: 0, count: 0 });
 				const gf = groupsFemale.get(key);
 				gf.sum += ave;
 				gf.count += 1;
-			}else if (!groupsMale.has(key) && gender == 2){
-				groupsMale.set(key, { sum: 0, count: 0 });
+			} else if (String(gender) === '2') {
+				if (!groupsMale.has(key)) groupsMale.set(key, { sum: 0, count: 0 });
 				const gm = groupsMale.get(key);
 				gm.sum += ave;
 				gm.count += 1;
@@ -149,6 +149,12 @@ export default function GroupBarChart({ studentRows = [] }) {
 			.attr('fill', 'rgba(113, 83, 86, 0.5)')
 			.attr('rx', 4);
 
+		if (onBarClick) {
+			barsFemale.selectAll('rect').style('cursor', 'pointer').on('click', (event, d) => {
+				onBarClick({ grade: d.grade, gender: 'female' });
+			});
+		}
+
 		barsFemale
 			.append('text')
 			.attr('x', (d) => x(d.grade) + x.bandwidth() * 3 / 4)
@@ -169,6 +175,12 @@ export default function GroupBarChart({ studentRows = [] }) {
 			.attr('height', (d) => h - y(d.avg))
 			.attr('fill', 'rgba(55, 75, 71, 0.5)')
 			.attr('rx', 4);
+
+		if (onBarClick) {
+			barsMale.selectAll('rect').style('cursor', 'pointer').on('click', (event, d) => {
+				onBarClick({ grade: d.grade, gender: 'male' });
+			});
+		}
 			
 		barsMale
 			.append('text')

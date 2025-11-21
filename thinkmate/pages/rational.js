@@ -2,11 +2,11 @@ import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import SlopeChart from '../components/visualization/slopeChart';
 import LollipopChart from '../components/visualization/lollipopChart';
-import ScatterPlot from '../components/visualization/scatterPlot'; 
-import CreativityScatter from '../components/visualization/creativityScatter';
+import ScatterPlot from '../components/visualization/creativityScatterPlot'; 
+import CreativityScatter from '../components/visualization/beeSwarmPlot';
 import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 
 import galleryItems, { items as newsItems } from './api/data/news';
@@ -45,6 +45,37 @@ export default function RationalPage({ countries = []}) {
       });
     }
   }
+
+  // Bar filter state: { grade, gender }
+  const [barFilter, setBarFilter] = useState({ grade: null, gender: null });
+
+  const creativityRows = useMemo(() => {
+    if (!Array.isArray(filteredStudentData)) return [];
+    const { grade: fGrade, gender: fGender } = barFilter || {};
+    return filteredStudentData.filter((r) => {
+      if (!r) return false;
+      if (fGrade) {
+        const rowGrade = r.grade ?? r.ST001D01T ?? '';
+        if (String(rowGrade) !== String(fGrade)) return false;
+      }
+      if (fGender) {
+        const rowGender = r.gender ?? r.ST004D01T ?? null;
+        // In dataset gender encoding might be 1 (female) / 2 (male) or strings
+        if (fGender === 'female' && String(rowGender) !== '1') return false;
+        if (fGender === 'male' && String(rowGender) !== '2') return false;
+      }
+      return true;
+    });
+  }, [filteredStudentData, barFilter]);
+
+  const handleBarClick = ({ grade, gender }) => {
+    // toggle same selection
+    if (barFilter.grade === grade && barFilter.gender === gender) {
+      setBarFilter({ grade: null, gender: null });
+    } else {
+      setBarFilter({ grade, gender });
+    }
+  };
 
 
   return (
@@ -122,8 +153,8 @@ export default function RationalPage({ countries = []}) {
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
         </p>
         <div style={{alignItems: 'center' , justifyContent: 'center', display: 'flex', gap: '2rem' }}>
-          <GroupBarChart studentRows={filteredStudentData} />
-          <ScatterPlot studentRows={filteredStudentData} />
+          <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} />
+          <ScatterPlot studentRows={creativityRows} />
         </div>
           
     </div>
