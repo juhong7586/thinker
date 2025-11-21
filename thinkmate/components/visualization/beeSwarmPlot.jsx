@@ -11,7 +11,8 @@ export default function BeesSwarmPlot({ studentRows }) {
           rawData = studentRows;
         } else {
           console.error('No studentRows data available for ScatterPlot');
-          return;
+          
+          return(<div style={{ color: '#666' }}>Please select a country first.</div>);
         }
 
         const data = rawData.filter(item => !isNaN(item.ave_cr) && !isNaN(item.ave_cr_social));
@@ -240,7 +241,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           scattered = true;
           g.selectAll('.dot')
             .transition()
-            .duration(600)
+            .duration(1000)
             .attr('cx', (d, i) => d.x + randomOffset(d, i)[0])
             .attr('cy', (d, i) => d.y + randomOffset(d, i)[1])
             .attr('opacity', 0.9)

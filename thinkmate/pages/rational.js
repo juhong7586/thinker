@@ -2,8 +2,8 @@ import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import SlopeChart from '../components/visualization/slopeChart';
 import LollipopChart from '../components/visualization/lollipopChart';
-import ScatterPlot from '../components/visualization/creativityScatterPlot'; 
-import CreativityScatter from '../components/visualization/beeSwarmPlot';
+import CreativityScatter from '../components/visualization/creativityScatterPlot'; 
+import BeeSwarmPlot from '../components/visualization/beeSwarmPlot';
 import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
 import { useState, useMemo } from 'react';
@@ -98,7 +98,7 @@ export default function RationalPage({ countries = []}) {
     </div>
     <div style={{  alignItems: 'center' , textAlign: 'center', fontFamily: 'NanumSquareNeo', maxWidth: '90%', margin: '1rem auto', paddingBottom: '4rem' }}>
      
-          <p className={styles.subtitle} style={{ fontSize: '1.3rem', lineHeight: 2, padding: '5rem 0'}}>
+          <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 2, padding: '5rem 0'}}>
           What would these issues mean for our students? 
           <br />They do think these problems are important, however, they do not think they should make a difference.
           <br />How would these problems impact on them? Would it be okay to let them ignore these issues?
@@ -135,28 +135,31 @@ export default function RationalPage({ countries = []}) {
         </div>
 
         {country && (
-          <p style={{ textAlign: 'center', marginTop: 8 }}><strong>Selected country:</strong> {country}</p>
+          <p style={{ textAlign: 'center', marginTop: 8, fontSize: '1.2rem', paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
         )}
           <SlopeChart currentCountry={country} countryData={countries} />
-          <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+          <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
-          <CreativityScatter studentRows={filteredStudentData} />
-        <p className={styles.subtitle} style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+          <BeeSwarmPlot studentRows={filteredStudentData} />
+        <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
           Look at the distribution of empathy and creativity scores among students.
           <br />Compare number of students between overall creativity and social problem solving creativity.
           <br /> Although they possess high creativity, they struggle when the problems narrow down to social problems.
           <br /> This is directly related to the unsolved conflicts within our society.</p>
 
-        <h3 className={styles.subtitle} style={{ fontWeight: 700, textAlign: 'center', fontStyle: 'italic' }}>How can we solve this problem?</h3>
+        <h3 style={{ color: '#333', paddingTop: '6rem' }}>
+          How can we solve this problem?</h3>
         <LollipopChart currentCountry={country} countryData={countries} />
         <p style={{ lineHeight: 1.6 }}>
-          We can find hint in empathy. Chart above is about confidence in self-directed learning, and social and emotional skills.
-          <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
+          We can find hint in <strong>empathy.</strong>
+          <br /> Chart above is about confidence in self-directed learning, and social and emotional skills.
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
+        <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
+          < br />
         </p>
-        <div style={{alignItems: 'center' , justifyContent: 'center', display: 'flex', gap: '2rem' }}>
+        <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem' }}>
           <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} />
-          <ScatterPlot studentRows={creativityRows} />
+          <CreativityScatter studentRows={creativityRows} />
         </div>
           
     </div>

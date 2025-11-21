@@ -75,21 +75,18 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 			return String(a.grade).localeCompare(String(b.grade));
 		});
 
-		
+		d3.select(svgRef.current).selectAll("*").remove();
 
-
-		// D3 render
-		const svg = d3.select(svgRef.current);
-		svg.selectAll('*').remove();
-
-		const width = 520;
-		const height = 360;
+		const width = 500;
+		const height = 500;
 		const margin = { top: 100, right: 20, bottom: 50, left: 48 };
 		const w = width - margin.left - margin.right;
 		const h = height - margin.top - margin.bottom;
 
-		svg.attr('viewBox', `0 0 ${width} ${height}`).attr('preserveAspectRatio', 'xMidYMid meet');
-
+		const svg = d3.select(svgRef.current)
+			.attr('width', width)
+			.attr('height', height);
+		
 		const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
 		if (data.length === 0) {
@@ -102,10 +99,14 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 		const y = d3.scaleLinear().domain([0, maxVal]).nice().range([h, 0]);
 
 		// x axis
-		g.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x)).selectAll('text').attr('font-size', 11).attr('fill', '#111');
+		g.append('g')
+		.attr('transform', `translate(0,${h})`)
+		.call(d3.axisBottom(x)).selectAll('text')
+		.attr('font-size', '0.8rem')
+		.attr('fill', '#111');
 
 		// y axis
-		g.append('g').call(d3.axisLeft(y).ticks(5)).selectAll('text').attr('font-size', 11).attr('fill', '#111');
+		g.append('g').call(d3.axisLeft(y).ticks(5)).selectAll('text').attr('font-size', '0.8rem').attr('fill', '#111');
 
 		// gridlines
 		g.append('g')
@@ -123,16 +124,16 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 			.attr('y', (d) => y(d.avg))
 			.attr('width', x.bandwidth())
 			.attr('height', (d) => h - y(d.avg))
-			.attr('fill', 'rgba(245,226, 190, 0.8)')
+			.attr('fill', 'rgba(120, 120, 120, 0.5)')
 			.attr('rx', 4);
 
 		// value labels
 		bars
 			.append('text')
 			.attr('x', (d) => x(d.grade) + x.bandwidth() / 2)
-			.attr('y', (d) => y(d.avg) - 6)
+			.attr('y', (d) => y(d.avg) - 10)
 			.attr('text-anchor', 'middle')
-			.attr('font-size', 11)
+			.attr('font-size', '0.7rem')
 			.attr('fill', '#111')
 			.text((d) => d.avg.toFixed(1));
 
@@ -149,7 +150,7 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 			.attr('y', (d) => y(d.avg))
 			.attr('width', x.bandwidth() / 2)
 			.attr('height', (d) => h - y(d.avg))
-			.attr('fill', 'rgba(113, 83, 86, 0.5)')
+			.attr('fill', 'rgba(0,0,0, 0.5)')
 			.attr('rx', 4);
 
 		if (onBarClick) {
@@ -161,10 +162,10 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 		barsFemale
 			.append('text')
 			.attr('x', (d) => x(d.grade) + x.bandwidth() * 3 / 4)
-			.attr('y', (d) => y(d.avg) - 6)
+			.attr('y', (d) => (h - y(d.avg))/2 + y(d.avg))
 			.attr('text-anchor', 'middle')
-			.attr('font-size', 11)
-			.attr('fill', '#111')
+			.attr('font-size', '0.7rem')
+			.attr('fill', '#FFF')
 			.text((d) => d.avg.toFixed(1));		
 		
 		// Male average bars
@@ -176,7 +177,7 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 			.attr('y', (d) => y(d.avg))
 			.attr('width', x.bandwidth() / 2)
 			.attr('height', (d) => h - y(d.avg))
-			.attr('fill', 'rgba(55, 75, 71, 0.5)')
+			.attr('fill', 'rgba(230, 230, 230, 0.5)')
 			.attr('rx', 4);
 
 		if (onBarClick) {
@@ -188,14 +189,15 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 		barsMale
 			.append('text')
 			.attr('x', (d) => x(d.grade) + x.bandwidth() / 4)
-			.attr('y', (d) => y(d.avg) - 6)
+			.attr('y', (d) => (h - y(d.avg))/2 + y(d.avg))
 			.attr('text-anchor', 'middle')
-			.attr('font-size', 11)
+			.attr('font-size', '0.7rem')
 			.attr('fill', '#111')
 			.text((d) => d.avg.toFixed(1));	
 		
 		// Legend
-		const legend = svg.append('g').attr('transform', `translate(${width - margin.right - 120},${margin.top}-30)`);
+		const legend = svg.append('g')
+		.attr('transform', `translate(${width - margin.right - 120},${margin.top}-10)`)
 
 		const legendItems = [
 			{ label: 'Overall Average', color: 'rgba(245,226, 190, 0.8)' },
@@ -204,7 +206,7 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 		];
 
 		legendItems.forEach((item, index) => {
-			const legendRow = legend.append('g').attr('transform', `translate(0, ${index * 20})`);
+			const legendRow = legend.append('g').attr('transform', `translate(0, ${index * 20+10})`);
 			
 			legendRow.append('rect')
 				.attr('width', 12)
@@ -215,7 +217,7 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 			legendRow.append('text')
 				.attr('x', 18)
 				.attr('y', 10)
-				.attr('font-size', 11)
+				.attr('font-size', '0.7rem')
 				.attr('fill', '#111')
 				.text(item.label);
 		});
@@ -227,8 +229,8 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 	}, [studentRows]);
 
 	return (
-		<div style={{ maxWidth: '50%', maxWidth: 720 }}>
-			<svg ref={svgRef} style={{ width: '100%', height: 300 }} />
+		<div style={{ maxWidth: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+			<svg ref={svgRef} style={{ width: '100%' }} />
 		</div>
 	);
 }
