@@ -152,7 +152,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           .attr('font-size', '15px');
 
         // Add circles (bees)
-        g.selectAll('.dot')
+        const nodes = g.selectAll('.dot')
           .data(allData)
           .enter()
           .append('circle')
@@ -218,6 +218,60 @@ export default function BeesSwarmPlot({ studentRows }) {
             tooltipScore.style('display', 'none');
             tooltipSocial.style('display', 'none');
           });
+
+        // --- Scroll-based scatter/gather behavior ---
+        // We animate circles away from their simulated positions on scroll down,
+        // and return them on scroll up.
+        let lastY = typeof window !== 'undefined' ? window.scrollY : 0;
+        let scattered = false;
+
+        const scatterAmount = 2000; // max px displacement
+
+        function randomOffset(d, i) {
+          // Use a deterministic-ish offset per datum for consistent feel
+          const seed = (i + 1) * 9301 % 233280;
+          const rx = (Math.sin(seed + i) * 2 - 1) * scatterAmount;
+          const ry = (Math.cos(seed + i) * 2 - 1) * scatterAmount * 0.6;
+          return [rx, ry];
+        }
+
+        function doScatter() {
+          if (scattered) return;
+          scattered = true;
+          g.selectAll('.dot')
+            .transition()
+            .duration(600)
+            .attr('cx', (d, i) => d.x + randomOffset(d, i)[0])
+            .attr('cy', (d, i) => d.y + randomOffset(d, i)[1])
+            .attr('opacity', 0.9)
+            .attr('r', 6);
+        }
+
+        function doGather() {
+          if (!scattered) return;
+          scattered = false;
+          g.selectAll('.dot')
+            .transition()
+            .duration(600)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr('opacity', 0.6)
+            .attr('r', 5);
+        }
+
+        function onScroll() {
+          const y = window.scrollY;
+          const dy = y - lastY;
+          lastY = y;
+          // threshold to avoid tiny scrolls flipping state
+          if (dy > 10) {
+            doScatter();
+          } else if (dy < -10) {
+            doGather();
+          }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
 
         // Add title
         svg.append('text')

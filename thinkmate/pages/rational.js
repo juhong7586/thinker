@@ -8,6 +8,8 @@ import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
 import { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
+import ConvergingParticles from '../components/beforeGalaxy';
+
 
 import itemsList from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
@@ -25,7 +27,7 @@ export default function RationalPage({ countries = []}) {
   // Use the client-safe SWR hook which fetches from `/api/data/getStudentsByCountry`
   // This avoids importing server-only modules into the browser bundle.
   const { data: studentData } = useCountryStats(country);
-
+  
   // Ensure we render strings for country buttons
   const countryList = Array.isArray(countries)
     ? countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)))
@@ -45,6 +47,8 @@ export default function RationalPage({ countries = []}) {
       });
     }
   }
+  const studentNum = filteredStudentData ? filteredStudentData.length : 0;
+
 
   // Bar filter state: { grade, gender }
   const [barFilter, setBarFilter] = useState({ grade: null, gender: null });
@@ -156,12 +160,14 @@ export default function RationalPage({ countries = []}) {
         </div>
           
     </div>
-    <div style={{ background: 'linear-gradient(to bottom, #ffffff 30%, #020202 70%)', width: '100vw', height: '30vh', fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center' }}>
+    <div style={{  width: '100vw', height: '30vh', fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center' }}>
       <h3 style={{ color: '#333' }}>What can we do for students' future?</h3>
       <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
         <br /> For that, we need to provide learning experiences to think about their society. </p>
     </div>
+    <ConvergingParticles studentNum={studentNum} />
     <div style={{ background: '#020202', width: '100vw' }}>
+      
       <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />
     </div>
     
