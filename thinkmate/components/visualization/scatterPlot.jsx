@@ -32,7 +32,7 @@ export default function CreativityScatter({ studentRows }) {
       const { slope, intercept } = regression;
 
       const margin = { top: 30, right: 30, bottom: 60, left: 60 };
-      const width = 800 - margin.left - margin.right;
+      const width = 500 - margin.left - margin.right;
       const height = 550 - margin.top - margin.bottom;
 
       // Clear previous content
@@ -230,8 +230,8 @@ export default function CreativityScatter({ studentRows }) {
   }, [selectedMetric, studentRows]);
 
   return (
-    <div style={{ width: '100%', minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ padding: '30px' }}>
+    <div style={{ maxWidth: '50%', minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div>
         <div style={{ textAlign: 'center' }}>
           <label style={{ marginRight: '20px', fontSize: '16px', fontWeight: 'bold' }}>
             Select Creativity Metric:

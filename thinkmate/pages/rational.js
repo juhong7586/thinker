@@ -31,7 +31,7 @@ export default function RationalPage({ countries = []}) {
   // Use the client-safe SWR hook which fetches from `/api/data/getStudentsByCountry`
   // This avoids importing server-only modules into the browser bundle.
   const { data: studentData, loading: studentLoading, error: studentError } = useCountryStats(country);
-  
+  console.log(studentData);
 
   // Ensure we render strings for country buttons
   const countryList = Array.isArray(countries)
@@ -162,7 +162,7 @@ export default function RationalPage({ countries = []}) {
           <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
         </p>
-        <div style={{alignItems: 'center' , textAlign: 'center'}}>
+        <div style={{alignItems: 'center' , justifyContent: 'center', display: 'flex', gap: '2rem' }}>
           <GroupBarChart studentRows={filteredStudentData} />
           <ScatterPlot studentRows={filteredStudentData} />
         </div>
