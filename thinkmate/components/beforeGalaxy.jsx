@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Renderer, Camera, Geometry, Program, Mesh } from 'ogl';
 
-export default function ConvergingParticles({ studentNum }) {
+export default function ConvergingParticles({ studentsNum }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function ConvergingParticles({ studentNum }) {
       }
     `;
 
-    const count = studentNum || 0;
+    const count = studentsNum || 0;
     const positions = new Float32Array(count * 3);
     const randoms = new Float32Array(count * 4);
     const colors = new Float32Array(count * 3);
@@ -172,7 +172,7 @@ export default function ConvergingParticles({ studentNum }) {
         width: '100%',
         height: '100vh',
         position: 'relative',
-        background: 'linear-gradient(180deg, #ffffff 30%, #020202 70%)'
+        background: '#020202'
       }}
     />
   );

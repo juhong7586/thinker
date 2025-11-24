@@ -11,8 +11,8 @@ export default function CardGallery({ cardsList = [], cards = [] }) {
   const cards2 = Array.isArray(inputLists[1]) ? inputLists[1] : cards1;
 
   return (
-    <div className="w-full h-screen bg-gray-900 flex items-center justify-center overflow-hidden">
-      <div className="w-full max-w-6xl">
+    <div className="h-screen bg-gray-900 flex items-center justify-center overflow-hidden">
+      <div >
         <div className="overflow-hidden">
           {cards1.length > 0 && (
             <div className={styles.scrollContainerLeft}>

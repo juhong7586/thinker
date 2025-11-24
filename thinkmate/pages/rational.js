@@ -33,6 +33,10 @@ export default function RationalPage({ countries = []}) {
     ? countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)))
     : [];
 
+  // Split-button state: controls the floating split control on the left
+  const [splitMenuOpen, setSplitMenuOpen] = useState(false);
+  const [splitSelected, setSplitSelected] = useState(country || (countryList.length ? countryList[0] : null));
+
   // // If `country` is falsy we pass through the original array (show all).
   let filteredStudentData = [];
   if (Array.isArray(studentData)) {
@@ -89,11 +93,43 @@ export default function RationalPage({ countries = []}) {
         <title>Rational — ThinkMate</title>
         <meta name="description" content="Rational info: how empathy and creativity relate" />
       </Head>
+      {/* Floating split control: main = reselect (opens small list), arrow = apply/fetch (sets country) */}
+      <div className={styles.floatingSplit}>
+        <motion.button
+          className={styles.floatingSplitMain}
+          aria-haspopup="menu"
+          aria-expanded={splitMenuOpen}
+          onClick={() => setSplitMenuOpen((s) => !s)}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 1.1 }}
+        >
+          <span style={{ fontSize: 14, color: '#111' }}>{splitSelected || 'All'}</span>
+        </motion.button>
+
+     
+        {splitMenuOpen && countryList.length > 0 && (
+          <div className={styles.floatingSplitMenu} role="menu">
+            {countryList.map((c) => (
+              <button
+                key={c}
+                className={styles.floatingSplitMenuItem}
+                onClick={() => {
+                  setSplitSelected(c);
+                  setCountry(c);
+                  setSplitMenuOpen(false);
+                }}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     <div className={styles.title} style={{ maxWidth: '100%', margin: '3rem auto', textAlign: 'center', fontFamily: 'NanumSquareNeo' }}>
       <p style={{fontWeight:'600', fontSize:'1.5rem'}}>Empathy in Student: Unlocking creative solutions to social challenges</p>
          
     </div>
-    <div>
+    <div style={{overflowX: 'hidden'}}>
       <CardGallery cardsList={itemsList} />
     </div>
     <div style={{  alignItems: 'center' , textAlign: 'center', fontFamily: 'NanumSquareNeo', maxWidth: '90%', margin: '1rem auto', paddingBottom: '4rem' }}>
@@ -111,21 +147,14 @@ export default function RationalPage({ countries = []}) {
               <div style={{ color: '#666' }}>Loading countries…</div>
             ) : (
               countryList.map((c, idx) => (
-                <motion.button
-                  key={`${c}-${idx}`}
-                  onClick={() => setCountry(c)}
-                  aria-pressed={country === c}
-                  style={{
-                    padding: country === c ? '8px 16px' : '6px 12px',
-                    borderRadius: 18,
-                    border: country === c ? '2px solid #111' : '1px solid #ddd',
-                    background: country === c ? '#f3f4f6' : '#fff',
-                    cursor: 'pointer',
-                    fontSize: '1rem',
-                    transformOrigin: 'center'
-                  }}
-                  animate={country === c ? { scale: 1.1 } : { scale: 1 }}
-                  transition ={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  <motion.button
+                    key={c}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => setCountry(c)}
+                    className={
+                      `${styles.countryButton} ${country === c ? styles.countryButtonActive : ""}`
+                    }
                   >
                     {c}
                   </motion.button>
@@ -163,15 +192,17 @@ export default function RationalPage({ countries = []}) {
         </div>
           
     </div>
-    <div style={{  width: '100vw', height: '30vh', fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center' }}>
+    <div style={{ fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center', background: 'linear-gradient(180deg, #fff 0%, #020202 30%)' }}>
       <h3 style={{ color: '#333' }}>What can we do for students' future?</h3>
       <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
         <br /> For that, we need to provide learning experiences to think about their society. </p>
+        <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />
+        <div>
+          <ConvergingParticles studentsNum={studentNum}/>
+        </div>
     </div>
-    <ConvergingParticles studentNum={studentNum} />
-    <div style={{ background: '#020202', width: '100vw' }}>
+    <div style={{ background: '#020202' }}>
       
-      <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />
     </div>
     
     </>
