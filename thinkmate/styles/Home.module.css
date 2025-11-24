@@ -110,7 +110,7 @@
     border-radius: 999px;
     background: #ffffff;
     border: 1px solid rgba(0,0,0,0.08);
-    box-shadow: 0 6px 20px rgba(16,24,40,0.08);
+    box-shadow: 0 6px 20px rgba(16,24,40,0.8);
     cursor: pointer;
     transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
     -webkit-tap-highlight-color: transparent;
@@ -142,7 +142,7 @@
     z-index: 9000;
     display: inline-flex;
     align-items: stretch;
-    box-shadow: 0 6px 20px rgba(16,24,40,0.06);
+    box-shadow: 0 6px 20px rgba(16,24,40,0.4);
     border-radius: 999px;
     overflow: visible;
   }

@@ -120,7 +120,7 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
             return { x: centerX, y: centerY };
           case 'bottom':
           default:
-            return { x: d.x, y: centerY + startOffset };
+            return { x: centerX + startOffset, y: centerY + startOffset };
         }
       };
 
@@ -248,32 +248,23 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
       const onScroll = () => {
         if (!svgRef.current) return;
         const scrollTop = window.scrollY || window.pageYOffset || 0;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrolled = docHeight > 0 ? scrollTop / docHeight : 0;
+        const windowH = window.innerHeight;
+        const docH = document.documentElement.scrollHeight;
+        const scrolled = docH > windowH ? scrollTop / (docH - windowH) : 0;
 
         // no React state update here; positions follow scroll directly
 
         // if not yet gathered, ignore scroll-driven moves
         if (!gathered) return;
 
-        const bottomCenterX = centerX;
-        const bottomCenterY = height;
-
         if (scrolled <= 0.5) {
-          const progress = scrolled / 0.5; // 0..1
-          svg.selectAll('.particle')
-            .attr('cx', d => d.baseX + (centerX - d.baseX) * progress)
-            .attr('cy', d => d.baseY + (centerY - d.baseY) * progress);
+          animateParticles(true);
         } else {
-          const progress = Math.min(1, (scrolled - 0.5) / 0.5); // 0..1
-          // interpolate from center -> bottom-center
-          const interX = centerX;
-          const interY = centerY + (bottomCenterY - centerY) * progress;
-          // converge further so at progress=1 they overlap at bottomCenter
-          const finalFactor = progress;
           svg.selectAll('.particle')
-            .attr('cx', () => interX)
-            .attr('cy', () => interY + (bottomCenterY - interY) * finalFactor);
+          .transition()
+          .duration(800)
+          .attr('cx', width/2)
+          .attr('cy', height)
         }
       };
 
@@ -282,7 +273,7 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
       // set cleanup function to remove listener(s) and disconnect observer
       cleanupFn = () => {
         try { window.removeEventListener('scroll', onScroll); } catch (e) {}
-        try { if (obs && typeof obs.disconnect === 'function') obs.disconnect(); } catch (e) {}
+        try { if (obs) obs.disconnect(); } catch (e) {}
       };
       // also attach to svgRef in case other code wants to call it
       if (svgRef.current) svgRef.current.__gravityCleanup = cleanupFn;
