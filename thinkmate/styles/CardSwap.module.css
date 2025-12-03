@@ -2,10 +2,15 @@
   /* position relative so the container sits inside its parent placement
      (intro page will place this block at top-left). */
   position: relative;
-  perspective: 1200px;
-  overflow: visible;
+  width: 100%;
   stroke: #000;
   stroke-width: 5px;
+
+  /* prevent children from forcing horizontal scroll and constrain layout */
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .card {
@@ -19,13 +24,22 @@
   background: #000;
   color: #aaa;
   padding: 18px;
-  width: 20vw;
-  height: 6vh;
+  width: min(20vw, 320px);
+  height: min(6vh, 48px);
 
   transform-style: preserve-3d;
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+/* ensure internal elements respect the container sizing */
+.card-swap-container * {
+  box-sizing: inherit;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
 @media (max-width: 1000px) {

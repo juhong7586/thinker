@@ -55,9 +55,16 @@ export default function LollipopChart({ currentCountry, countryData }) {
       xAxisG.selectAll('text')
         .attr('transform', 'rotate(-45)')
         .style('text-anchor', 'end')
-        .style('font-size', '0.8rem')
+        .style('font-size', d => {
+          if (d === currentCountry) return '1.125rem';
+          else return '0.8rem';
+        })
         .attr('dx', '-0.6em')
-        .attr('dy', '0.25em');
+        .attr('dy', '0.25em')
+        .attr('font-weight', d => {
+          if (d === currentCountry) return 'bold';
+          else return 'normal';
+        });
 
 
       g.append('g')
@@ -113,8 +120,6 @@ export default function LollipopChart({ currentCountry, countryData }) {
           else return '#9e9e9e';
         })
 
-  
-
         .on('mouseover', function(event, d) {
           d3.select(this)
             .transition()
@@ -146,24 +151,49 @@ export default function LollipopChart({ currentCountry, countryData }) {
           g.selectAll('.tooltip, .country-label').remove();
         });
 
+      // Render a persistent label and stronger visual cue for the currently selected country
+      if (currentCountry) {
+        const currentDatum = data.find(d => d.country === currentCountry);
+        if (currentDatum) {
+          // emphasize the circle by adding a stroke and larger radius
+          g.selectAll('.circle')
+            .filter(d => d.country === currentCountry)
+            .attr('r', 9)
+            .attr('stroke', '#6C5838')
+            .attr('stroke-width', 2);
+
+          // add a persistent country label near the point
+          g.append('text')
+            .attr('class', 'current-country-label')
+            .attr('x', xScale(currentDatum.country) + xScale.bandwidth() / 2)
+            .attr('y', yScale(currentDatum.empathyScore) - 20)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', '1.2rem')
+            .attr('font-weight', '600')
+            .attr('fill', '#6C5838')
+            .text(currentDatum.empathyScore.toFixed(2));
+        }
+      }
+
       
     
       // Add title
       svg.append('text')
-        .attr('x', (width + margin.left + margin.right) / 2)
-        .attr('y', 15)
-        .attr('text-anchor', 'middle')
-        .attr('font-size', '1rem')
-        .attr('font-weight', 'bold')
-        .attr('fill', '#333')
-        .text('Power of Empathy on Self-Directed Learning');
+          .attr('x', (width + margin.left + margin.right) / 2)
+          .attr('y', 20)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', '18px')
+          .attr('font-weight', 'normal')
+          .attr('fill', '#888')
+          .attr('padding-bottom', '1rem')
+          .text('Power of Empathy on Self-Directed Learning');
         
       };  
       loadData().catch(err => console.error('Failed to load data for LollipopChart:', err));
   }, [currentCountry]);
   return (
-  <div style={{ width: '100%', padding: '20px', backgroundColor: '#ffffff', minHeight: '60vh' }}>
-       <div style={{ backgroundColor: 'white', padding: '10px', borderRadius: '8px' }}>
+  <div style={{ width: '100%', backgroundColor: '#ffffff', minHeight: '20vh' }}>
+       <div style={{ backgroundColor: 'white', borderRadius: '8px' }}>
         <svg ref={svgRef}></svg>
       </div>
     </div>

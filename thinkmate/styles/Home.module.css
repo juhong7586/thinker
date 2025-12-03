@@ -76,6 +76,141 @@
     box-shadow: 0 5px 25px rgba(72, 72, 72, 0.3);
   }
 
+  .countryButton {
+    padding: 6px 12px;
+    border-radius: 18px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    transform-origin: center;
+    transition: transform 120ms ease, background 150ms ease, border 150ms ease, padding 120ms ease;
+    font-family: 'NanumSquareNeo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  }
+
+  .countryButtonActive {
+    padding: 8px 16px;
+    border-radius: 18px;
+    border: 2px solid #111;
+    background: #f3f4f6;
+  }
+
+  /* Floating left-side button used only on the Rational page */
+  .floatingLeftButton {
+    position: fixed;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 9000;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 70px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 6px 20px rgba(16,24,40,0.8);
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .floatingLeftButton:hover {
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 10px 30px rgba(16,24,40,0.12);
+  }
+
+  .floatingLeftButtonInner {
+    font-size: 20px;
+    line-height: 1;
+    color: #111;
+  }
+
+  @media (max-width: 720px) {
+    .floatingLeftButton {
+      display: none; /* hide on small screens to avoid covering content */
+    }
+  }
+
+  /* Split floating control: main label + small arrow action */
+  .floatingSplit {
+    position: fixed;
+    left: 3vw;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 9000;
+    display: inline-flex;
+    align-items: stretch;
+    box-shadow: 0 6px 20px rgba(16,24,40,0.4);
+    border-radius: 999px;
+    overflow: visible;
+  }
+
+  .floatingSplitMain {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 1.5rem;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 999px;
+    cursor: pointer;
+    min-width: 64px;
+    white-space: nowrap;
+    font-family:'NanumSquareNeo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    font-size: 1rem;
+
+  }
+
+  .floatingSplitArrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-top-right-radius: 999px;
+    border-bottom-right-radius: 999px;
+    cursor: pointer;
+  }
+
+  .floatingSplitMenu {
+    position: fixed;
+    left: calc(16px + 56px);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 9100;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+    max-height: 320px;
+    overflow: auto;
+    padding: 8px;
+  }
+
+  .floatingSplitMenuItem {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-family: 'NanumSquareNeo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .floatingSplitMenuItem:hover {
+    background: #f3f4f6;
+  }
+
+  @media (max-width: 720px) {
+    .floatingSplit { display: none; }
+  }
+
 .loginInput {
     width: 90%;
     margin: 0.5rem 0 1rem 0;

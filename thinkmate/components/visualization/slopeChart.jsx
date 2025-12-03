@@ -63,7 +63,7 @@ export default function SlopeChart({ currentCountry, countryData, colorScheme = 
     const margin = { top: 40, right: 50, bottom: 10, left: 220 };
  
     const barHeight = 11;
-    const height = 600;
+    const height = 400;
     const width = 1000;
 
     d3.select(svgRef.current).selectAll("*").remove();
@@ -97,7 +97,7 @@ export default function SlopeChart({ currentCountry, countryData, colorScheme = 
  
     // Create a vertical legend of discrete circles for the full social range
     const legendX = width -  margin.right - 20;
-    const legendHeight = height*0.7;
+    const legendHeight = height;
     const legendTop = margin.top;
     const legendScaleSocial = d3.scaleLinear().domain([minSocial, maxSocial]).range([legendTop + legendHeight, legendTop]);
     const legendScaleAll = d3.scaleLinear().domain([minAll, maxAll]).range([legendTop + legendHeight, legendTop]);
@@ -396,7 +396,7 @@ export default function SlopeChart({ currentCountry, countryData, colorScheme = 
   }, [currentCountry, countryData]);
 
   return (
-    <div style={{ width: '100%',  minHeight: '80vh' }}>
+    <div style={{ width: '100%',  minHeight: '40vh' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto',  }}>
         <div style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', borderRadius: '4px' }}>
           <svg ref={svgRef}></svg>

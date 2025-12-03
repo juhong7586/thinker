@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 
 export default function CreativityScatter({ studentRows }) {
   const svgRef = useRef();
-  const [selectedMetric, setSelectedMetric] = useState('ave_cr');
+  const [selectedMetric, setSelectedMetric] = useState('both');
 
   useEffect(() => {
     const loadData = async () => {
@@ -16,33 +16,42 @@ export default function CreativityScatter({ studentRows }) {
         }
       
       let data, yLabel, yDomain, regression;
+      const showBoth = selectedMetric === 'both';
 
 
 
-      if (selectedMetric === 'ave_cr') {
+      if (selectedMetric === 'ave_cr' || showBoth) {
         data = rawData.filter(item => !isNaN(item.ave_cr) && !isNaN(item.ave_emp));
-        yLabel = 'Creativity (Overall)';
-        yDomain = [0, 2.2];
+        yLabel = showBoth ? 'Creativity (Overall & Social)' : 'Creativity (Overall)';
       } else {
         data = rawData.filter(item => !isNaN(item.ave_cr_social) && !isNaN(item.ave_emp));
-        yLabel = 'Creativity (Social Problem Solving)';
-        yDomain = [0, 2.2];
+        yLabel = 'Creativity (Social Problem Solving)';     
       }
+      yDomain = [0, 2.2];
 
-      // Simple linear regression calculation
-      const n = data.length;
-      if (n >= 2) {
-        const sumX = d3.sum(data, d => d.ave_emp);
-        const sumY = d3.sum(data, d => selectedMetric === 'ave_cr' ? d.ave_cr : d.ave_cr_social);
-        const sumXY = d3.sum(data, d => d.ave_emp * (selectedMetric === 'ave_cr' ? d.ave_cr : d.ave_cr_social));
-        const sumX2 = d3.sum(data, d => d.ave_emp * d.ave_emp);
+      const yKey = (selectedMetric === 'ave_cr' || showBoth) ? 'ave_cr' : 'ave_cr_social';
+      // Build datasets for each metric
+      const dataCr = rawData.filter(d => !isNaN(d.ave_cr) && !isNaN(d.ave_emp));
+      const dataSocial = rawData.filter(d => !isNaN(d.ave_cr_social) && !isNaN(d.ave_emp));
 
-        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-        const intercept = (sumY - slope * sumX) / n;
+      // helper to compute a linear regression {slope, intercept}
+      const calcRegression = (dataset, key) => {
+        const m = dataset.length;
+        if (m < 2) return { slope: 0, intercept: 0 };
+        const sumX = d3.sum(dataset, d => d.ave_emp);
+        const sumY = d3.sum(dataset, d => d[key]);
+        const sumXY = d3.sum(dataset, d => d.ave_emp * d[key]);
+        const sumX2 = d3.sum(dataset, d => d.ave_emp * d.ave_emp);
+        const slope = (m * sumXY - sumX * sumY) / (m * sumX2 - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / m;
+        return { slope, intercept };
+      };
 
-        regression = { slope, intercept };
-      }
-      const { slope = 0, intercept = 0 } = regression || {};
+      const regPrimary = calcRegression(dataCr, 'ave_cr');
+      const regOther = calcRegression(dataSocial, 'ave_cr_social');
+
+      // choose primary regression depending on selection
+      const { slope = 0, intercept = 0 } = (selectedMetric === 'ave_cr' || showBoth) ? regPrimary : regOther;
 
       const margin = { top: 30, right: 30, bottom: 60, left: 60 };
       const width = 500 - margin.left - margin.right;
@@ -65,7 +74,7 @@ export default function CreativityScatter({ studentRows }) {
       
       // Scales
       const xScale = d3.scaleLinear()
-        .domain([0, 5])
+        .domain([1, 5])
         .range([0, width]);
 
       const yScale = d3.scaleLinear()
@@ -108,95 +117,76 @@ export default function CreativityScatter({ studentRows }) {
           .tickFormat('')
         );     
 
-      // g.append('line')
-      //   .attr('x1', xScale(trendLineData[0].x))
-      //   .attr('y1', yScale(trendLineData[0].y))
-      //   .attr('x2', xScale(trendLineData[1].x))
-      //   .attr('y2', yScale(trendLineData[1].y))
-      //   .attr('stroke', '#ff7300')
-      //   .attr('stroke-width', 2)
-      //   .attr('opacity', 0.8)
-      //   .attr('stroke-dasharray', '5,5');
-
       // Add scatter points
-      const yDataKey = selectedMetric === 'ave_cr' ? 'ave_cr' : 'ave_cr_social';
+      const yDataKey = yKey;
 
-      // Compute a min/max envelope across x by binning the data along ave_emp.
-      // This produces a shaded area between min and max y for each x-bin.
-      const bins = d3.bin()
+      // Create base bins across all rows that have ave_emp so both envelopes align
+      const baseBins = d3.bin()
         .domain(xScale.domain())
-        .thresholds(80) // adjust number of bins for smoothness/detail
-        .value(d => d.ave_emp)(data);
+        .thresholds(80)
+        .value(d => d.ave_emp)(rawData.filter(d => !isNaN(d.ave_emp)));
 
-      const envelope = bins
+      const buildEnvelope = (binsSource, key) => binsSource
         .map(bin => {
-          if (!bin.length) return null;
+          const vals = bin.filter(d => d[key] != null && !isNaN(d[key]));
+          if (!vals || vals.length === 0) return null;
           const xCenter = (bin.x0 + bin.x1) / 2;
           return {
             x: xCenter,
-            min: d3.min(bin, d => d[yDataKey]),
-            max: d3.max(bin, d => d[yDataKey]),
-            avg: d3.mean(bin, d => d[yDataKey]),
-            count: bin.length
+            min: d3.min(vals, d => d[key]),
+            max: d3.max(vals, d => d[key]),
+            avg: d3.mean(vals, d => d[key]),
+            count: vals.length
           };
         })
         .filter(d => d !== null)
         .sort((a, b) => a.x - b.x);
 
-      // const area = d3.area()
-      //   .x(d => xScale(d.x))
-      //   .y0(d => yScale(d.min))
-      //   .y1(d => yScale(d.max))
-      //   .curve(d3.curveCatmullRom.alpha(0.01));
+      const envelopeCr = buildEnvelope(baseBins, 'ave_cr');
+      const envelopeSocial = buildEnvelope(baseBins, 'ave_cr_social');
+      const envelope = (selectedMetric === 'ave_cr' || showBoth) ? envelopeCr : envelopeSocial;
 
-      // g.append('path')
-      //   .datum(envelope)
-      //   .attr('fill', '#DDD')
-      //   .attr('fill-opacity', 0.25)
-      //   .attr('stroke', 'none')
-      //   .attr('d', area);
+      const area = d3.area()
+        .x(d => xScale(d.x))
+        .y0(d => yScale(d.min))
+        .y1(d => yScale(d.max))
+        .curve(d3.curveCatmullRom.alpha(0.01));
 
-
-      // // Add max line 
-      // const lineMax = d3.line()
-      //   .x(d => xScale(d.x))
-      //   .y(d => yScale(d.max))
-      //   .curve(d3.curveCatmullRom.alpha(0.02));
-
-      // g.append('path')
-      //   .datum(envelope)
-      //   .attr('fill', 'none')
-      //   .attr('stroke', '#CCC')
-      //   .attr('stroke-width', 1)
-      //   .attr('stroke-linecap', 'round')
-      //   .attr('d', lineMax);    
-
-      // // Add min line
-      // const lineMin = d3.line()
-      //   .x(d => xScale(d.x))
-      //   .y(d => yScale(d.min))
-      //   .curve(d3.curveCatmullRom.alpha(0.01));
-
-      // g.append('path')
-      //   .datum(envelope)
-      //   .attr('fill', 'none')
-      //   .attr('stroke', '#CCC')
-      //   .attr('stroke-width', 1)
-      //   .attr('stroke-linecap', 'round')
-      //   .attr('d', lineMin);
+      g.append('path')
+        .datum(envelope)
+        .attr('fill', yDataKey === 'ave_cr_social' ? '#86525E' : '#85908D')
+        .attr('fill-opacity', 0.25)
+        .attr('stroke', 'none')
+        .attr('d', area);
 
 
-      g.selectAll('.dot')
-        .data(data)
-        .enter()
-        .append('circle')
-        .attr('class', 'dot')
-        .attr('cx', d => xScale(d.ave_emp))
-        .attr('cy', d => yScale(d[yDataKey]))
-        .attr('r', 4)
-        .attr('fill', selectedMetric === 'ave_cr_social' ? '#86525E' : '#85908D')
-        .attr('opacity', 0.6)
-        .attr('fill-opacity', 0.7);
+      // Add max line 
+      const lineMax = d3.line()
+        .x(d => xScale(d.x))
+        .y(d => yScale(d.max))
+        .curve(d3.curveCatmullRom.alpha(0.02));
+
+      g.append('path')
+        .datum(envelope)
+        .attr('fill', 'none')
+        .attr('stroke', yDataKey === 'ave_cr_social' ? '#86525E' : '#85908D')
+        .attr('stroke-width', 1)
+        .attr('stroke-linecap', 'round')
+        .attr('d', lineMax);    
+
+      // Add min line
+      const lineMin = d3.line()
+        .x(d => xScale(d.x))
+        .y(d => yScale(d.min))
+        .curve(d3.curveCatmullRom.alpha(0.01));
+
+      g.append('path')
+        .datum(envelope)
+        .attr('fill', 'none')
+        .attr('stroke', yDataKey === 'ave_cr_social' ? '#86525E' : '#85908D')
+        .attr('stroke-width', 1)
+        .attr('stroke-linecap', 'round')
+        .attr('d', lineMin);
 
 
       // Draw average line as segmented lines with thickness proportional to bin count
@@ -221,7 +211,7 @@ export default function CreativityScatter({ studentRows }) {
           .attr('y1', yScale(d.x * slope + intercept))
           .attr('x2', xScale(nextD.x))
           .attr('y2', yScale(nextD.x * slope + intercept))
-          .attr('stroke', '#D1B174')
+          .attr('stroke', yDataKey === 'ave_cr_social' ? '#86525E' : '#85908D')
           .attr('stroke-width', thickness)
           .attr('stroke-linecap', 'round')
           .attr('opacity', 0.95);
@@ -231,19 +221,110 @@ export default function CreativityScatter({ studentRows }) {
       const legend = svg.append('g')
         .attr('transform', `translate(${margin.left + 20}, ${margin.top + 20})`);
 
+      // If showBoth is enabled, compute and draw the alternate metric (social) overlays
+      if (showBoth) {
+        const overallColor = '#85908D';
+        const socialColor = '#86525E';
 
-      legend.append('line')
-        .attr('x1', 0)
-        .attr('x2', 20)
-        .attr('y1', -2)
-        .attr('y2', -2)
-        .attr('stroke', '#D1B174')
-        .attr('stroke-width', 4);
-      legend.append('text')
-        .attr('x', 25)
-        .attr('y', 0)
-        .attr('font-size', '12px')
-        .text('Trend Line');
+        const yKeyPrimary = selectedMetric === 'ave_cr' ? 'ave_cr' : 'ave_cr_social';
+        const yKeyOther = yKeyPrimary === 'ave_cr' ? 'ave_cr_social' : 'ave_cr';
+
+        // regressions and per-metric datasets were computed earlier (regOther, dataCr, dataSocial)
+
+        // Build envelope for the other metric using the same base bins
+        const envelopeOther = envelopeSocial;
+
+        const areaOther = d3.area()
+          .x(d => xScale(d.x))
+          .y0(d => yScale(d.min))
+          .y1(d => yScale(d.max))
+          .curve(d3.curveCatmullRom.alpha(0.01));
+
+        g.append('path')
+          .datum(envelopeOther)
+          .attr('fill', yKeyOther === 'ave_cr_social' ? overallColor : socialColor)
+          .attr('fill-opacity', 0.18)
+          .attr('stroke', 'none')
+          .attr('d', areaOther);
+
+        // max and min lines for other
+        const lineMaxOther = d3.line()
+          .x(d => xScale(d.x))
+          .y(d => yScale(d.max))
+          .curve(d3.curveCatmullRom.alpha(0.02));
+
+        g.append('path')
+          .datum(envelopeOther)
+          .attr('fill', 'none')
+          .attr('stroke', yKeyOther === 'ave_cr_social' ? overallColor : socialColor)
+          .attr('stroke-width', 1)
+          .attr('stroke-linecap', 'round')
+          .attr('d', lineMaxOther);
+
+        const lineMinOther = d3.line()
+          .x(d => xScale(d.x))
+          .y(d => yScale(d.min))
+          .curve(d3.curveCatmullRom.alpha(0.01));
+
+        g.append('path')
+          .datum(envelopeOther)
+          .attr('fill', 'none')
+          .attr('stroke', yKeyOther === 'ave_cr_social' ? overallColor : socialColor)
+          .attr('stroke-width', 1)
+          .attr('stroke-linecap', 'round')
+          .attr('d', lineMinOther);
+
+        // segmented trend line for other series (smoothed thickness).
+        const countsOther = envelopeOther.map(d => d.count || 0);
+        const smoothedOther = countsOther.map((c, i) => {
+          const prev = countsOther[i - 1] || 0;
+          const next = countsOther[i + 1] || 0;
+          return (prev + c + next) / 10;
+        });
+        const maxSmoothedOther = d3.max(smoothedOther) || 1;
+
+        for (let i = 0; i < envelopeOther.length - 1; i++) {
+          const d = envelopeOther[i];
+          const nextD = envelopeOther[i + 1];
+          const avgSm = (smoothedOther[i] + smoothedOther[i + 1]) / 2;
+          const thickness = 2 + (avgSm / maxSmoothedOther) * 8;
+
+          g.append('line')
+            .attr('x1', xScale(d.x))
+            .attr('y1', yScale(d.x * regOther.slope + regOther.intercept))
+            .attr('x2', xScale(nextD.x))
+            .attr('y2', yScale(nextD.x * regOther.slope + regOther.intercept))
+            .attr('stroke', yKeyOther === 'ave_cr_social' ? overallColor : socialColor)
+            .attr('stroke-width', thickness)
+            .attr('stroke-linecap', 'round')
+            .attr('opacity', 0.9);
+        }
+
+        // augment legend: add color swatches for both series
+        legend.append('rect')
+          .attr('x', 0)
+          .attr('y', 10)
+          .attr('width', 12)
+          .attr('height', 8)
+          .attr('fill', overallColor);
+        legend.append('text')
+          .attr('x', 18)
+          .attr('y', 18)
+          .attr('font-size', '11px')
+          .text('Creativity (Overall)');
+
+        legend.append('rect')
+          .attr('x', 0)
+          .attr('y', 30)
+          .attr('width', 12)
+          .attr('height', 8)
+          .attr('fill', socialColor);
+        legend.append('text')
+          .attr('x', 18)
+          .attr('y', 38)
+          .attr('font-size', '11px')
+          .text('Creativity (Social)');
+      }
 
     };
     loadData().catch(err => console.error('Failed to load data for ScatterPlot:', err));
@@ -269,9 +350,12 @@ export default function CreativityScatter({ studentRows }) {
 
             }}
           >
+            <option value="both">Both Metrics</option>
             <option value="ave_cr">Creativity (Overall)</option>
             <option value="ave_cr_social">Creativity (Social Problem Solving)</option>
+            
           </select>
+          
         </div>
         <svg ref={svgRef}></svg>
       </div>

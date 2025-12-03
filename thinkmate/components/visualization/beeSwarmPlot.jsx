@@ -69,14 +69,15 @@ export default function BeesSwarmPlot({ studentRows }) {
 
         // Add type labels on the left
         g.selectAll('.type-label')
-          .data(['Overall', 'Social Problem'])
+          .data(['Overall', 'Social Problem Solving'])
           .enter()
           .append('text')
           .attr('x', -150)
-          .attr('y', d => yScale(d)*2 + 100)
+          .attr('y', d => yScale(d)*3 + 100)
           .attr('text-anchor', 'start')
           .attr('text-wrap', 'wrap')
           .attr('font-size', '1rem')
+          .attr('font-weight', '600')
           .text(d => `${d}`);
 
         // Force simulation for jittering
@@ -173,7 +174,7 @@ export default function BeesSwarmPlot({ studentRows }) {
 
               // lookup count depending on type
               const count = d.type === 'Overall' ? (overallCounts.get(d.value) || 0) : (socialCounts.get(d.value) || 0);
-              const label = ` student${count === 1 ? '' : 's'} • `;
+           
 
               // position tooltip near the point (transform relative to svg)
               const xPos = xScale(d.value);
@@ -265,7 +266,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           const dy = y - lastY;
           lastY = y;
           // threshold to avoid tiny scrolls flipping state
-          if (dy > 10) {
+          if (dy > 70) {
             doScatter();
           } else if (dy < -10) {
             doGather();
@@ -279,10 +280,10 @@ export default function BeesSwarmPlot({ studentRows }) {
           .attr('x', (width + margin.left + margin.right) / 2)
           .attr('y', 20)
           .attr('text-anchor', 'middle')
-          .attr('font-size', '20px')
-          .attr('font-weight', 'bold')
-          .attr('fill', '#333')
-          .text('Creativity Distribution Comparison');
+          .attr('font-size', '18px')
+          .attr('font-weight', 'normal')
+          .attr('fill', '#888')
+          .text('CREATIVITY DISTRIBUTION');
 
 
       };
