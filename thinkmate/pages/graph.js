@@ -93,7 +93,7 @@ export default function Home() {
     // also poll occasionally for same-tab updates
     const iv = setInterval(check, 1000);
     return () => { mounted = false; window.removeEventListener('storage', onStorage); clearInterval(iv); };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const node = containerRef.current;

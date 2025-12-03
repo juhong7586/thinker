@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { message, conversation = [], userData } = req.body;
+  const { message, userData } = req.body;
   if (!message) return res.status(400).json({ error: 'no message' });
 
   // Support multiple env var naming conventions. Prefer explicit host/deployment,
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
           role: 'system',
           content: [{ type: 'text', text: `User profile: ${summary}` }]
         });
-      } catch (e) {
+      } catch  {
         // ignore serialization errors
       }
     }
@@ -133,13 +133,13 @@ export default async function handler(req, res) {
             const parsed = JSON.parse(text);
             // Prefer explicit reply fields if present
             assistantText = parsed.reply || parsed.text || parsed.question || parsed.reaction || JSON.stringify(parsed);
-          } catch (e) {
+          } catch {
             // not JSON — use the raw text
             assistantText = text.trim();
           }
         }
       }
-    } catch (e) {
+    } catch {
       // ignore and fall back
       assistantText = null;
     }
