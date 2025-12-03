@@ -1,21 +1,18 @@
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import SlopeChart from '../components/visualization/slopeChart';
-import LollipopChart from '../components/visualization/lollipopChart';
 import CreativityScatter from '../components/visualization/creativityScatterPlot'; 
 import BeeSwarmPlot from '../components/visualization/beeSwarmPlot';
 import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
-import ConvergingParticles from '../components/beforeGalaxy';
 
 
-import itemsList from './api/data/news';
+import itemsList from './data/news';
 import useCountryStats from '../hooks/useCountryStats';
 import CardGallery from '../components/cardGallery';
 import FlipCards from '../components/flipCards';
-import { line } from 'd3';
 
 
 

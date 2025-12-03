@@ -1,0 +1,35 @@
+{
+    "label": "‘Men don’t know why they became unhappy’: the toxic gender war dividing South Korea",
+    "href": "https://www.theguardian.com/society/2025/sep/20/inside-saturday-south-korea-gender-war",
+    "ariaLabel": "Home",
+    "rotation": -2,
+    "hoverStyles": { "bgColor": "#3b82f6", "textColor": "#ffffff" }
+  },
+  {
+    "label": "Gender, generation gap on full display in exit poll showing entrenched differences",
+    "href": "https://koreajoongangdaily.joins.com/news/2025-06-03/national/2025presidential/Gender-generation-gap-on-full-display-in-exit-poll-showing-entrenched-differences/2322105",
+    "ariaLabel": "About",
+    "rotation": 4,
+    "hoverStyles": { "bgColor": "#10b981", "textColor": "#ffffff" }
+  },
+  {
+    "label": "South Korea’s deep political divide",
+    "href": "https://www.koreaherald.com/article/10508049",
+    "ariaLabel": "Projects",
+    "rotation": 2,
+    "hoverStyles": { "bgColor": "#f59e0b", "textColor": "#ffffff" }
+  },
+  {
+    "label": "For cash-strapped South Koreans, the class conflict in 'Squid Game' is deadly serious",
+    "href": "https://www.npr.org/2021/11/06/1053163060/class-conflict-and-economic-hardship-in-squid-game-is-real-for-many-south-korean",
+    "ariaLabel": "Blog",
+    "rotation": -1,
+    "hoverStyles": { "bgColor": "#ef4444", "textColor": "#ffffff" }
+  },
+  {
+    "label": "S. Korea has 3rd highest social conflict index among OECD countries",
+    "href": "https://english.hani.co.kr/arti/english_edition/e_national/912156.html",
+    "ariaLabel": "Contact",
+    "rotation": 4,
+    "hoverStyles": { "bgColor": "#8b5cf6", "textColor": "#ffffff" }
+  }

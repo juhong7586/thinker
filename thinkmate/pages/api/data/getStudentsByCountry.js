@@ -1,0 +1,32 @@
+import getStudentsByCountryServer from '../../../lib/getStudentsByCountryServer';
+
+export default async function handler(req, res) {
+
+  try {
+    // Debugging: log incoming request metadata so we can see referer/origin/host
+    // Remove or narrow this logging after you finish debugging.
+    try {
+      const { method, url, headers } = req;
+      const debugInfo = {
+        method,
+        url,
+        referer: headers.referer || headers.referrer || null,
+        origin: headers.origin || null,
+        host: headers.host || null,
+        userAgent: headers['user-agent'] || null
+      };
+      // Log at info level so visible in dev and platform logs
+      console.info('API getStudentsByCountry request:', JSON.stringify(debugInfo));
+    } catch (logErr) {
+      // non-fatal logging error
+      console.warn('Failed to log API request debug info', logErr);
+    }
+
+    const country = req.query?.country || null;
+    const rows = await getStudentsByCountryServer(country);
+    return res.status(200).json({ rows });
+  } catch (err) {
+    console.error('API getStudentsByCountry error:', err);
+    return res.status(500).json({ error: err.message || 'server error' });
+  }
+}
