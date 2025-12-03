@@ -21,10 +21,10 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
     rawData = rawData.filter(item => !isNaN(item.ave_emp));
 
       const width = 1200;
-      const height = 600;
+      const height =1000;
       const centerX = width / 2;
-      const centerY = height / 2;
-      const maxRadius = Math.min(width, height) / 2 - 40;
+      const centerY = height / 4;
+      const maxRadius = Math.min(width, height) / 3 - 40;
 
       // Clear previous content
       d3.select(svgRef.current).selectAll("*").remove();
@@ -165,6 +165,9 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
       // Animation: animate particles from start positions to their computed (d.x,d.y)
       const animateParticles = (reset = false) => {
         const sel = svg.selectAll('.particle');
+        // interrupt any running transitions so restart is immediate
+        sel.interrupt();
+
         if (reset) {
           // Reset to start positions, tiny radius and invisible
           sel
@@ -172,6 +175,11 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
             .attr('cy', d => getStartPos(d).y)
             .attr('r', 0.5)
             .attr('opacity', 0);
+          // mark not yet gathered until entrance completes
+          gathered = false;
+          phase = 'gathering';
+          // schedule gathered flag after entrance completes (scheduleGathered defined later)
+          try { if (typeof scheduleGathered === 'function') scheduleGathered(); } catch (e) {}
         }
 
         sel.transition()
@@ -243,7 +251,12 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
       // Ensure initial gathering completes first. animateParticles(true) is triggered
       // by the IntersectionObserver; mark gathering done after an estimated duration.
       const estimatedEntranceTime = 100 + data.length * 6 + 200; // ms buffer
-      setTimeout(() => { gathered = true; phase = 'idle'; }, estimatedEntranceTime);
+      let entranceTimeout = null;
+      const scheduleGathered = () => {
+        try { if (entranceTimeout) clearTimeout(entranceTimeout); } catch (e) {}
+        entranceTimeout = setTimeout(() => { gathered = true; phase = 'idle'; }, estimatedEntranceTime);
+      };
+      scheduleGathered();
 
       const onScroll = () => {
         if (!svgRef.current) return;
@@ -254,17 +267,22 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
 
         // no React state update here; positions follow scroll directly
 
-        // if not yet gathered, ignore scroll-driven moves
-        if (!gathered) return;
+        // if not yet gathered, ignore scroll-driven moves (but allow resets)
+        if (!gathered && scrolled > 0.5) return;
 
         if (scrolled <= 0.5) {
+          // when user scrolls back up into the top region, restart the entrance
           animateParticles(true);
         } else {
+          // converge particles to the bottom center
           svg.selectAll('.particle')
-          .transition()
-          .duration(800)
-          .attr('cx', width/2)
-          .attr('cy', height)
+            .interrupt()
+            .transition()
+            .duration(800)
+            .attr('cx', centerX)
+            .attr('cy', height)
+            .attr('r', 4)
+            .attr('opacity', 0.95);
         }
       };
 
@@ -274,6 +292,7 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
       cleanupFn = () => {
         try { window.removeEventListener('scroll', onScroll); } catch (e) {}
         try { if (obs) obs.disconnect(); } catch (e) {}
+        try { if (entranceTimeout) clearTimeout(entranceTimeout); } catch (e) {}
       };
       // also attach to svgRef in case other code wants to call it
       if (svgRef.current) svgRef.current.__gravityCleanup = cleanupFn;
@@ -349,9 +368,17 @@ export default function GravityScatterPlot({ currentCountry, studentRows }) {
   }, [currentCountry, studentRows]);
 
   return (
-    <div style={{ width: '100%', minHeight: '800px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ width: '100%', minHeight: '800px', justifyContent: 'center', textAlign: 'center' }}>
       <div>
         <svg ref={svgRef}></svg>
+        <p style={{color: '#444' }}>
+        If students come together, shared empathy would open the possibility for collective problem-solving.
+      </p>
+      <p style={{color: '#666', paddingBottom: '4rem', lineHeight: 1.6 }}>
+        By nurturing empathy and a spirit of collaboration, 
+        <br /> we can help students become compassionate problem-solvers 
+        <br /> who care for others and lead their own lives.
+      </p>
       </div>
     </div>
   );

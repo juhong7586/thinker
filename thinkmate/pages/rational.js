@@ -14,6 +14,7 @@ import ConvergingParticles from '../components/beforeGalaxy';
 import itemsList from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
 import CardGallery from '../components/cardGallery';
+import FlipCards from '../components/flipCards';
 import { line } from 'd3';
 
 
@@ -187,7 +188,7 @@ export default function RationalPage({ countries = []}) {
             <p style={{ marginTop: 8, paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
             <SlopeChart currentCountry={country} countryData={countries} />
 
-            <div style={{ lineHeight: 1.4, marginTop: 12 }}>
+            <div className={styles.subtitle} style={{ lineHeight: 1.4, paddingTop: '2rem', paddingBottom: '3rem' }}>
               {selectedCountryData ? (
                 selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
                   <div>
@@ -213,33 +214,9 @@ export default function RationalPage({ countries = []}) {
               )}
             </div>
 
-            <div className={styles.subtitle} style={{ lineHeight: 1.6, paddingBottom: '4rem', paddingTop: '4rem' }}>
-              <div>
-                Look at the distribution of creativity scores among students.
-                <br />Here, one dot represents one student.
-              </div>
-
-              {selectedCountryData ? (
-                selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
-                  <div>
-                    Even though the social problem solving creativity seems high on average,
-                    <br /> there are many students who have low.
-                  </div>
-                ) : selectedCountryData.overallScore > selectedCountryData.socialSuccess ? (
-                  <div>
-                    {selectedCountryData.country} has lower social problem solving creativity than overall.
-                  </div>
-                ) : (
-                  <div>
-                    Even though the social problem solving creativity seems moderate on average,
-                    <br /> there are many students who have low.
-                  </div>
-                )
-              ) : null}
-            </div>
-          
         <BeeSwarmPlot studentRows={filteredStudentData} />
-        <p className={styles.subtitle} style={{lineHeight: 1.6 }}>
+        <div className={styles.subtitle} >
+        <p style={{lineHeight: 1.6 }}>
           Look at the distribution of creativity scores among students.
           < br />Here, one dot represents one student.
           </p>
@@ -261,10 +238,11 @@ export default function RationalPage({ countries = []}) {
           ):null
         }
         </div>
+        </div>
         <p style={{ color: '#333', paddingBottom: '6rem', fontStyle: 'italic', lineHeight: 1.6 }}>
           What makes the difference?
           <br />How can we solve this problem?</p>
-          <h3 style={{ color: '#333' }}>We can find the hint in <strong>empathy.</strong></h3>
+          <h3 style={{ color: '#333', paddingTop: '3rem' }}>We can find the hint in <strong>empathy.</strong></h3>
           <div style={{ color: '#333', lineHeight: 1.6, background: 'linear-gradient(180deg, #eeebe3ff 0%, #ffffff 100%)', padding: '1rem 2rem', borderRadius: '8px', marginTop: '1rem'  }}>
             <p>
               As one of the abilities of future 2030 skills suggested by OECD,
@@ -272,78 +250,97 @@ export default function RationalPage({ countries = []}) {
             </p>
 
             <p>
-              It includes the ability to:
+              It includes the ability to
             </p>
-
-            <ol style={{ marginTop: 6, marginBottom: 6 }}>
-              <ul>1. <strong>Recognize</strong> emotions in others</ul>
-              <ul>2. <strong>Understand</strong> another person's perspective</ul>
-              <ul>3. <strong>Communicate</strong> that understanding to others</ul>
-            </ol>
-
+           <FlipCards />
             <p>
-              It is a foundation for citizenship and responsibility toward society.
+              As a foundation for citizenship and responsibility toward society,
+              < br /> empathy mediates other social-emotional skills such as tolerance, cooperation, and teamwork.
               <br /> Empathetic students are more likely to engage in social problem solving and creative thinking to address societal challenges.
             </p>
           </div>
-          <p style={{fontSize: '0.85rem', fontStyle: 'italic', paddingBottom: '6rem'}}>Feshbach, 1978; Hope, 2014; OECDa, 2019; Spinrad et al., 2006; Steponavičius et al., 2023; Wray‐Lake, 2011</p>
-          
-        <LollipopChart currentCountry={country} countryData={countries} />
+          <p style={{fontSize: '0.85rem', fontStyle: 'italic', paddingBottom: '7rem', color: '#888'}}>Doron, 2017; Feshbach, 1978; Grant & Berry, 2011; Hope, 2014; Kripal & Reiter-Palmon, 2024; OECDa, 2019; Spinrad et al., 2006; Steponavičius et al., 2023; Wray‐Lake, 2011</p>
+        {/* <LollipopChart currentCountry={country} countryData={countries} />
         
                   <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>
           <br /> Chart above is about confidence in self-directed learning and empathy.
           <br />Even after accounting for students' and schools' socio-economic profile, and mathematics performance,
           <br />We can see that more empathic students tend to have higher confidence in self-directed learning.
           < br />
-        </p>
+        </p> */}
 
-         <h3 style={{ color: '#333', paddingTop: '6rem' }}>Let's take a deep look.</h3>
-         <p style={{ lineHeight: 1.6 }}>  
-          How's your class like? choose the grade. 
-          <br /> And take a look at the gender. Click the bar.
-         </p>
-         <p style={{ lineHeight: 1.6 }} id="bar-explanation">  
-          Older students tend to report higher empathy and tolerance than younger students. (OECDb, 2024) 
+         <h3 style={{ color: '#333', paddingTop: '3rem' }}>Let's take a deep look.</h3>
+         
+        <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem', height: '500px' }}>
+          
+          <div style={{width: '50%'}}>
+         <p className={styles.subtitle} style={{ lineHeight: 1.6 }} id="bar-explanation">  
+          According to the OECD reports, 
+          <br /><strong>Older </strong> students tend to report higher empathy than younger students.
+          <br /> Also, interestingly, <strong>female</strong> students tend to report higher empathy.
           </p>
+          <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>  
+          <h3>How's your class like?</h3> 
+          Left bar chart shows the average empathy scores 
+          <br /> by grade and gender in <strong>{country}</strong>.
+          <br /> 
 
-
-        <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem' }}>
-          <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} />
-          <CreativityScatter studentRows={creativityRows} />
+          <br /> The darker bar is for female students, 
+          <br />and the lighter one is for male students.
+          <br /> Click the bars to filter the students in the chart below.
+         </p>
+        </div>
+        <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} style={{ width: '50%' }} />
+          </div>
+          <p style={{ fontSize: '3rem', alignSelf: 'center' }}> ↓ </p>
+           <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', height: '500px' }}>
+        <CreativityScatter studentRows={creativityRows} onBarClick={handleBarClick} selectedBar={barFilter} />
         </div>
           
 
-    <div style={{ fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center', background: 'linear-gradient(180deg, #fff 0%, #020202 30%)' }}>
-      <h3 style={{ color: '#333' }}>What can we do for students' future?</h3>
+    <div style={{ fontFamily: 'NanumSquareNeo', paddingTop: '7rem', paddingBottom: '0rem',fontWeight: '600', textAlign: 'center', background: 'linear-gradient(180deg, #fff 0%, #020202 30%)' }}>
+      <h3 style={{ color: '#333' }}>So, what can we do for students' future?</h3>
       <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
         <br /> For that, we need to provide learning experiences to think about their society. </p>
-        <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />
-        <div>
-          <ConvergingParticles studentsNum={studentNum}/>
-        </div>
-        
+        <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />        
     </div>
 
 
-    <div style={{ background: '#020202' }}>
+    <div style={{ background: '#020202', paddingTop: '0rem' }}>
       <div>
-        <p>
+        <p style={{ fontSize: '1.5rem', color: '#ccc', textAlign: 'center', fontWeight: '600', paddingTop: '4rem', paddingBottom: '2rem' }}>
+          Data & References
+        </p>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+         <p style={{ fontSize: '1.2rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', lineHeight: 1.6 }}>
+          Data
+        </p>
+        <p style={{ fontSize: '0.75rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', paddingBottom: '2rem', lineHeight: 1.6 }}>
+          <ul>
+            OECD PISA 2022 Database, https://www.oecd.org/pisa/data/2022database/
+          </ul>
+          </p>
+        <p style={{ fontSize: '1.2rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', lineHeight: 1.6 }}>
           References
         </p>
-        <p>
+        <p style={{ fontSize: '0.75rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', paddingBottom: '4rem', lineHeight: 1.6 }}>
           <ul>
+            <li>Doron, E. (2017). Fostering creativity in school aged children through perspective taking and visual media based short term intervention program. Thinking Skills and Creativity, 23, 150–160. https://doi.org/10.1016/j.tsc.2016.12.003</li>
+            <li>Feshbach, N. D. (1978). Empathy in children: Some theoretical and empirical considerations. In N. Eisenberg-Berg (Ed.), Development of prosocial behavior (pp. 213–231). Academic Press.</li>
+            <li>Grant, A. M., & Berry, J. W. (2011). The necessity of others is the mother of invention: Intrinsic and prosocial motivations, perspective taking, and creativity. The Academy of Management Journal, 54, 73–96. https://doi.org/10.5465/AMJ.2011.59215085</li>
             <li>Hope, E. (2014), “The role of sociopolitical attitudes and civic education in the civic engagement of black youth”, Journal of Research on Adolescence, Vol. 24/3, pp. 460-470.</li>
+            <li>Kripal, S. J., & Reiter-Palmon, R. (2024). The role of empathy in problem construction and creative problem solving. Learning and Individual Differences, 114, 102501. https://doi.org/10.1016/j.lindif.2024.102501</li>
             <li>OECDa (2019), OECD Future of education and skills 2030: OECD Learning compass 20230 a series of concept notes, OECD Publishing, Paris.</li>
             <li>OECDb (2024), Social and emotional skills for better lives: Findings from the OECD survey on social and emotional Skills 2023, OECD Publishing, Paris, https://doi.org/10.1787/35ca7b7c-en.</li>
             <li>Spinrad, T. L., Eisenberg, N., Cumberland, A., Fabes, R. A., Valiente, C., Shepard, S. A., Reiser, M., Losoya, S. H., & Guthrie, I. K. (2006). Relation of emotion-related regulation to children's social competence: a longitudinal study. Emotion (Washington, D.C.), 6(3), 498–510. https://doi.org/10.1037/1528-3542.6.3.498</li>
             <li>Steponavičius, M., C. Gress-Wright and A. Linzarini (2023), “Social and emotional skills: Latest evidence on teachability and impact on life outcomes”, OECD Education Working Papers, No. 304, OECD Publishing, Paris, https://doi.org/10.1787/ba34f086-en.</li>
-          <li>Wray‐Lake, L. (2011), “The developmental roots of social responsibility in childhood and adolescence.”, New directions for child and adolescent development, Vol. 2011/134, pp. 11-25.</li>
+            <li>Wray‐Lake, L. (2011), “The developmental roots of social responsibility in childhood and adolescence.”, New directions for child and adolescent development, Vol. 2011/134, pp. 11-25.</li>
            </ul>
         </p>
-        
         </div> 
     </div>
-  </div>
+    </div>
+    </div>
     </>
         )} 
 
