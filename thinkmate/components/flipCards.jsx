@@ -14,7 +14,7 @@ export default function FlipCards() {
 
   const cards = [
     { front: 'Recognize emotions in others', back: 'Broaden emotional and cognitive awareness in various contexts' },
-    { front: 'Understand another person\'s perspective', back: 'Construct High-quality and original problems within phenomena' },
+    { front: 'Understand another person\'s perspective', back: 'Construct high-quality and original problems within phenomena' },
     { front: 'Communicate that understanding to others', back: 'Represent the problem in descriptive terms' },
     { front: '🔑', back: 'Produce useful and new ideas within human-centered design thinking processes' },
   ];
@@ -75,25 +75,45 @@ export default function FlipCards() {
                         backfaceVisibility: 'hidden'
                       }}
                     >
-                      {card.front}
+                      <div style={{ textAlign: 'center' }}>
+                        {card.front}
+                        <br />
+                      </div>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          right: 10,
+                          bottom: 10,
+                          color: '#333',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          letterSpacing: '0.6px',
+                          pointerEvents: 'none',
+                          opacity: flipped[index] ? 0 : 0.9,
+                          transition: 'opacity 0.18s ease'
+                        }}
+                        aria-hidden
+                      >
+                        → flip
+                      </div>
                     </div>
 
                     {/* Back */}
                     <div
-                      className="back-face"
+                      className="back-face" 
                       style={{
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        background: index === 3 ? '#6C5838' : '#9E8C6C',
+                        background: index === 3 ? 'linear-gradient(135deg, #6C5838 90%, #f2f2f2 0%)' : 'linear-gradient(135deg, #9E8C6C 90%, #f2f2f2 0%)  ',
                         borderRadius: 12,
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.34)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: 20,
+                        fontSize: '1.1rem',
                         fontWeight: 700,
                         color: '#fff',
                         backfaceVisibility: 'hidden',

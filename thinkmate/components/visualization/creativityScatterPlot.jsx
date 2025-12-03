@@ -55,17 +55,17 @@ export default function CreativityScatter({ studentRows }) {
 
       const margin = { top: 30, right: 30, bottom: 60, left: 60 };
       const width = 500 - margin.left - margin.right;
-      const height = 550 - margin.top - margin.bottom;
+      const height = 480 - margin.top - margin.bottom;
 
       // Clear previous content
       d3.select(svgRef.current).selectAll("*").remove();
 
       const svg = d3.select(svgRef.current)
         .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom);
+        .attr('height', height +  margin.bottom + margin.top);
 
       const g = svg.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
+        .attr('transform', `translate(${margin.left},${margin.top+10})`);
 
       if (data.length === 0) {
         g.append('text').attr('x', w / 2).attr('y', h / 2).attr('text-anchor', 'middle').attr('fill', '#666').text('Please select a country first.');
@@ -89,7 +89,7 @@ export default function CreativityScatter({ studentRows }) {
         .attr('transform', `translate(0,${height})`)
         .call(xAxis)
         .append('text')
-        .attr('y', 55)
+        .attr('y', 35)
         .attr('x', width / 2)
         .attr('fill', 'black')
         .attr('text-anchor', 'middle')
@@ -219,7 +219,7 @@ export default function CreativityScatter({ studentRows }) {
 
       // Add legend
       const legend = svg.append('g')
-        .attr('transform', `translate(${margin.left + 20}, ${margin.top + 20})`);
+        .attr('transform', `translate(${margin.left + 20}, ${-margin.top + 25})`);
 
       // If showBoth is enabled, compute and draw the alternate metric (social) overlays
       if (showBoth) {
@@ -331,9 +331,9 @@ export default function CreativityScatter({ studentRows }) {
   }, [selectedMetric, studentRows]);
 
   return (
-    <div style={{ maxWidth: '50%', minHeight: '80vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ maxWidth: '50%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', height: '40px' }}>
           <label style={{ marginRight: '10px', fontSize: '16px', fontWeight: 'bold' }}>
             Empathy on
           </label>

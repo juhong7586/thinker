@@ -270,18 +270,25 @@ export default function RationalPage({ countries = []}) {
         </p> */}
 
          <h3 style={{ color: '#333', paddingTop: '3rem' }}>Let's take a deep look.</h3>
-         <p style={{ lineHeight: 1.6 }}>  
-          How's your class like? choose the grade. 
-          <br /> And take a look at the gender. Click the bar.
-         </p>
-         <p style={{ lineHeight: 1.6 }} id="bar-explanation">  
-          Older students tend to report higher empathy and tolerance than younger students. (OECDb, 2024) 
+         
+         <p className={styles.subtitle} style={{ lineHeight: 1.6 }} id="bar-explanation">  
+          According to the OECD reports, older students tend to report higher empathy and tolerance than younger students.
+          <br /> Also, interestingly, female students tend to report higher empathy.
           </p>
+          <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>  
+          How's your class like? 
+          <br /> choose the grade. And take a look at the gender.
+          <br /> Click the bar.
+         </p>
 
 
-        <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem' }}>
+        <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem', height: '500px' }}>
           <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} />
+          </div>
+          <p style={{ fontSize: '3rem', alignSelf: 'center' }}> ↓ </p>
+           <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem', height: '500px' }}>
           <CreativityScatter studentRows={creativityRows} />
+
         </div>
           
 
