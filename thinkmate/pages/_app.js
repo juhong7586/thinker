@@ -9,8 +9,9 @@ export default function App({ Component, pageProps }) {
     try {
       const raw = localStorage.getItem('thinkmate_user')
       if (raw) setSignedUser(JSON.parse(raw))
-    } catch (e) { setSignedUser(null) }
+    } catch { setSignedUser(null) }
   }, [])
+  
 
   return (
     <>

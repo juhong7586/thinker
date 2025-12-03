@@ -18,7 +18,9 @@ export default function Analysis() {
   useEffect(() => {
     try {
       if (selectedOption) localStorage.setItem('analysis.selectedOption', selectedOption);
-    } catch (e) {}
+    } catch {
+      // ignore storage errors
+    }
   }, [selectedOption]);
 
 
@@ -81,7 +83,7 @@ export default function Analysis() {
               onClick={() => setSelectedOption('none')}
               style={{ 
                 color: selectedOption === 'none' ? 'rgba(113, 83, 86, 0.8)' : '' }}
-            >I don't have an idea</button>
+            >I don&#39;t have an idea</button>
           </div>
         </div>
           {/* Pass selection down to scaffold */}
@@ -97,7 +99,7 @@ export default function Analysis() {
                 right: '5rem',
                 color: '#eee',
                 fontFamily: 'Georgia, Times New Roman, Times, serif',
-              }}>Let's get started</button>
+              }}>Let&#39;s get started</button>
             </Link>
           </div>
         </div>

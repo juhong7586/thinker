@@ -21,7 +21,7 @@ export default function Login() {
         if (obj && obj.user && obj.user.name) setName(obj.user.name)
         if (obj && obj.user && obj.user.email) setEmail(obj.user.email)
       }
-    } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
   }, [])
 
   const handleLogin = async () => {
@@ -64,7 +64,7 @@ export default function Login() {
       <div className={styles.container} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' , background: 'linear-gradient(135deg, #f5f7fa 0%, #BFB1B3 100%)', height: '100vh' }}>
         <div style={{ width: '30vw', background: 'rgba(255,255,255,0.95)', padding: '2rem', borderRadius: '2rem', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
           <h2 style={{ marginTop: 0, marginBottom: '1rem' }}>Sign in</h2>
-          <p style={{ marginTop: 0, color: '#555', marginBottom: '1rem', lineHeight: '1.5' }}>Enter your name and email. <br /> We'll remember you on this device.</p>
+          <p style={{ marginTop: 0, color: '#555', marginBottom: '1rem', lineHeight: '1.5' }}>Enter your name and email. <br /> We&#39;ll remember you on this device.</p>
 
           {error && <div style={{ color: 'crimson', marginBottom: 8 }}>{error}</div>}
 

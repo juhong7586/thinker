@@ -30,10 +30,11 @@ export default function RationalPage({ countries = []}) {
   // This avoids importing server-only modules into the browser bundle.
   const { data: studentData } = useCountryStats(country);
   
-  // Ensure we render strings for country buttons
-  const countryList = Array.isArray(countries)
-    ? countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)))
-    : [];
+  // Ensure we render strings for country buttons (memoized to avoid re-computation)
+  const countryList = useMemo(() => {
+    if (!Array.isArray(countries)) return [];
+    return countries.map((c, i) => (typeof c === 'string' ? c : (c?.country ?? `country-${i}`)));
+  }, [countries]);
 
   // Split-button state: controls the floating split control on the left
   const [splitMenuOpen, setSplitMenuOpen] = useState(false);
@@ -63,7 +64,6 @@ export default function RationalPage({ countries = []}) {
       });
     }
   }
-  const studentNum = filteredStudentData ? filteredStudentData.length : 0;
 
   // If `country` is a string (name), find its full data object from `countries`.
   const selectedCountryData = country && Array.isArray(countries)
@@ -163,7 +163,7 @@ export default function RationalPage({ countries = []}) {
             {countryList.length === 0 ? (
               <div style={{ color: '#666' }}>Loading countries…</div>
             ) : (
-              countryList.map((c, idx) => (
+              countryList.map((c) => (
                   <motion.button
                     key={c}
                     whileHover={{ scale: 1.02 }}
@@ -218,13 +218,13 @@ export default function RationalPage({ countries = []}) {
         <div className={styles.subtitle} >
         <p style={{lineHeight: 1.6 }}>
           Look at the distribution of creativity scores among students.
-          < br />Here, one dot represents one student.
+          <br />Here, one dot represents one student.
           </p>
           <div className={styles.subtitle}>
            {selectedCountryData ? (
                 selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
-                   <div> Even though the social problem solving creativity seems high in average, 
-                    < br /> there are many students who have low.</div>
+                   <div> Even though the social problem solving creativity seems high in average,
+                    <br /> there are many students who have low.</div>
                 ) : selectedCountryData.overallScore > selectedCountryData.socialSuccess ? (
                    <div>
             {selectedCountryData.country} has lower social problem solving creativity than overall.
@@ -246,7 +246,7 @@ export default function RationalPage({ countries = []}) {
           <div style={{ color: '#333', lineHeight: 1.6, background: 'linear-gradient(180deg, #eeebe3ff 0%, #ffffff 100%)', padding: '1rem 2rem', borderRadius: '8px', marginTop: '1rem'  }}>
             <p>
               As one of the abilities of future 2030 skills suggested by OECD,
-              <br /> empathy is defined as the ability to understand another's emotional state or condition.
+              <br /> empathy is defined as the ability to understand another&#39;s emotional state or condition.
             </p>
 
             <p>
@@ -255,7 +255,7 @@ export default function RationalPage({ countries = []}) {
            <FlipCards />
             <p>
               As a foundation for citizenship and responsibility toward society,
-              < br /> empathy mediates other social-emotional skills such as tolerance, cooperation, and teamwork.
+              <br /> empathy mediates other social-emotional skills such as tolerance, cooperation, and teamwork.
               <br /> Empathetic students are more likely to engage in social problem solving and creative thinking to address societal challenges.
             </p>
           </div>
@@ -266,10 +266,10 @@ export default function RationalPage({ countries = []}) {
           <br /> Chart above is about confidence in self-directed learning and empathy.
           <br />Even after accounting for students' and schools' socio-economic profile, and mathematics performance,
           <br />We can see that more empathic students tend to have higher confidence in self-directed learning.
-          < br />
+          <br />
         </p> */}
 
-         <h3 style={{ color: '#333', paddingTop: '3rem' }}>Let's take a deep look.</h3>
+         <h3 style={{ color: '#333', paddingTop: '3rem' }}>Let&#39;s take a deep look.</h3>
          
         <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem', height: '500px' }}>
           
@@ -280,7 +280,7 @@ export default function RationalPage({ countries = []}) {
           <br /> Also, interestingly, <strong>female</strong> students tend to report higher empathy.
           </p>
           <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>  
-          <h3>How's your class like?</h3> 
+          <h3>How&#39;s your class like?</h3> 
           Left bar chart shows the average empathy scores 
           <br /> by grade and gender in <strong>{country}</strong>.
           <br /> 
@@ -299,8 +299,8 @@ export default function RationalPage({ countries = []}) {
           
 
     <div style={{ fontFamily: 'NanumSquareNeo', paddingTop: '7rem', paddingBottom: '0rem',fontWeight: '600', textAlign: 'center', background: 'linear-gradient(180deg, #fff 0%, #020202 30%)' }}>
-      <h3 style={{ color: '#333' }}>So, what can we do for students' future?</h3>
-      <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
+      <h3 style={{ color: '#333' }}>So, what can we do for students&#39; future?</h3>
+      <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students&#39; social problem solving skills. 
         <br /> For that, we need to provide learning experiences to think about their society. </p>
         <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />        
     </div>
@@ -365,7 +365,9 @@ export async function getStaticProps() {
       // Try using the @databricks/sql client if env vars are provided.
       // Use await to ensure the query completes before returning props.
       try {
-        const { DBSQLClient } = require('@databricks/sql');
+        // Dynamically import the Databricks client to avoid bundling server-only CJS into the client
+        const mod = await import('@databricks/sql');
+        const { DBSQLClient } = mod;
         const client = new DBSQLClient();
         const connectOptions = { token, host: serverHostName, path: httpPath };
         await client.connect(connectOptions);
