@@ -42,15 +42,15 @@ jobs:
           # Determine repo name for Pages basePath (so assets reference /REPO/...) and create next.config.js
           REPO_NAME=${GITHUB_REPOSITORY##*/}
           cat > thinkmate-rational/next.config.js <<EOT
-const path = require('path')
-module.exports = {
-  outputFileTracingRoot: path.join(__dirname, '.'),
-  basePath: '/${REPO_NAME}',
-  assetPrefix: '/${REPO_NAME}/',
-  images: { unoptimized: true },
-  eslint: { ignoreDuringBuilds: true }
-}
-EOT
+          const path = require('path')
+          module.exports = {
+            outputFileTracingRoot: path.join(__dirname, '.'),
+            basePath: '/${REPO_NAME}',
+            assetPrefix: '/${REPO_NAME}/',
+            images: { unoptimized: true },
+            eslint: { ignoreDuringBuilds: true }
+          }
+          EOT`
 
       - name: Install dependencies (thinkmate-rational)
         run: npm ci
@@ -58,8 +58,8 @@ EOT
 
       - name: Build and export (thinkmate-rational)
         run: |
-         cd thinkmate
-          npm run dev
+          npx next build
+          npx next export -o out
         working-directory: thinkmate-rational
 
       - name: Upload artifact
