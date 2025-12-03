@@ -1,8 +1,8 @@
-name: Deploy Next.js site to Pages
+name: Deploy Rational page to Pages
 
 on:
   push:
-    branches: ["dev", "main"]
+    branches: ["deploy/rational", "main"]
   workflow_dispatch:
 
 permissions:
@@ -11,84 +11,67 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "deploy-rational"
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-export:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Detect package manager (for thinkmate/)
-        id: detect-package-manager
-        run: |
-          cd thinkmate
-          if [ -f "pnpm-lock.yaml" ]; then
-            echo "manager=pnpm" >> $GITHUB_OUTPUT
-            echo "install=pnpm install --frozen-lockfile" >> $GITHUB_OUTPUT
-            echo "runner=pnpm exec" >> $GITHUB_OUTPUT
-            exit 0
-          elif [ -f "yarn.lock" ]; then
-            echo "manager=yarn" >> $GITHUB_OUTPUT
-            echo "install=yarn install --frozen-lockfile" >> $GITHUB_OUTPUT
-            echo "runner=yarn run" >> $GITHUB_OUTPUT
-            exit 0
-          elif [ -f "package-lock.json" ]; then
-            echo "manager=npm" >> $GITHUB_OUTPUT
-            echo "install=npm ci" >> $GITHUB_OUTPUT
-            echo "runner=npx --no-install" >> $GITHUB_OUTPUT
-            exit 0
-          else
-            # fallback to npm
-            echo "manager=npm" >> $GITHUB_OUTPUT
-            echo "install=npm ci" >> $GITHUB_OUTPUT
-            echo "runner=npx --no-install" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: ${{ steps.detect-package-manager.outputs.manager }}
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-        with:
-          static_site_generator: next
-
-      - name: Restore .next cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            thinkmate/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ steps.detect-package-manager.outputs.manager }}-${{ hashFiles('thinkmate/pnpm-lock.yaml', 'thinkmate/yarn.lock', 'thinkmate/package-lock.json', 'thinkmate/**.[jt]s', 'thinkmate/**.[jt]sx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ steps.detect-package-manager.outputs.manager }}-
-
-      - name: Install dependencies (thinkmate/)
-        run: ${{ steps.detect-package-manager.outputs.install }}
-        working-directory: thinkmate
-
-      - name: Build and export Next.js (thinkmate/)
+      - name: Prepare rational-only site
         run: |
-          # build and static export to ./out (Pages expects a static artifact)
-          ${{ steps.detect-package-manager.outputs.runner }} next build
-          ${{ steps.detect-package-manager.outputs.runner }} next export -o out
-        working-directory: thinkmate
+          set -e
+          # Copy the thinkmate app and keep only the rational page as index
+          cp -R thinkmate thinkmate-rational
+          mkdir -p thinkmate-rational/tmp_pages
+          if [ -f thinkmate-rational/pages/_app.js ]; then mv thinkmate-rational/pages/_app.js thinkmate-rational/tmp_pages/; fi
+          if [ -f thinkmate-rational/pages/rational.js ]; then mv thinkmate-rational/pages/rational.js thinkmate-rational/tmp_pages/index.js; fi
+          # If no rational page found, fail early
+          if [ ! -f thinkmate-rational/tmp_pages/index.js ]; then echo "rational page not found"; ls -la thinkmate-rational/pages || true; exit 1; fi
+          rm -rf thinkmate-rational/pages/*
+          mv thinkmate-rational/tmp_pages/* thinkmate-rational/pages/
+          rmdir thinkmate-rational/tmp_pages || true
+          # Determine repo name for Pages basePath (so assets reference /REPO/...) and create next.config.js
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          cat > thinkmate-rational/next.config.js <<EOT
+const path = require('path')
+module.exports = {
+  outputFileTracingRoot: path.join(__dirname, '.'),
+  basePath: '/${REPO_NAME}',
+  assetPrefix: '/${REPO_NAME}/',
+  images: { unoptimized: true },
+  eslint: { ignoreDuringBuilds: true }
+}
+EOT
+
+      - name: Install dependencies (thinkmate-rational)
+        run: npm ci
+        working-directory: thinkmate-rational
+
+      - name: Build and export (thinkmate-rational)
+        run: |
+          npx next build
+          npx next export -o out
+        working-directory: thinkmate-rational
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./thinkmate/out
+          path: thinkmate-rational/out
 
   deploy:
-    needs: build
+    needs: build-and-export
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
