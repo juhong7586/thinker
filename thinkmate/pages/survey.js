@@ -16,7 +16,9 @@ export default function Analysis() {
   useEffect(() => {
     try {
       if (selectedOption) localStorage.setItem('analysis.selectedOption', selectedOption);
-    } catch (e) {}
+    } catch {
+      // ignore storage errors
+    }
   }, [selectedOption]);
 
 

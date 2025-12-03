@@ -11,7 +11,7 @@ export default async function handler(req, res) {
                     },
             });
             res.status(200).json(students)
-        } catch (error) {
+        } catch {
             res.status(500).json({ error: 'Failed to fetch students' })
         }
     } else if (req.method === 'POST') {

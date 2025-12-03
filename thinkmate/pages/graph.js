@@ -56,7 +56,7 @@ export default function Home() {
         setAiPending(Boolean(pending));
         try {
           setAiResult(resultRaw ? JSON.parse(resultRaw) : null);
-        } catch (e) {
+        } catch {
           setAiResult(resultRaw || null);
         }
         // If we transitioned from pending -> not pending and a new result appeared, refresh once
@@ -70,20 +70,20 @@ export default function Home() {
           setTimeout(() => {
             try {
               router.replace(router.asPath);
-            } catch (e) {
+            } catch {
               window.location.reload();
             }
           }, 250);
         }
         prevAiPendingRef.current = nowPending;
-      } catch (e) {
+      } catch {
         if (!mounted) return;
         setAiPending(false);
         setAiResult(null);
       }
     };
     // initialize previous pending flag from storage on mount
-    try { prevAiPendingRef.current = Boolean(localStorage.getItem('thinkmate.ai.pending')); } catch (e) { prevAiPendingRef.current = false; }
+    try { prevAiPendingRef.current = Boolean(localStorage.getItem('thinkmate.ai.pending')); } catch { prevAiPendingRef.current = false; }
     check();
     const onStorage = (e) => {
       if (e.key && (e.key.startsWith('thinkmate.ai.'))) check();

@@ -16,7 +16,9 @@ export default async function getStudentsByCountryServer(country) {
     let studentData = [];
     if (serverHostName && token && httpPath) {
       try {
-        const { DBSQLClient } = require('@databricks/sql');
+        // Use dynamic import to satisfy ESM lint rules and avoid require()
+        const mod = await import('@databricks/sql');
+        const { DBSQLClient } = mod;
         const client = new DBSQLClient();
         const connectOptions = { token, host: serverHostName, path: httpPath };
         await client.connect(connectOptions);
