@@ -69,14 +69,15 @@ export default function BeesSwarmPlot({ studentRows }) {
 
         // Add type labels on the left
         g.selectAll('.type-label')
-          .data(['Overall', 'Social Problem'])
+          .data(['Overall', 'Social Problem Solving'])
           .enter()
           .append('text')
           .attr('x', -150)
-          .attr('y', d => yScale(d)*2 + 100)
+          .attr('y', d => yScale(d)*3 + 100)
           .attr('text-anchor', 'start')
           .attr('text-wrap', 'wrap')
           .attr('font-size', '1rem')
+          .attr('font-weight', '600')
           .text(d => `${d}`);
 
         // Force simulation for jittering
@@ -282,7 +283,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           .attr('font-size', '20px')
           .attr('font-weight', 'bold')
           .attr('fill', '#333')
-          .text('Creativity Distribution Comparison');
+          .text('Creativity Distribution');
 
 
       };

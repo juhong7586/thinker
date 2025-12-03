@@ -182,10 +182,10 @@ export default function RationalPage({ countries = []}) {
               <div style={{ color: '#AAA', fontStyle: 'italic', fontWeight: '800', padding: '5rem', textAlign: 'center', fontSize: '1.3rem'}}>Select country to see the data.</div>
             ) : (
               <>
-          <div style={{textAlign: 'center', fontFamily: 'NanumSquareNeo' }}>
-          <p style={{ marginTop: 8, fontSize: '1.2rem', paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
+          <div style={{textAlign: 'center', fontFamily: 'NanumSquareNeo', fontSize: '1.125rem' }}>
+          <p style={{ marginTop: 8, paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
           <SlopeChart currentCountry={country} countryData={countries} />
-            <div className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.4 }}>
+            <div className={styles.subtitle} style={{lineHeight: 1.4 }}>
               {selectedCountryData ? (
                 selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
                   <p>{selectedCountryData.country} has more creativity specific to social problem solving than overall creativity.
@@ -210,18 +210,35 @@ export default function RationalPage({ countries = []}) {
 
             </div>
 
-          <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6, paddingBottom: '4rem', paddingTop: '4rem' }}>
+          <p className={styles.subtitle} style={{lineHeight: 1.6, paddingBottom: '4rem', paddingTop: '4rem' }}>
           Let's take a deep look at the students' individual data. </p>
           
-              <BeeSwarmPlot studentRows={filteredStudentData} />
-        <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
-          Look at the distribution of empathy and creativity scores among students.
-          <br />Compare number of students between overall creativity and social problem solving creativity.
-          <br /> Although they possess high creativity, they struggle when the problems narrow down to social problems.
-          <br /> This is directly related to the unsolved conflicts within our society.</p>
-
-        <h3 style={{ color: '#333', paddingBottom: '6rem', paddingTop: '1rem'}}>
-          How can we solve this problem?</h3>
+        <BeeSwarmPlot studentRows={filteredStudentData} />
+        <p className={styles.subtitle} style={{lineHeight: 1.6 }}>
+          Look at the distribution of creativity scores among students.
+          < br />Here, one dot represents one student.
+          </p>
+          <div className={styles.subtitle}>
+           {selectedCountryData ? (
+                selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
+                   <div> Even though the social problem solving creativity seems high in average, 
+                    < br /> there are many students who have low.</div>
+                ) : selectedCountryData.overallScore > selectedCountryData.socialSuccess ? (
+                   <div>
+            {selectedCountryData.country} has lower social problem solving creativity than overall.
+              </div>
+            ) : (
+              <div>
+                Even though the social problem solving creativity seems moderate on average,
+                <br /> there are many students who have low.
+              </div>          
+            )    
+          ):null
+        }
+        </div>
+        <h3 style={{ color: '#333', paddingBottom: '6rem'}}>
+          What makes the difference?
+          <br />How can we solve this problem?</h3>
           
         <LollipopChart currentCountry={country} countryData={countries} />
         
