@@ -63,6 +63,11 @@ export default function RationalPage({ countries = []}) {
   }
   const studentNum = filteredStudentData ? filteredStudentData.length : 0;
 
+  // If `country` is a string (name), find its full data object from `countries`.
+  const selectedCountryData = country && Array.isArray(countries)
+    ? countries.find((c) => c.country === country) || null
+    : null;
+
 
   // Bar filter state: { grade, gender }
   const [barFilter, setBarFilter] = useState({ grade: null, gender: null });
@@ -172,22 +177,41 @@ export default function RationalPage({ countries = []}) {
             )}
           </div>
         </div>
-
-        {country && (
+        </div>
+      {country === null ? (
+              <div style={{ color: '#AAA', fontStyle: 'italic', fontWeight: '800', padding: '5rem', textAlign: 'center', fontSize: '1.3rem'}}>Select country to see the data.</div>
+            ) : (
+              <>
+          <div style={{textAlign: 'center', fontFamily: 'NanumSquareNeo' }}>
           <p style={{ textAlign: 'center', marginTop: 8, fontSize: '1.2rem', paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
-        )}
           <SlopeChart currentCountry={country} countryData={countries} />
+            <div>
+              {selectedCountryData ? (
+                selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
+                  <p>{selectedCountryData.country} has more social success than overall creativity.</p>
+                ) : selectedCountryData.overallScore > selectedCountryData.socialSuccess ? (
+                  <p>{selectedCountryData.country} has higher overall creativity than social success.</p>
+                ) : (
+                  <p>{selectedCountryData.country} has similar overall creativity and social success.</p>
+                )
+              ) : (
+                <p>Summary data not available for <strong>{country}</strong>.</p>
+              )}
+            </div>
+
           <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
           IT is really a problem, especially comparing between students. </p>
-          <BeeSwarmPlot studentRows={filteredStudentData} />
+          
+              <BeeSwarmPlot studentRows={filteredStudentData} />
         <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
           Look at the distribution of empathy and creativity scores among students.
           <br />Compare number of students between overall creativity and social problem solving creativity.
           <br /> Although they possess high creativity, they struggle when the problems narrow down to social problems.
           <br /> This is directly related to the unsolved conflicts within our society.</p>
 
-        <h3 style={{ color: '#333', paddingBottom: '6rem', paddingTop: '1rem' }}>
+        <h3 style={{ color: '#333', paddingBottom: '6rem', paddingTop: '1rem'}}>
           How can we solve this problem?</h3>
+          
         <LollipopChart currentCountry={country} countryData={countries} />
         
          <h3 style={{ color: '#333' }}>We can find the hint in <strong>empathy.</strong></h3>
@@ -212,7 +236,7 @@ export default function RationalPage({ countries = []}) {
           <CreativityScatter studentRows={creativityRows} />
         </div>
           
-    </div>
+
     <div style={{ fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center', background: 'linear-gradient(180deg, #fff 0%, #020202 30%)' }}>
       <h3 style={{ color: '#333' }}>What can we do for students' future?</h3>
       <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
@@ -221,11 +245,17 @@ export default function RationalPage({ countries = []}) {
         <div>
           <ConvergingParticles studentsNum={studentNum}/>
         </div>
+        
     </div>
+
+
     <div style={{ background: '#020202' }}>
-      
+     
     </div>
-    
+  </div>
+    </>
+        )} 
+
     </>
   );
 }
