@@ -58,7 +58,8 @@ EOT
 
       - name: Build and export (thinkmate-rational)
         run: |
-          npx run dev
+         cd thinkmate
+          npm run dev
         working-directory: thinkmate-rational
 
       - name: Upload artifact
