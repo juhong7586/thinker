@@ -298,24 +298,32 @@ export default function RationalPage({ countries = []}) {
         </div>
           
 
-    <div style={{ fontFamily: 'NanumSquareNeo', fontWeight: '600', textAlign: 'center', background: 'linear-gradient(180deg, #fff 0%, #020202 30%)' }}>
-      <h3 style={{ color: '#333' }}>What can we do for students' future?</h3>
+    <div style={{ fontFamily: 'NanumSquareNeo', paddingTop: '7rem', paddingBottom: '0rem',fontWeight: '600', textAlign: 'center', background: 'linear-gradient(180deg, #fff 0%, #020202 30%)' }}>
+      <h3 style={{ color: '#333' }}>So, what can we do for students' future?</h3>
       <p style={{lineHeight: 1.6, fontWeight: 400}}> We need to foster students' social problem solving skills. 
         <br /> For that, we need to provide learning experiences to think about their society. </p>
-        <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />
-        <div>
-          <ConvergingParticles studentsNum={studentNum}/>
-        </div>
-        
+        <GravityScatterPlot currentCountry={country} studentRows={filteredStudentData} />        
     </div>
 
 
-    <div style={{ background: '#020202' }}>
+    <div style={{ background: '#020202', paddingTop: '0rem' }}>
       <div>
-        <p>
+        <p style={{ fontSize: '1.5rem', color: '#ccc', textAlign: 'center', fontWeight: '600', paddingTop: '4rem', paddingBottom: '2rem' }}>
+          Data & References
+        </p>
+        <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '6rem' }}>
+         <p style={{ fontSize: '1.2rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', lineHeight: 1.6 }}>
+          Data
+        </p>
+        <p style={{ fontSize: '0.75rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', paddingBottom: '4rem', lineHeight: 1.6 }}>
+          <ul>
+            OECD PISA 2022 Database, https://www.oecd.org/pisa/data/2022database/
+          </ul>
+          </p>
+        <p style={{ fontSize: '1.2rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', lineHeight: 1.6 }}>
           References
         </p>
-        <p>
+        <p style={{ fontSize: '0.75rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', paddingBottom: '4rem', lineHeight: 1.6 }}>
           <ul>
             <li>Doron, E. (2017). Fostering creativity in school aged children through perspective taking and visual media based short term intervention program. Thinking Skills and Creativity, 23, 150–160. https://doi.org/10.1016/j.tsc.2016.12.003</li>
             <li>Feshbach, N. D. (1978). Empathy in children: Some theoretical and empirical considerations. In N. Eisenberg-Berg (Ed.), Development of prosocial behavior (pp. 213–231). Academic Press.</li>
@@ -329,10 +337,10 @@ export default function RationalPage({ countries = []}) {
             <li>Wray‐Lake, L. (2011), “The developmental roots of social responsibility in childhood and adolescence.”, New directions for child and adolescent development, Vol. 2011/134, pp. 11-25.</li>
            </ul>
         </p>
-        
         </div> 
     </div>
-  </div>
+    </div>
+    </div>
     </>
         )} 
 
