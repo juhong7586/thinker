@@ -280,10 +280,10 @@ export default function BeesSwarmPlot({ studentRows }) {
           .attr('x', (width + margin.left + margin.right) / 2)
           .attr('y', 20)
           .attr('text-anchor', 'middle')
-          .attr('font-size', '20px')
-          .attr('font-weight', 'bold')
-          .attr('fill', '#333')
-          .text('Creativity Distribution');
+          .attr('font-size', '18px')
+          .attr('font-weight', 'normal')
+          .attr('fill', '#888')
+          .text('CREATIVITY DISTRIBUTION');
 
 
       };

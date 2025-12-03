@@ -14,6 +14,7 @@ import ConvergingParticles from '../components/beforeGalaxy';
 import itemsList from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
 import CardGallery from '../components/cardGallery';
+import { line } from 'd3';
 
 
 
@@ -182,36 +183,60 @@ export default function RationalPage({ countries = []}) {
               <div style={{ color: '#AAA', fontStyle: 'italic', fontWeight: '800', padding: '5rem', textAlign: 'center', fontSize: '1.3rem'}}>Select country to see the data.</div>
             ) : (
               <>
-          <div style={{textAlign: 'center', fontFamily: 'NanumSquareNeo', fontSize: '1.125rem' }}>
-          <p style={{ marginTop: 8, paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
-          <SlopeChart currentCountry={country} countryData={countries} />
-            <div className={styles.subtitle} style={{lineHeight: 1.4 }}>
+          <div className={styles.subtitle} style={{ textAlign: 'center', fontFamily: 'NanumSquareNeo', fontSize: '1.125rem' }}>
+            <p style={{ marginTop: 8, paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
+            <SlopeChart currentCountry={country} countryData={countries} />
+
+            <div style={{ lineHeight: 1.4, marginTop: 12 }}>
               {selectedCountryData ? (
                 selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
-                  <p>{selectedCountryData.country} has more creativity specific to social problem solving than overall creativity.
-                  < br /> Hover over the country and check others with the same level of overall creativity.
-                  < br /> Do all our students have higher creativity in social problem solving than overall creativity?
-                  </p>
+                  <div>
+                    {selectedCountryData.country} has more creativity specific to social problem solving than overall creativity.
+                    <br /> Hover over the country and check others with the same level of overall creativity.
+                    <br /> Do all our students have higher creativity in social problem solving than overall creativity?
+                  </div>
                 ) : selectedCountryData.overallScore > selectedCountryData.socialSuccess ? (
-                  <p>{selectedCountryData.country} has higher overall creativity than the specific creativity to social problem solving.
-                  < br /> Hover over the country and check others with the same level of overall creativity.
-                  < br /> Do all our students have higher overall creativity than creativity in social problem solving?
-                  </p>
+                  <div>
+                    {selectedCountryData.country} has higher overall creativity than the specific creativity to social problem solving.
+                    <br /> Hover over the country and check others with the same level of overall creativity.
+                    <br /> Do all our students have higher overall creativity than creativity in social problem solving?
+                  </div>
                 ) : (
-                  <p>{selectedCountryData.country} has similar overall creativity and social success. 
-                  < br /> Hover over the country and check others with the same level of overall creativity.
-                  < br /> Do all our students have similar level of creativity for all domains?
-                  </p>
+                  <div>
+                    {selectedCountryData.country} has similar overall creativity and social success.
+                    <br /> Hover over the country and check others with the same level of overall creativity.
+                    <br /> Do all our students have similar level of creativity for all domains?
+                  </div>
                 )
               ) : (
-                <p>Summary data not available for <strong>{country}</strong>.</p>
-              )
-              }
-
+                <div>Summary data not available for <strong>{country}</strong>.</div>
+              )}
             </div>
 
-          <p className={styles.subtitle} style={{lineHeight: 1.6, paddingBottom: '4rem', paddingTop: '4rem' }}>
-          Let's take a deep look at the students' individual data. </p>
+            <div className={styles.subtitle} style={{ lineHeight: 1.6, paddingBottom: '4rem', paddingTop: '4rem' }}>
+              <div>
+                Look at the distribution of creativity scores among students.
+                <br />Here, one dot represents one student.
+              </div>
+
+              {selectedCountryData ? (
+                selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
+                  <div>
+                    Even though the social problem solving creativity seems high on average,
+                    <br /> there are many students who have low.
+                  </div>
+                ) : selectedCountryData.overallScore > selectedCountryData.socialSuccess ? (
+                  <div>
+                    {selectedCountryData.country} has lower social problem solving creativity than overall.
+                  </div>
+                ) : (
+                  <div>
+                    Even though the social problem solving creativity seems moderate on average,
+                    <br /> there are many students who have low.
+                  </div>
+                )
+              ) : null}
+            </div>
           
         <BeeSwarmPlot studentRows={filteredStudentData} />
         <p className={styles.subtitle} style={{lineHeight: 1.6 }}>
@@ -236,17 +261,39 @@ export default function RationalPage({ countries = []}) {
           ):null
         }
         </div>
-        <h3 style={{ color: '#333', paddingBottom: '6rem'}}>
+        <p style={{ color: '#333', paddingBottom: '6rem', fontStyle: 'italic', lineHeight: 1.6 }}>
           What makes the difference?
-          <br />How can we solve this problem?</h3>
+          <br />How can we solve this problem?</p>
+          <h3 style={{ color: '#333' }}>We can find the hint in <strong>empathy.</strong></h3>
+          <div style={{ color: '#333', lineHeight: 1.6, background: 'linear-gradient(180deg, #eeebe3ff 0%, #ffffff 100%)', padding: '1rem 2rem', borderRadius: '8px', marginTop: '1rem'  }}>
+            <p>
+              As one of the abilities of future 2030 skills suggested by OECD,
+              <br /> empathy is defined as the ability to understand another's emotional state or condition.
+            </p>
+
+            <p>
+              It includes the ability to:
+            </p>
+
+            <ol style={{ marginTop: 6, marginBottom: 6 }}>
+              <ul>1. <strong>Recognize</strong> emotions in others</ul>
+              <ul>2. <strong>Understand</strong> another person's perspective</ul>
+              <ul>3. <strong>Communicate</strong> that understanding to others</ul>
+            </ol>
+
+            <p>
+              It is a foundation for citizenship and responsibility toward society.
+              <br /> Empathetic students are more likely to engage in social problem solving and creative thinking to address societal challenges.
+            </p>
+          </div>
+          <p style={{fontSize: '0.85rem', fontStyle: 'italic', paddingBottom: '6rem'}}>Feshbach, 1978; Hope, 2014; OECDa, 2019; Spinrad et al., 2006; Steponavičius et al., 2023; Wray‐Lake, 2011</p>
           
         <LollipopChart currentCountry={country} countryData={countries} />
         
-         <h3 style={{ color: '#333' }}>We can find the hint in <strong>empathy.</strong></h3>
-         <p style={{ lineHeight: 1.6 }}>
-          <br /> Chart above is about confidence in self-directed learning, and social and emotional skills.
-          <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
-        <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
+                  <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>
+          <br /> Chart above is about confidence in self-directed learning and empathy.
+          <br />Even after accounting for students' and schools' socio-economic profile, and mathematics performance,
+          <br />We can see that more empathic students tend to have higher confidence in self-directed learning.
           < br />
         </p>
 
@@ -256,6 +303,7 @@ export default function RationalPage({ countries = []}) {
           <br /> And take a look at the gender. Click the bar.
          </p>
          <p style={{ lineHeight: 1.6 }} id="bar-explanation">  
+          Older students tend to report higher empathy and tolerance than younger students. (OECDb, 2024) 
           </p>
 
 
@@ -278,7 +326,22 @@ export default function RationalPage({ countries = []}) {
 
 
     <div style={{ background: '#020202' }}>
-     
+      <div>
+        <p>
+          References
+        </p>
+        <p>
+          <ul>
+            <li>Hope, E. (2014), “The role of sociopolitical attitudes and civic education in the civic engagement of black youth”, Journal of Research on Adolescence, Vol. 24/3, pp. 460-470.</li>
+            <li>OECDa (2019), OECD Future of education and skills 2030: OECD Learning compass 20230 a series of concept notes, OECD Publishing, Paris.</li>
+            <li>OECDb (2024), Social and emotional skills for better lives: Findings from the OECD survey on social and emotional Skills 2023, OECD Publishing, Paris, https://doi.org/10.1787/35ca7b7c-en.</li>
+            <li>Spinrad, T. L., Eisenberg, N., Cumberland, A., Fabes, R. A., Valiente, C., Shepard, S. A., Reiser, M., Losoya, S. H., & Guthrie, I. K. (2006). Relation of emotion-related regulation to children's social competence: a longitudinal study. Emotion (Washington, D.C.), 6(3), 498–510. https://doi.org/10.1037/1528-3542.6.3.498</li>
+            <li>Steponavičius, M., C. Gress-Wright and A. Linzarini (2023), “Social and emotional skills: Latest evidence on teachability and impact on life outcomes”, OECD Education Working Papers, No. 304, OECD Publishing, Paris, https://doi.org/10.1787/ba34f086-en.</li>
+          <li>Wray‐Lake, L. (2011), “The developmental roots of social responsibility in childhood and adolescence.”, New directions for child and adolescent development, Vol. 2011/134, pp. 11-25.</li>
+           </ul>
+        </p>
+        
+        </div> 
     </div>
   </div>
     </>

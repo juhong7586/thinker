@@ -56,7 +56,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
         .attr('transform', 'rotate(-45)')
         .style('text-anchor', 'end')
         .style('font-size', d => {
-          if (d === currentCountry) return '1rem';
+          if (d === currentCountry) return '1.125rem';
           else return '0.8rem';
         })
         .attr('dx', '-0.6em')
@@ -168,7 +168,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
             .attr('x', xScale(currentDatum.country) + xScale.bandwidth() / 2)
             .attr('y', yScale(currentDatum.empathyScore) - 20)
             .attr('text-anchor', 'middle')
-            .attr('font-size', '1.1rem')
+            .attr('font-size', '1.2rem')
             .attr('font-weight', '600')
             .attr('fill', '#6C5838')
             .text(currentDatum.empathyScore.toFixed(2));
@@ -179,13 +179,14 @@ export default function LollipopChart({ currentCountry, countryData }) {
     
       // Add title
       svg.append('text')
-        .attr('x', (width + margin.left + margin.right) / 2)
-        .attr('y', 15)
-        .attr('text-anchor', 'middle')
-        .attr('font-size', '1rem')
-        .attr('font-weight', 'bold')
-        .attr('fill', '#333')
-        .text('Power of Empathy on Self-Directed Learning');
+          .attr('x', (width + margin.left + margin.right) / 2)
+          .attr('y', 20)
+          .attr('text-anchor', 'middle')
+          .attr('font-size', '18px')
+          .attr('font-weight', 'normal')
+          .attr('fill', '#888')
+          .attr('padding-bottom', '1rem')
+          .text('Power of Empathy on Self-Directed Learning');
         
       };  
       loadData().catch(err => console.error('Failed to load data for LollipopChart:', err));
