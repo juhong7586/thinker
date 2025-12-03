@@ -1,10 +1,16 @@
+import styles from '../../styles/Home.module.css';
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
-export default function CreativityScatter({ studentRows }) {
+export default function CreativityScatter({ studentRows, barClick, selectedBar }) {
   const svgRef = useRef();
   const [selectedMetric, setSelectedMetric] = useState('both');
-
+  if (selectedBar != null) {
+    var { grade: gradeFilter, gender: genderFilter } = selectedBar;
+  } else {
+    var gradeFilter = null;
+    var genderFilter = null;
+  }
   useEffect(() => {
     const loadData = async () => {
       let rawData = null;
@@ -159,6 +165,58 @@ export default function CreativityScatter({ studentRows }) {
         .attr('stroke', 'none')
         .attr('d', area);
 
+      // draw individual points for students — only when a single metric is selected
+      const pointSets = [];
+      if (!showBoth) {
+        pointSets.push({
+          key: yDataKey,
+          data: rawData.filter(d => !isNaN(d[yDataKey]) && !isNaN(d.ave_emp)),
+          color: yDataKey === 'ave_cr' ? '#85908D' : '#86525E'
+        });
+      }
+
+      pointSets.forEach(set => {
+        const sel = g.selectAll(`.pts-${set.key}`).data(set.data, (d, i) => d.id ?? d._id ?? `${set.key}-${i}`);
+
+        sel.join(
+          enter => enter.append('circle')
+            .attr('class', `pts-${set.key}`)
+            .attr('cx', d => xScale(d.ave_emp))
+            .attr('cy', d => yScale(d[set.key]))
+            .attr('r', 3)
+            .attr('fill', set.color)
+            .attr('fill-opacity', 0.7)
+            .attr('stroke', 'rgba(0,0,0,0.06)')
+            .attr('stroke-width', 0.5)
+            .each(function(d){
+              const title = `Empathy: ${d.ave_emp}, ${set.key}: ${d[set.key]}`;
+              d3.select(this).append('title').text(title);
+            }),
+          update => update
+            .attr('cx', d => xScale(d.ave_emp))
+            .attr('cy', d => yScale(d[set.key]))
+            .attr('fill', set.color),
+          exit => exit.remove()
+        );
+
+        // apply filtering highlight if gradeFilter or genderFilter provided
+        if (gradeFilter != null || genderFilter != null) {
+          g.selectAll(`.pts-${set.key}`).attr('opacity', d => {
+            const gradeVal = d.grade ?? d.ST001D01T ?? d.grade;
+            const genVal = d.gender ?? d.ST004D01T ?? d.gender ?? '';
+            const gradeMatch = gradeFilter == null ? true : String(gradeVal) === String(gradeFilter);
+            const genderMatch = genderFilter == null ? true : String(genVal) === String(genderFilter);
+            return (gradeMatch && genderMatch) ? 1 : 0.12;
+          }).attr('r', d => {
+            const gradeVal = d.grade ?? d.ST001D01T ?? d.grade;
+            const genVal = d.gender ?? d.ST004D01T ?? d.gender ?? '';
+            const gradeMatch = gradeFilter == null ? true : String(gradeVal) === String(gradeFilter);
+            const genderMatch = genderFilter == null ? true : String(genVal) === String(genderFilter);
+            return (gradeMatch && genderMatch) ? 3.8 : 2.2;
+          });
+        }
+      });
+
 
       // Add max line 
       const lineMax = d3.line()
@@ -251,7 +309,7 @@ export default function CreativityScatter({ studentRows }) {
         const lineMaxOther = d3.line()
           .x(d => xScale(d.x))
           .y(d => yScale(d.max))
-          .curve(d3.curveCatmullRom.alpha(0.02));
+          .curve(d3.curveCatmullRom.alpha(0.001));
 
         g.append('path')
           .datum(envelopeOther)
@@ -264,7 +322,7 @@ export default function CreativityScatter({ studentRows }) {
         const lineMinOther = d3.line()
           .x(d => xScale(d.x))
           .y(d => yScale(d.min))
-          .curve(d3.curveCatmullRom.alpha(0.01));
+          .curve(d3.curveCatmullRom.alpha(0.001));
 
         g.append('path')
           .datum(envelopeOther)
@@ -330,34 +388,60 @@ export default function CreativityScatter({ studentRows }) {
     loadData().catch(err => console.error('Failed to load data for ScatterPlot:', err));
   }, [selectedMetric, studentRows]);
 
-  return (
-    <div style={{ maxWidth: '50%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <div>
-        <div style={{ textAlign: 'center', height: '40px' }}>
-          <label style={{ marginRight: '10px', fontSize: '16px', fontWeight: 'bold' }}>
-            Empathy on
-          </label>
-          <select 
-            value={selectedMetric}
-            onChange={(e) => setSelectedMetric(e.target.value)}
-            style={{
-              fontSize: '1rem',
-              cursor: 'pointer', 
-              fontFamily: 'inherit',
-              fontWeight: 'bold',
-              padding: '6px 20px',
-              borderRadius: '20px',
+  // Early return when no student rows are available
+  if (gradeFilter == null || genderFilter == null) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <p className={styles.subtitle}>No student data available for the selected country.</p>
+      </div>
+    );
+  }
 
-            }}
-          >
-            <option value="both">Both Metrics</option>
-            <option value="ave_cr">Creativity (Overall)</option>
-            <option value="ave_cr_social">Creativity (Social Problem Solving)</option>
-            
-          </select>
-          
+  return (
+    <div style={{ alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', height: '500px' }}>
+      <div style={{ width: '50%' }}>
+        <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>
+          Now, here's <strong>{genderFilter}</strong> students in {studentRows?.[0]?.country ?? ''} in <strong>grade {gradeFilter}</strong>.
+          <br /> The students are filtered based on your selection in the bar chart above.
+          <br /> check the distribution of creativity and empathy scores among the filtered students.
+          <br /> The thickness of the trend line indicates the density of students in that area.
+          <br /> A thicker line means more students have similar scores.
+        </p>
+        <details>
+          <summary style={{ color: '#555', cursor: 'pointer', marginBottom: '0.5rem' }}>
+            <strong>How is the trend?</strong>
+          </summary>
+          <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: '#666' }}>
+
+          </p>
+        </details>
+      </div>
+
+      <div style={{ maxWidth: '50%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div>
+          <div style={{ textAlign: 'center', height: '40px' }}>
+            <label style={{ marginRight: '10px', fontSize: '16px', fontWeight: 'bold' }}>
+              Empathy on
+            </label>
+            <select
+              value={selectedMetric}
+              onChange={(e) => setSelectedMetric(e.target.value)}
+              style={{
+                fontSize: '1rem',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontWeight: 'bold',
+                padding: '6px 20px',
+                borderRadius: '20px'
+              }}
+            >
+              <option value="both">Both Metrics</option>
+              <option value="ave_cr">Creativity (Overall)</option>
+              <option value="ave_cr_social">Creativity (Social Problem Solving)</option>
+            </select>
+          </div>
+          <svg ref={svgRef}></svg>
         </div>
-        <svg ref={svgRef}></svg>
       </div>
     </div>
   );

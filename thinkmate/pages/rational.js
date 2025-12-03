@@ -281,20 +281,20 @@ export default function RationalPage({ countries = []}) {
           </p>
           <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>  
           <h3>How's your class like?</h3> 
-          Left bar chart shows 
-          <br />the association between empathy and social problem solving creativity
+          Left bar chart shows the average empathy scores 
           <br /> by grade and gender in <strong>{country}</strong>.
-          <br />
-          <br /> Choose the grade. And take a look at the gender.
-          <br /> Click the bar.
+          <br /> 
+
+          <br /> The darker bar is for female students, 
+          <br />and the lighter one is for male students.
+          <br /> Click the bars to filter the students in the chart below.
          </p>
         </div>
         <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} style={{ width: '50%' }} />
           </div>
           <p style={{ fontSize: '3rem', alignSelf: 'center' }}> ↓ </p>
-           <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem', height: '500px' }}>
-          <CreativityScatter studentRows={creativityRows} />
-
+           <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', height: '500px' }}>
+        <CreativityScatter studentRows={creativityRows} onBarClick={handleBarClick} selectedBar={barFilter} />
         </div>
           
 
