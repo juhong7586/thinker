@@ -86,6 +86,16 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 		const svg = d3.select(svgRef.current)
 			.attr('width', width)
 			.attr('height', height);
+
+		// Chart title
+		svg.append('text')
+			.attr('x', width / 2)
+			.attr('y', margin.top / 2)
+			.attr('text-anchor', 'middle')
+			.attr('font-size', '1rem')
+			.attr('font-weight', 700)
+			.attr('fill', '#222')
+			.text('Average Empathy by Grade');
 		
 		const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -105,8 +115,27 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 		.attr('font-size', '0.8rem')
 		.attr('fill', '#111');
 
+	// x axis label
+	g.append('text')
+		.attr('x', w / 2)
+		.attr('y', h + 40)
+		.attr('text-anchor', 'middle')
+		.attr('font-size', '0.9rem')
+		.attr('fill', '#444')
+		.text('Grade');
+
 		// y axis
 		g.append('g').call(d3.axisLeft(y).ticks(5)).selectAll('text').attr('font-size', '0.8rem').attr('fill', '#111');
+
+		// y axis label
+	g.append('text')
+		.attr('transform', 'rotate(-90)')
+		.attr('x', -h / 2)
+		.attr('y', -38)
+		.attr('text-anchor', 'middle')
+		.attr('font-size', '0.9rem')
+		.attr('fill', '#444')
+		.text('score');
 
 		// gridlines
 		g.append('g')
@@ -217,7 +246,7 @@ export default function GroupBarChart({ studentRows = [], onBarClick }) {
 			legendRow.append('text')
 				.attr('x', 18)
 				.attr('y', 10)
-				.attr('font-size', '0.7rem')
+				.attr('font-size', '0.8rem')
 				.attr('fill', '#111')
 				.text(item.label);
 		});

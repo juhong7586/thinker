@@ -271,19 +271,25 @@ export default function RationalPage({ countries = []}) {
 
          <h3 style={{ color: '#333', paddingTop: '3rem' }}>Let's take a deep look.</h3>
          
+        <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem', height: '500px' }}>
+          
+          <div style={{width: '50%'}}>
          <p className={styles.subtitle} style={{ lineHeight: 1.6 }} id="bar-explanation">  
-          According to the OECD reports, older students tend to report higher empathy and tolerance than younger students.
-          <br /> Also, interestingly, female students tend to report higher empathy.
+          According to the OECD reports, 
+          <br /><strong>Older </strong> students tend to report higher empathy than younger students.
+          <br /> Also, interestingly, <strong>female</strong> students tend to report higher empathy.
           </p>
           <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>  
-          How's your class like? 
-          <br /> choose the grade. And take a look at the gender.
+          <h3>How's your class like?</h3> 
+          Left bar chart shows 
+          <br />the association between empathy and social problem solving creativity
+          <br /> by grade and gender in <strong>{country}</strong>.
+          <br />
+          <br /> Choose the grade. And take a look at the gender.
           <br /> Click the bar.
          </p>
-
-
-        <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem', height: '500px' }}>
-          <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} />
+        </div>
+        <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} style={{ width: '50%' }} />
           </div>
           <p style={{ fontSize: '3rem', alignSelf: 'center' }}> ↓ </p>
            <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem', height: '500px' }}>

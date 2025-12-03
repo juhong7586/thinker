@@ -20,7 +20,7 @@ export default function FlipCards() {
   ];
    
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '20vh' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ display: 'flex', gap: '5vw', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '100%' }}>
         {cards.map((card, index) => {
           const transformStr = `${flipped[index] ? 'rotateY(180deg)' : 'rotateY(0deg)'}${hoverIndex === index ? ' translateY(-8px)' : ''}`;
