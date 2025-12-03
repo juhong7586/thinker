@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 export default function CreativityScatter({ studentRows, barClick, selectedBar }) {
   const svgRef = useRef();
   const [selectedMetric, setSelectedMetric] = useState('both');
+  const [slopes, setSlopes] = useState({ overall: 0, social: 0 });
   if (selectedBar != null) {
     var { grade: gradeFilter, gender: genderFilter } = selectedBar;
   } else {
@@ -55,6 +56,9 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
 
       const regPrimary = calcRegression(dataCr, 'ave_cr');
       const regOther = calcRegression(dataSocial, 'ave_cr_social');
+
+      // publish slopes for UI display
+      try { setSlopes({ overall: regPrimary.slope || 0, social: regOther.slope || 0 }); } catch (e) { /* ignore */ }
 
       // choose primary regression depending on selection
       const { slope = 0, intercept = 0 } = (selectedMetric === 'ave_cr' || showBoth) ? regPrimary : regOther;
@@ -156,7 +160,7 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
         .x(d => xScale(d.x))
         .y0(d => yScale(d.min))
         .y1(d => yScale(d.max))
-        .curve(d3.curveCatmullRom.alpha(0.01));
+        .curve(d3.curveCardinalOpen.tension(1));
 
       g.append('path')
         .datum(envelope)
@@ -222,7 +226,7 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
       const lineMax = d3.line()
         .x(d => xScale(d.x))
         .y(d => yScale(d.max))
-        .curve(d3.curveCatmullRom.alpha(0.02));
+        .curve(d3.curveCardinalOpen.tension(1));
 
       g.append('path')
         .datum(envelope)
@@ -236,7 +240,7 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
       const lineMin = d3.line()
         .x(d => xScale(d.x))
         .y(d => yScale(d.min))
-        .curve(d3.curveCatmullRom.alpha(0.01));
+        .curve(d3.curveCardinalOpen.tension(1));
 
       g.append('path')
         .datum(envelope)
@@ -296,7 +300,7 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
           .x(d => xScale(d.x))
           .y0(d => yScale(d.min))
           .y1(d => yScale(d.max))
-          .curve(d3.curveCatmullRom.alpha(0.01));
+          .curve(d3.curveCardinalOpen.tension(1));
 
         g.append('path')
           .datum(envelopeOther)
@@ -309,7 +313,7 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
         const lineMaxOther = d3.line()
           .x(d => xScale(d.x))
           .y(d => yScale(d.max))
-          .curve(d3.curveCatmullRom.alpha(0.001));
+          .curve(d3.curveCardinalOpen.tension(1));
 
         g.append('path')
           .datum(envelopeOther)
@@ -322,7 +326,7 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
         const lineMinOther = d3.line()
           .x(d => xScale(d.x))
           .y(d => yScale(d.min))
-          .curve(d3.curveCatmullRom.alpha(0.001));
+          .curve(d3.curveCardinalOpen.tension(1));
 
         g.append('path')
           .datum(envelopeOther)
@@ -389,7 +393,7 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
   }, [selectedMetric, studentRows]);
 
   // Early return when no student rows are available
-  if (gradeFilter == null || genderFilter == null) {
+  if (!Array.isArray(studentRows) || studentRows.length === 0) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
         <p className={styles.subtitle}>No student data available for the selected country.</p>
@@ -403,17 +407,36 @@ export default function CreativityScatter({ studentRows, barClick, selectedBar }
         <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>
           Now, here's <strong>{genderFilter}</strong> students in {studentRows?.[0]?.country ?? ''} in <strong>grade {gradeFilter}</strong>.
           <br /> The students are filtered based on your selection in the bar chart above.
-          <br /> check the distribution of creativity and empathy scores among the filtered students.
-          <br /> The thickness of the trend line indicates the density of students in that area.
-          <br /> A thicker line means more students have similar scores.
+          <br /> Check distribution of empathy scores on {selectedMetric}.
+          <br /> The thickness of the trend line indicates the density of students.
+          </p>
+          <p className={styles.subtitle} style={{background: "#f9f2e5ff", color: '#555', padding: '0.8rem', borderRadius: '8px', lineHeight: 1.5 }}>
+          1. A thicker line means more students have similar scores.
+          <br /> 2. Available ranges are as follows: Empathy(1-5), Creativity(0-2)
+          <br /> 3. If you want to check detailed distribution, 
+          <br /> please select a single metric from the dropdown.
         </p>
         <details>
-          <summary style={{ color: '#555', cursor: 'pointer', marginBottom: '0.5rem' }}>
-            <strong>How is the trend?</strong>
+          <summary style={{ color: '#555', cursor: 'pointer', marginBottom: '0.5rem', marginTop: '2rem' }}>
+            <strong>How are the trends?</strong>
           </summary>
-          <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: '#666' }}>
-
-          </p>
+          <div style={{ padding: '0.5rem 0' }}>
+            <p style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
+              <strong>Slopes</strong> — Overall: <strong>{Number(slopes.overall).toFixed(3)}</strong>, Social: <strong>{Number(slopes.social).toFixed(3)}</strong>
+            </p>
+            <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.95rem', color: '#666' }}>
+              {(() => {
+                const diff = slopes.social - slopes.overall;
+                const absDiff = Math.abs(diff);
+                if (absDiff < 1e-3) return 'The slope is similar for both creativity measures.';
+                if (diff > 0) return `Social problem-solving creativity increases ${absDiff.toFixed(3)} more per empathy unit than overall creativity.`;
+                return `Overall creativity increases ${absDiff.toFixed(3)} more per empathy unit than social problem-solving creativity.`;
+              })()}
+            </p>
+            <p style={{ margin: '1.2rem 0 0 0', fontSize: '0.8rem', color: '#888', fontStyle: 'italic' }}>
+              Interpretation: a larger slope means creativity changes more with empathy across students.
+            </p>
+          </div>
         </details>
       </div>
 
