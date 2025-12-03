@@ -58,6 +58,7 @@ jobs:
 
       - name: Build and export (thinkmate-rational)
         run: |
+          cd thinkmate
           npx next build
           npx next export -o out
         working-directory: thinkmate-rational
