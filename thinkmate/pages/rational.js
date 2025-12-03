@@ -183,24 +183,35 @@ export default function RationalPage({ countries = []}) {
             ) : (
               <>
           <div style={{textAlign: 'center', fontFamily: 'NanumSquareNeo' }}>
-          <p style={{ textAlign: 'center', marginTop: 8, fontSize: '1.2rem', paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
+          <p style={{ marginTop: 8, fontSize: '1.2rem', paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
           <SlopeChart currentCountry={country} countryData={countries} />
-            <div>
+            <div className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.4 }}>
               {selectedCountryData ? (
                 selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
-                  <p>{selectedCountryData.country} has more social success than overall creativity.</p>
+                  <p>{selectedCountryData.country} has more creativity specific to social problem solving than overall creativity.
+                  < br /> Hover over the country and check others with the same level of overall creativity.
+                  < br /> Do all our students have higher creativity in social problem solving than overall creativity?
+                  </p>
                 ) : selectedCountryData.overallScore > selectedCountryData.socialSuccess ? (
-                  <p>{selectedCountryData.country} has higher overall creativity than social success.</p>
+                  <p>{selectedCountryData.country} has higher overall creativity than the specific creativity to social problem solving.
+                  < br /> Hover over the country and check others with the same level of overall creativity.
+                  < br /> Do all our students have higher overall creativity than creativity in social problem solving?
+                  </p>
                 ) : (
-                  <p>{selectedCountryData.country} has similar overall creativity and social success.</p>
+                  <p>{selectedCountryData.country} has similar overall creativity and social success. 
+                  < br /> Hover over the country and check others with the same level of overall creativity.
+                  < br /> Do all our students have similar level of creativity for all domains?
+                  </p>
                 )
               ) : (
                 <p>Summary data not available for <strong>{country}</strong>.</p>
-              )}
+              )
+              }
+
             </div>
 
-          <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
-          IT is really a problem, especially comparing between students. </p>
+          <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6, paddingBottom: '4rem', paddingTop: '4rem' }}>
+          Let's take a deep look at the students' individual data. </p>
           
               <BeeSwarmPlot studentRows={filteredStudentData} />
         <p className={styles.subtitle} style={{ fontSize: '1.2rem', lineHeight: 1.6 }}>
