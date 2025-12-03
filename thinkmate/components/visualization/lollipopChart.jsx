@@ -70,14 +70,14 @@ export default function LollipopChart({ currentCountry, countryData }) {
       g.append('g')
         .call(yAxis)
         .append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('y', 0 - margin.bottom)
-        .attr('x', 0 - (height / 2))
+        .attr('y', 0-margin.top)
+        .attr('x', 25)
+        .attr('text-anchor', 'start')
         .attr('dy', '1em')
-        .attr('fill', 'black')
+        .attr('fill', '#888')
         .attr('text-anchor', 'middle')
-        .attr('font-size', '1.2rem')
-        .text('Self-Directed Learning Index');
+        .attr('font-size', '1rem')
+        .text('Effect size (SD)');
 
       // Add grid lines
       g.append('g')

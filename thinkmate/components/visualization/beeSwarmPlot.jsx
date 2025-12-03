@@ -266,7 +266,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           const dy = y - lastY;
           lastY = y;
           // threshold to avoid tiny scrolls flipping state
-          if (dy > 70) {
+          if (dy > 100) {
             doScatter();
           } else if (dy < -10) {
             doGather();

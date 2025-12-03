@@ -187,7 +187,7 @@ export default function RationalPage({ countries = []}) {
             <p style={{ marginTop: 8, paddingBottom: '1rem' }}><strong>Selected country:</strong> {country}</p>
             <SlopeChart currentCountry={country} countryData={countries} />
 
-            <div style={{ lineHeight: 1.4, marginTop: 12 }}>
+            <div className={styles.subtitle} style={{ lineHeight: 1.4, paddingTop: '2rem', paddingBottom: '3rem' }}>
               {selectedCountryData ? (
                 selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
                   <div>
@@ -213,33 +213,9 @@ export default function RationalPage({ countries = []}) {
               )}
             </div>
 
-            <div className={styles.subtitle} style={{ lineHeight: 1.6, paddingBottom: '4rem', paddingTop: '4rem' }}>
-              <div>
-                Look at the distribution of creativity scores among students.
-                <br />Here, one dot represents one student.
-              </div>
-
-              {selectedCountryData ? (
-                selectedCountryData.overallScore < selectedCountryData.socialSuccess ? (
-                  <div>
-                    Even though the social problem solving creativity seems high on average,
-                    <br /> there are many students who have low.
-                  </div>
-                ) : selectedCountryData.overallScore > selectedCountryData.socialSuccess ? (
-                  <div>
-                    {selectedCountryData.country} has lower social problem solving creativity than overall.
-                  </div>
-                ) : (
-                  <div>
-                    Even though the social problem solving creativity seems moderate on average,
-                    <br /> there are many students who have low.
-                  </div>
-                )
-              ) : null}
-            </div>
-          
         <BeeSwarmPlot studentRows={filteredStudentData} />
-        <p className={styles.subtitle} style={{lineHeight: 1.6 }}>
+        <div className={styles.subtitle} >
+        <p style={{lineHeight: 1.6 }}>
           Look at the distribution of creativity scores among students.
           < br />Here, one dot represents one student.
           </p>
@@ -261,10 +237,11 @@ export default function RationalPage({ countries = []}) {
           ):null
         }
         </div>
+        </div>
         <p style={{ color: '#333', paddingBottom: '6rem', fontStyle: 'italic', lineHeight: 1.6 }}>
           What makes the difference?
           <br />How can we solve this problem?</p>
-          <h3 style={{ color: '#333' }}>We can find the hint in <strong>empathy.</strong></h3>
+          <h3 style={{ color: '#333', paddingTop: '3rem' }}>We can find the hint in <strong>empathy.</strong></h3>
           <div style={{ color: '#333', lineHeight: 1.6, background: 'linear-gradient(180deg, #eeebe3ff 0%, #ffffff 100%)', padding: '1rem 2rem', borderRadius: '8px', marginTop: '1rem'  }}>
             <p>
               As one of the abilities of future 2030 skills suggested by OECD,
@@ -275,19 +252,20 @@ export default function RationalPage({ countries = []}) {
               It includes the ability to:
             </p>
 
-            <ol style={{ marginTop: 6, marginBottom: 6 }}>
+            <ol style={{ marginTop: 6, marginBottom: 3 }}>
               <ul>1. <strong>Recognize</strong> emotions in others</ul>
               <ul>2. <strong>Understand</strong> another person's perspective</ul>
               <ul>3. <strong>Communicate</strong> that understanding to others</ul>
             </ol>
 
             <p>
-              It is a foundation for citizenship and responsibility toward society.
+              As a foundation for citizenship and responsibility toward society,
+              < br /> empathy mediates other social-emotional skills such as tolerance, cooperation, and teamwork.
               <br /> Empathetic students are more likely to engage in social problem solving and creative thinking to address societal challenges.
             </p>
           </div>
-          <p style={{fontSize: '0.85rem', fontStyle: 'italic', paddingBottom: '6rem'}}>Feshbach, 1978; Hope, 2014; OECDa, 2019; Spinrad et al., 2006; Steponavičius et al., 2023; Wray‐Lake, 2011</p>
-          
+          <p style={{fontSize: '0.85rem', fontStyle: 'italic', paddingBottom: '7rem', color: '#888'}}>Feshbach, 1978; Hope, 2014; OECDa, 2019; Spinrad et al., 2006; Steponavičius et al., 2023; Wray‐Lake, 2011</p>
+                      <h3 style={{ color: '#333', paddingBottom: '7rem' }}>So, how important is empathy in nurturing problem solving skills?</h3>
         <LollipopChart currentCountry={country} countryData={countries} />
         
                   <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>
