@@ -173,7 +173,7 @@ export default function BeesSwarmPlot({ studentRows }) {
 
               // lookup count depending on type
               const count = d.type === 'Overall' ? (overallCounts.get(d.value) || 0) : (socialCounts.get(d.value) || 0);
-              const label = ` student${count === 1 ? '' : 's'} • `;
+           
 
               // position tooltip near the point (transform relative to svg)
               const xPos = xScale(d.value);
@@ -265,7 +265,7 @@ export default function BeesSwarmPlot({ studentRows }) {
           const dy = y - lastY;
           lastY = y;
           // threshold to avoid tiny scrolls flipping state
-          if (dy > 10) {
+          if (dy > 40) {
             doScatter();
           } else if (dy < -10) {
             doGather();

@@ -6,7 +6,7 @@ import CreativityScatter from '../components/visualization/creativityScatterPlot
 import BeeSwarmPlot from '../components/visualization/beeSwarmPlot';
 import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import ConvergingParticles from '../components/beforeGalaxy';
 
@@ -36,6 +36,16 @@ export default function RationalPage({ countries = []}) {
   // Split-button state: controls the floating split control on the left
   const [splitMenuOpen, setSplitMenuOpen] = useState(false);
   const [splitSelected, setSplitSelected] = useState(country || (countryList.length ? countryList[0] : null));
+
+  // Keep the split-selected label in sync with the active `country`.
+  useEffect(() => {
+    if (country) {
+      setSplitSelected(country);
+    } else if (!country && countryList && countryList.length > 0) {
+      // fallback to first country when none selected
+      setSplitSelected(countryList[0]);
+    }
+  }, [country, countryList]);
 
   // // If `country` is falsy we pass through the original array (show all).
   let filteredStudentData = [];
@@ -176,16 +186,27 @@ export default function RationalPage({ countries = []}) {
           <br /> Although they possess high creativity, they struggle when the problems narrow down to social problems.
           <br /> This is directly related to the unsolved conflicts within our society.</p>
 
-        <h3 style={{ color: '#333', paddingTop: '6rem' }}>
+        <h3 style={{ color: '#333', paddingBottom: '6rem', paddingTop: '1rem' }}>
           How can we solve this problem?</h3>
         <LollipopChart currentCountry={country} countryData={countries} />
-        <p style={{ lineHeight: 1.6 }}>
-          We can find hint in <strong>empathy.</strong>
+        
+         <h3 style={{ color: '#333' }}>We can find the hint in <strong>empathy.</strong></h3>
+         <p style={{ lineHeight: 1.6 }}>
           <br /> Chart above is about confidence in self-directed learning, and social and emotional skills.
           <br />We can see that students who has higher empathy score tends to have higher confidence in self-directed learning index.
         <br />It shows change in the index of confidence in self-directed learning index with a one-unit increase in each of the social and emotional skills (SES) indices after accounting for students' and schools' socio-economic profile, and mathematics performance. 
           < br />
         </p>
+
+         <h3 style={{ color: '#333', paddingTop: '6rem' }}>Let's take a deep look.</h3>
+         <p style={{ lineHeight: 1.6 }}>  
+          How's your class like? choose the grade. 
+          <br /> And take a look at the gender. Click the bar.
+         </p>
+         <p style={{ lineHeight: 1.6 }} id="bar-explanation">  
+          </p>
+
+
         <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', gap: '2rem', paddingTop: '2rem' }}>
           <GroupBarChart studentRows={filteredStudentData} onBarClick={handleBarClick} />
           <CreativityScatter studentRows={creativityRows} />
