@@ -58,6 +58,7 @@ EOT
 
       - name: Build and export (thinkmate-rational)
         run: |
+          cd thinkmate
           npm run dev
         working-directory: thinkmate-rational
 
