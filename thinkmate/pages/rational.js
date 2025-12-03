@@ -311,11 +311,11 @@ export default function RationalPage({ countries = []}) {
         <p style={{ fontSize: '1.5rem', color: '#ccc', textAlign: 'center', fontWeight: '600', paddingTop: '4rem', paddingBottom: '2rem' }}>
           Data & References
         </p>
-        <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '6rem' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
          <p style={{ fontSize: '1.2rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', lineHeight: 1.6 }}>
           Data
         </p>
-        <p style={{ fontSize: '0.75rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', paddingBottom: '4rem', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '0.75rem', color: '#ccc', textAlign: 'left', maxWidth: '90%', margin: '0 auto', paddingBottom: '2rem', lineHeight: 1.6 }}>
           <ul>
             OECD PISA 2022 Database, https://www.oecd.org/pisa/data/2022database/
           </ul>
