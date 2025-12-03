@@ -1,8 +1,55 @@
-pyenv: uvicorn: command not found
-
-The `uvicorn' command exists in these Python versions:
-  .venv
-  3.11.8/envs/.venv
-
-Note: See 'pyenv help global' for tips on allowing both
-      python2 and python3 to be found.
+Traceback (most recent call last):
+  File "/Users/juhong/.pyenv/versions/.venv/bin/uvicorn", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/click/core.py", line 1462, in __call__
+    return self.main(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/click/core.py", line 1383, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/click/core.py", line 1246, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/click/core.py", line 814, in invoke
+    return callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/main.py", line 423, in main
+    run(
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/main.py", line 593, in run
+    server.run()
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/_compat.py", line 23, in asyncio_run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/config.py", line 438, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/importer.py", line 22, in import_from_string
+    raise exc from None
+  File "/Users/juhong/.pyenv/versions/3.11.8/envs/.venv/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/juhong/.pyenv/versions/3.11.8/lib/python3.11/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1126, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1140, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'server'
