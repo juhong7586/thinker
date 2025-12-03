@@ -269,9 +269,7 @@ export default function RationalPage({ countries = []}) {
           < br />
         </p> */}
 
-        <h3 style={{ color: '#333', paddingBottom: '7rem' }}>So, how important is empathy in nurturing problem solving skills?</h3>
-
-         <h3 style={{ color: '#333', paddingTop: '6rem' }}>Let's take a deep look.</h3>
+         <h3 style={{ color: '#333', paddingTop: '3rem' }}>Let's take a deep look.</h3>
          <p style={{ lineHeight: 1.6 }}>  
           How's your class like? choose the grade. 
           <br /> And take a look at the gender. Click the bar.

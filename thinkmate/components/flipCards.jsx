@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 export default function FlipCards() {
   const [flipped, setFlipped] = useState([false, false, false, false]);
+  const [hoverIndex, setHoverIndex] = useState(-1);
 
   const toggleFlip = (index) => {
     setFlipped(prev => {
@@ -19,85 +20,94 @@ export default function FlipCards() {
   ];
    
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '20vh' }}>
       <div style={{ display: 'flex', gap: '5vw', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '100%' }}>
-        {cards.map((card, index) => (
-          <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {index === 3 && (
-              <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-                <p style={{ margin: '1rem' }}>These problem comprehension and construction connects to... </p>
-              </div>
-            )}
-            <div
-              onClick={() => toggleFlip(index)}
-              className="perspective"
-              style={{ perspective: '1000px', height: '20rem', width: '15rem', cursor: 'pointer' }}
-            >
-            <div
-              className="relative"
-              style={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                transition: 'transform 0.5s',
-                transformStyle: 'preserve-3d',
-                transform: flipped[index] ? 'rotateY(180deg)' : 'rotateY(0deg)'
-              }}
-            >
-              {/* Front */}
-              <div
-                className="front-face"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  background: index === 3 ? 'linear-gradient(135deg,#6C5838 5%, #f2f2f2 10%, #6C5838 70%)' : '#6C5838',
-                  wordWrap: 'break-word',
-                  borderRadius: 12,
-                  boxShadow: '2px 20px 30px rgba(0,0,0,0.24)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  fontSize: '1.1rem',
-                  fontFamily: 'NanumSquareNeo',
-                  fontWeight: 700,
-                  backfaceVisibility: 'hidden'
-                }}
-              >
-                {card.front}
-              </div>
+        {cards.map((card, index) => {
+          const transformStr = `${flipped[index] ? 'rotateY(180deg)' : 'rotateY(0deg)'}${hoverIndex === index ? ' translateY(-8px)' : ''}`;
+          return (
+            <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {index === 3 && (
+                <div style={{textAlign: 'center' }}>
+                  <p style={{ marginBottom: '1rem' }}>These problem comprehension and construction connects to </p>
+                </div>
+              )}
 
-              {/* Back */}
               <div
-                className="back-face"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  background: '#9E8C6C',
-                  borderRadius: 12,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 20,
-                  fontWeight: 700,
-                  color: '#fff',
-                  backfaceVisibility: 'hidden',
-                  transform: 'rotateY(180deg)'
-                }}
+                onMouseEnter={() => setHoverIndex(index)}
+                onMouseLeave={() => setHoverIndex(-1)}
               >
-                {card.back}
+                <div
+                  onClick={() => toggleFlip(index)}
+                  className="perspective"
+                  style={{ perspective: '1000px', height: '20rem', width: '15rem', cursor: 'pointer' }}
+                >
+                  <div
+                    className="relative"
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      height: '100%',
+                      transition: 'transform 0.28s cubic-bezier(.22,.8,.3,1)',
+                      transformStyle: 'preserve-3d',
+                      transform: transformStr
+                    }}
+                  >
+                    {/* Front */}
+                    <div
+                      className="front-face"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: index === 3 ? 'linear-gradient(135deg, #f2f2f2 0%, #6C5838 50%)' : 'linear-gradient(135deg, #f2f2f2 0%, #9E8C6C 70%)',
+                        wordWrap: 'break-word',
+                        borderRadius: 12,
+                        boxShadow: '2px 20px 30px rgba(0,0,0,0.24)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#fff',
+                        fontSize: index === 3 ? '3rem' : '1.1rem',
+                        fontFamily: 'NanumSquareNeo',
+                        fontWeight: 700,
+                        backfaceVisibility: 'hidden'
+                      }}
+                    >
+                      {card.front}
+                    </div>
+
+                    {/* Back */}
+                    <div
+                      className="back-face"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: index === 3 ? '#6C5838' : '#9E8C6C',
+                        borderRadius: 12,
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 20,
+                        fontWeight: 700,
+                        color: '#fff',
+                        backfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)'
+                      }}
+                    >
+                      {card.back}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
