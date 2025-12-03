@@ -19,19 +19,19 @@ export default function FlipCards() {
   ];
    
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', padding: 16 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh' }}>
       <div style={{ display: 'flex', gap: '5vw', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '100%' }}>
         {cards.map((card, index) => (
           <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {index === 3 && (
-              <div style={{ marginBottom: 8, textAlign: 'center' }}>
-                <p style={{ margin: 0 }}>Even it connects to...</p>
+              <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+                <p style={{ margin: '1rem' }}>These problem comprehension and construction connects to... </p>
               </div>
             )}
             <div
               onClick={() => toggleFlip(index)}
               className="perspective"
-              style={{ perspective: '1000px', height: 256, width: '22vw', cursor: 'pointer' }}
+              style={{ perspective: '1000px', height: '20rem', width: '15rem', cursor: 'pointer' }}
             >
             <div
               className="relative"
@@ -53,14 +53,15 @@ export default function FlipCards() {
                   left: 0,
                   width: '100%',
                   height: '100%',
-                  background: '#fff',
+                  background: index === 3 ? 'linear-gradient(135deg,#6C5838 5%, #f2f2f2 10%, #6C5838 70%)' : '#6C5838',
                   wordWrap: 'break-word',
                   borderRadius: 12,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  boxShadow: '2px 20px 30px rgba(0,0,0,0.24)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '1.3rem',
+                  color: '#fff',
+                  fontSize: '1.1rem',
                   fontFamily: 'NanumSquareNeo',
                   fontWeight: 700,
                   backfaceVisibility: 'hidden'
@@ -78,7 +79,7 @@ export default function FlipCards() {
                   left: 0,
                   width: '100%',
                   height: '100%',
-                  background: '#2563eb',
+                  background: '#9E8C6C',
                   borderRadius: 12,
                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
                   display: 'flex',
