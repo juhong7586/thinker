@@ -1,0 +1,95 @@
+name: Deploy Next.js site to Pages
+
+on:
+  push:
+    branches: ["dev", "main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect package manager (for thinkmate/)
+        id: detect-package-manager
+        run: |
+          cd thinkmate
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "manager=pnpm" >> $GITHUB_OUTPUT
+            echo "install=pnpm install --frozen-lockfile" >> $GITHUB_OUTPUT
+            echo "runner=pnpm exec" >> $GITHUB_OUTPUT
+            exit 0
+          elif [ -f "yarn.lock" ]; then
+            echo "manager=yarn" >> $GITHUB_OUTPUT
+            echo "install=yarn install --frozen-lockfile" >> $GITHUB_OUTPUT
+            echo "runner=yarn run" >> $GITHUB_OUTPUT
+            exit 0
+          elif [ -f "package-lock.json" ]; then
+            echo "manager=npm" >> $GITHUB_OUTPUT
+            echo "install=npm ci" >> $GITHUB_OUTPUT
+            echo "runner=npx --no-install" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            # fallback to npm
+            echo "manager=npm" >> $GITHUB_OUTPUT
+            echo "install=npm ci" >> $GITHUB_OUTPUT
+            echo "runner=npx --no-install" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: ${{ steps.detect-package-manager.outputs.manager }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          static_site_generator: next
+
+      - name: Restore .next cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            thinkmate/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ steps.detect-package-manager.outputs.manager }}-${{ hashFiles('thinkmate/pnpm-lock.yaml', 'thinkmate/yarn.lock', 'thinkmate/package-lock.json', 'thinkmate/**.[jt]s', 'thinkmate/**.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ steps.detect-package-manager.outputs.manager }}-
+
+      - name: Install dependencies (thinkmate/)
+        run: ${{ steps.detect-package-manager.outputs.install }}
+        working-directory: thinkmate
+
+      - name: Build and export Next.js (thinkmate/)
+        run: |
+          # build and static export to ./out (Pages expects a static artifact)
+          ${{ steps.detect-package-manager.outputs.runner }} next build
+          ${{ steps.detect-package-manager.outputs.runner }} next export -o out
+        working-directory: thinkmate
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./thinkmate/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
