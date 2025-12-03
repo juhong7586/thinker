@@ -14,6 +14,7 @@ import ConvergingParticles from '../components/beforeGalaxy';
 import itemsList from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
 import CardGallery from '../components/cardGallery';
+import FlipCards from '../components/flipCards';
 import { line } from 'd3';
 
 
@@ -251,29 +252,24 @@ export default function RationalPage({ countries = []}) {
             <p>
               It includes the ability to:
             </p>
-
-            <ol style={{ marginTop: 6, marginBottom: 3 }}>
-              <ul>1. <strong>Recognize</strong> emotions in others</ul>
-              <ul>2. <strong>Understand</strong> another person's perspective</ul>
-              <ul>3. <strong>Communicate</strong> that understanding to others</ul>
-            </ol>
-
+           <FlipCards />
             <p>
               As a foundation for citizenship and responsibility toward society,
               < br /> empathy mediates other social-emotional skills such as tolerance, cooperation, and teamwork.
               <br /> Empathetic students are more likely to engage in social problem solving and creative thinking to address societal challenges.
             </p>
           </div>
-          <p style={{fontSize: '0.85rem', fontStyle: 'italic', paddingBottom: '7rem', color: '#888'}}>Feshbach, 1978; Hope, 2014; OECDa, 2019; Spinrad et al., 2006; Steponavičius et al., 2023; Wray‐Lake, 2011</p>
-                      <h3 style={{ color: '#333', paddingBottom: '7rem' }}>So, how important is empathy in nurturing problem solving skills?</h3>
-        <LollipopChart currentCountry={country} countryData={countries} />
+          <p style={{fontSize: '0.85rem', fontStyle: 'italic', paddingBottom: '7rem', color: '#888'}}>Doron, 2017; Grant & Berry, 2011; Feshbach, 1978; Hope, 2014; OECDa, 2019; Spinrad et al., 2006; Steponavičius et al., 2023; Wray‐Lake, 2011</p>
+        {/* <LollipopChart currentCountry={country} countryData={countries} />
         
                   <p className={styles.subtitle} style={{ lineHeight: 1.6 }}>
           <br /> Chart above is about confidence in self-directed learning and empathy.
           <br />Even after accounting for students' and schools' socio-economic profile, and mathematics performance,
           <br />We can see that more empathic students tend to have higher confidence in self-directed learning.
           < br />
-        </p>
+        </p> */}
+
+        <h3 style={{ color: '#333', paddingBottom: '7rem' }}>So, how important is empathy in nurturing problem solving skills?</h3>
 
          <h3 style={{ color: '#333', paddingTop: '6rem' }}>Let's take a deep look.</h3>
          <p style={{ lineHeight: 1.6 }}>  
@@ -310,12 +306,14 @@ export default function RationalPage({ countries = []}) {
         </p>
         <p>
           <ul>
+            <li>Doron, E. (2017). Fostering creativity in school aged children through perspective taking and visual media based short term intervention program. Thinking Skills and Creativity, 23, 150–160. https://doi.org/10.1016/j.tsc.2016.12.003</li>
+            <li>Grant, A. M., & Berry, J. W. (2011). The necessity of others is the mother of invention: Intrinsic and prosocial motivations, perspective taking, and creativity. The Academy of Management Journal, 54, 73–96. https://doi.org/10.5465/AMJ.2011.59215085</li>
             <li>Hope, E. (2014), “The role of sociopolitical attitudes and civic education in the civic engagement of black youth”, Journal of Research on Adolescence, Vol. 24/3, pp. 460-470.</li>
             <li>OECDa (2019), OECD Future of education and skills 2030: OECD Learning compass 20230 a series of concept notes, OECD Publishing, Paris.</li>
             <li>OECDb (2024), Social and emotional skills for better lives: Findings from the OECD survey on social and emotional Skills 2023, OECD Publishing, Paris, https://doi.org/10.1787/35ca7b7c-en.</li>
             <li>Spinrad, T. L., Eisenberg, N., Cumberland, A., Fabes, R. A., Valiente, C., Shepard, S. A., Reiser, M., Losoya, S. H., & Guthrie, I. K. (2006). Relation of emotion-related regulation to children's social competence: a longitudinal study. Emotion (Washington, D.C.), 6(3), 498–510. https://doi.org/10.1037/1528-3542.6.3.498</li>
             <li>Steponavičius, M., C. Gress-Wright and A. Linzarini (2023), “Social and emotional skills: Latest evidence on teachability and impact on life outcomes”, OECD Education Working Papers, No. 304, OECD Publishing, Paris, https://doi.org/10.1787/ba34f086-en.</li>
-          <li>Wray‐Lake, L. (2011), “The developmental roots of social responsibility in childhood and adolescence.”, New directions for child and adolescent development, Vol. 2011/134, pp. 11-25.</li>
+            <li>Wray‐Lake, L. (2011), “The developmental roots of social responsibility in childhood and adolescence.”, New directions for child and adolescent development, Vol. 2011/134, pp. 11-25.</li>
            </ul>
         </p>
         

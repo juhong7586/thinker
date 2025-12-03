@@ -19,7 +19,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
 
 
 
-      const margin = { top: 30, right: 30, bottom: 100, left: 30 };
+      const margin = { top: 60, right: 30, bottom: 100, left: 30 };
       const width = 1000 - margin.left - margin.right;
       const height = 500 - margin.top - margin.bottom;
    
@@ -70,7 +70,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
       g.append('g')
         .call(yAxis)
         .append('text')
-        .attr('y', 0-margin.top)
+        .attr('y', margin.top/3-50)
         .attr('x', 25)
         .attr('text-anchor', 'start')
         .attr('dy', '1em')
@@ -186,7 +186,7 @@ export default function LollipopChart({ currentCountry, countryData }) {
           .attr('font-weight', 'normal')
           .attr('fill', '#888')
           .attr('padding-bottom', '1rem')
-          .text('Power of Empathy on Self-Directed Learning');
+          .text('POWER OF EMPATHY ON SELF-DIRECTED LEARNING');
         
       };  
       loadData().catch(err => console.error('Failed to load data for LollipopChart:', err));
