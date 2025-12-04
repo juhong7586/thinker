@@ -14,6 +14,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
   const [loading, setLoading] = useState(false);
   const [clusters, setClusters] = useState([]);
   const [memberIds, setMemberIds] = useState(null);
+  const [showAllData, setShowAllData] = useState(true);
   
   // 폼 상태
   const [currentStudent, setCurrentStudent] = useState('');
@@ -176,7 +177,8 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
 
   // memoize computed visualization nodes to avoid re-computation on unrelated renders
   const nodes = useMemo(() => {
-    const activeInterests = (selectedGroup && memberIds) ? interests.filter(i => memberIds.has(i.studentId)) : interests;
+    // if showAllData is true, ignore selectedGroup/memberIds and show all interests
+    const activeInterests = (!showAllData && selectedGroup && memberIds) ? interests.filter(i => memberIds.has(i.studentId)) : interests;
     if (!activeInterests || activeInterests.length === 0) return [];
     const padding = 10;
     const width = propWidth;
@@ -184,6 +186,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
     const groupResults = interestStats(activeInterests);
     return computeVisualizationNodes(groupResults, students, { width, height, padding, colors });
   }, [interests, students, propWidth, propHeight, selectedGroup, memberIds]);
+  
 
 
   // when selectedGroup changes, fetch its members so we can filter interests
@@ -290,7 +293,19 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
       
       <div className={homeStyles.fullScreenBox}>
 
-  <InterestVisualizationPlotly width={propWidth} height={propHeight} nodes={nodes} aiResult={aiResult} />
+      {/* Group / All-data toggle */}
+      <div style={{ display: 'flex',  width: '100%',alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+        {selectedGroup ? (
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem' }}>
+            <input type="checkbox" checked={showAllData} onChange={(e) => setShowAllData(e.target.checked)} />
+            <span>View all data (ignore group filter)</span>
+          </label>
+        ) : (
+          <div style={{ color: '#444' }}>No group selected — showing all data</div>
+        )}
+      </div>
+
+      <InterestVisualizationPlotly width={propWidth} height={propHeight} nodes={nodes} aiResult={aiResult} />
 
       {/* Register own interests (draggable) */}
       <div
@@ -379,32 +394,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
         >
           {loading ? 'Adding...' : 'Add interest'}
         </button>
-{/* 
-        등록된 데이터 현황
-        {(students.length > 0 || interests.length > 0) && (
-          <div className={styles.studentList}>
-            <p className={styles.formTitle}>Board</p>
-            <p className={styles.label}>👥 Registered students: {students.length}</p>
-            <p className={styles.label}>💡 Added interests: {interests.length}</p>
-            
-            {students.map((student) => {
-              const studentInterests = interests.filter(
-                interest => interest.studentId === student.id
-              );
-              return (
-                <div key={student.id} className={styles.studentItem}>
-                  <div
-                    className={styles.colorDot}
-                    style={{ backgroundColor: student.studentColor || '#999' }}
-                  ></div>
-                  <span>
-                    {student.user.name} (interests: {studentInterests.length})
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )} */}
       </div>
 
   {/* Cluster Analysis Result */}

@@ -8,14 +8,20 @@ export default function RegisterGroup() {
   const [groupName, setGroupName] = useState('')
   const [groupDesc, setGroupDesc] = useState('')
   const [inviteCode, setInviteCode] = useState('')
+  const [teacherId, setTeacherId] = useState('')
   const [created, setCreated] = useState(null)
+  const [foundGroup, setFoundGroup] = useState(null)
   const [message, setMessage] = useState('')
 
   const handleCreate = async () => {
     setMessage('')
     if (!groupName.trim()) return setMessage('Group name required')
+    if (!inviteCode.trim()) return setMessage('Invite code required')
     try {
-      const res = await fetch('/api/groups/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: groupName.trim(), description: groupDesc.trim(), inviteCode: inviteCode.trim() }) })
+      const payload = { name: groupName.trim(), description: groupDesc.trim(), inviteCode: inviteCode.trim(), teacherId: teacherId.trim() }
+      // make the requested destructured object available locally
+      
+      const res = await fetch('/api/groups/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (!res.ok) throw new Error('create failed')
       const data = await res.json()
       setCreated(data.group)
@@ -31,13 +37,44 @@ export default function RegisterGroup() {
     if (!inviteCode.trim()) return setMessage('Invite code required')
     try {
       // find group by inviteCode
-      const res = await fetch(`/api/groups?inviteCode=${encodeURIComponent(inviteCode.trim())}`)
+      const code = inviteCode.trim()
+      const res = await fetch(`/api/groups?inviteCode=${encodeURIComponent(code)}`)
       if (!res.ok) throw new Error('lookup failed')
       const data = await res.json()
       const g = (data.groups || [])[0]
       if (!g) return setMessage('No group found with that invite code')
-      setCreated(g)
-      setMessage(`Joined group: ${g.name}`)
+      // set as found group and let the user explicitly join
+      setFoundGroup(g)
+      setMessage(`Found group: ${g.name}`)
+    } catch (err) {
+      console.error(err)
+      setMessage('Failed to join group')
+    }
+  }
+
+  const handleConfirmJoin = async (group) => {
+    setMessage('')
+    const g = group || foundGroup
+    if (!g) return setMessage('No group selected')
+    try {
+      // try to get signed user (student) from localStorage so we can send studentId
+      let studentId = null
+      try {
+        const raw = typeof window !== 'undefined' ? localStorage.getItem('thinkmate_user') : null
+        if (raw) {
+          const su = JSON.parse(raw)
+          studentId = su?.id || null
+        }
+      } catch {
+        // ignore parse errors
+      }
+
+      const res = await fetch('/api/groups/join', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ groupId: g.id, inviteCode: inviteCode.trim(), studentId: studentId }) })
+      if (!res.ok) throw new Error('join failed')
+      const data = await res.json()
+      setCreated(data.group || g)
+      setFoundGroup(null)
+      setMessage(`Joined group: ${data.group?.name || g.name}`)
     } catch (err) {
       console.error(err)
       setMessage('Failed to join group')
@@ -63,8 +100,10 @@ export default function RegisterGroup() {
                   <input value={groupName} onChange={e => setGroupName(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
                   <label style={{ display: 'block', marginBottom: 6 }}>Description (optional)</label>
                   <textarea value={groupDesc} onChange={e => setGroupDesc(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
-                  <label style={{ display: 'block', marginBottom: 6 }}>Invite code (optional)</label>
+                  <label style={{ display: 'block', marginBottom: 6 }}>Invite code</label>
                   <input value={inviteCode} onChange={e => setInviteCode(e.target.value)} style={{ width: '40%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
+                  <label style={{ display: 'block', marginBottom: 6 }}>Teacher ID (optional)</label>
+                  <input value={teacherId} onChange={e => setTeacherId(e.target.value)} style={{ width: '40%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={handleCreate} className={styles.pageButton}>Create group</button>
                     <Link href='/'><button style={{ border: '1px solid #ddd', borderRadius: 8, padding: '8px 12px' }}>Back</button></Link>
@@ -74,6 +113,16 @@ export default function RegisterGroup() {
                 <div>
                   <label style={{ display: 'block', marginBottom: 6 }}>Enter invite code</label>
                   <input value={inviteCode} onChange={e => setInviteCode(e.target.value)} style={{ width: '40%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
+                  {foundGroup ? (
+                    <div style={{ marginTop: 12, padding: 12, border: '1px solid #eee', borderRadius: 8, background: '#fafafa' }}>
+                      <div><strong>{foundGroup.name}</strong> (id {foundGroup.id})</div>
+                      {foundGroup.description && <div style={{ color: '#666', marginTop: 6 }}>{foundGroup.description}</div>}
+                      <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                        <button onClick={() => handleConfirmJoin(foundGroup)} className={styles.pageButton}>Join group</button>
+                        <button onClick={() => setFoundGroup(null)} style={{ border: '1px solid #ddd', borderRadius: 8, padding: '8px 12px' }}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : null}
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={handleJoin} className={styles.pageButton}>Find group</button>
                     <Link href='/'><button style={{ border: '1px solid #ddd', borderRadius: 8, padding: '8px 12px' }}>Back</button></Link>
