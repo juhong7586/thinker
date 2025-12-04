@@ -14,7 +14,7 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
   const [loading, setLoading] = useState(false);
   const [clusters, setClusters] = useState([]);
   const [memberIds, setMemberIds] = useState(null);
-  const [showAllData, setShowAllData] = useState(false);
+  const [showAllData, setShowAllData] = useState(true);
   
   // 폼 상태
   const [currentStudent, setCurrentStudent] = useState('');
