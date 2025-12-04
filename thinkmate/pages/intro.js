@@ -1,10 +1,6 @@
 import Head from 'next/head'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import CardSwap, { Card } from '../components/CardSwap'
-
-// Dynamic client-only import: the gallery uses WebGL and must run in the browser.
-const CircularGallery = dynamic(() => import('../components/circularGallery'), { ssr: false })
 
 export default function HomeIntro() {
   const router = useRouter()
@@ -24,12 +20,12 @@ export default function HomeIntro() {
         <div style={{ position: 'absolute', left: 80, bottom: -300, zIndex: 10 }}>
           <div style={{ height: 600, position: 'relative' }}>
               <CardSwap cardDistance={200} verticalDistance={70} delay={4500} pauseOnHover={false} autoSwap={false}>
-                <Card style={{ background: 'rgba(255,255,255,0.95)', color: '#111' }}>
+                <Card style={{ background: 'rgba(255,255,255,0.95)', color: '#170a2e' }}>
                   <h3 style={{ margin: 0 }}>
                     <span
                       role="link"
                       tabIndex={0}
-                      onClick={(e) => { router.push('/graph') }}
+                      onClick={() => { router.push('/graph') }}
                       style={{ cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       Graph
@@ -43,7 +39,7 @@ export default function HomeIntro() {
                     <span
                       role="link"
                       tabIndex={0}
-                      onClick={(e) => { router.push('/rational') }}
+                      onClick={() => { router.push('/rational') }}
                       style={{ cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       Rational
@@ -57,7 +53,7 @@ export default function HomeIntro() {
                     <span
                       role="link"
                       tabIndex={0}
-                      onClick={(e) => { router.push('/analysis') }}
+                      onClick={() => { router.push('/analysis') }}
                       style={{ cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       Analysis
@@ -71,7 +67,7 @@ export default function HomeIntro() {
                     <span
                       role="link"
                       tabIndex={0}
-                      onClick={(e) => { router.push('/survey') }}
+                      onClick={() => { router.push('/survey') }}
                       style={{ cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       Survey
@@ -85,7 +81,7 @@ export default function HomeIntro() {
                     <span
                       role="link"
                       tabIndex={0}
-                      onClick={(e) => {router.push('/result') }}
+                      onClick={() => {router.push('/result') }}
                       style={{ cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       Results
@@ -99,7 +95,7 @@ export default function HomeIntro() {
                     <span
                       role="link"
                       tabIndex={0}
-                      onClick={(e) => { router.push('/login') }}
+                      onClick={() => { router.push('/login') }}
                       style={{ cursor: 'pointer', textDecoration: 'underline' }}
                     >
                       Login

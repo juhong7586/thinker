@@ -1,8 +1,5 @@
 import Head from 'next/head'
-import Link from 'next/link'
 import styles from '../styles/Analysis.module.css'
-import homeStyles from '../styles/Home.module.css'
-import { useEffect, useState, useRef } from 'react'
 import ChatBox from '../components/ChatBox'
 
 export default function Result() {

@@ -7,8 +7,7 @@ import Bubbles from '../components/bubbles'
 export default function Analysis() {
   const containerRef = useRef();
   const [size, setSize] = useState({ width: '97vw', height: '97vh' });
-  const [selectedOption, setSelectedOption] = useState(null);
-  const question = "What ideas are emerging?";
+  const [selectedOption] = useState(null);
   const particleCount = 30;
 
   
