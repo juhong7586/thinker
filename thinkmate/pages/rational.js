@@ -345,9 +345,6 @@ export default function RationalPage({ countries = []}) {
 export async function getStaticProps() {
     // Use the SWR hook to fetch per-country student rows (client-safe)
   
-  // SQL used to build the country summary. Keep this local so it's easy to reuse.
-  const sql = 'SELECT * FROM workspace.students.emp_cr_by_country';
-
   try {
     
     let rows = [];
@@ -363,7 +360,7 @@ export async function getStaticProps() {
         const connectOptions = { token, host: serverHostName, path: httpPath };
         await client.connect(connectOptions);
         const session = await client.openSession();
-        const queryOperation = await session.executeStatement(sql, { runAsync: true });
+        const queryOperation = await session.executeStatement('SELECT * FROM workspace.students.emp_cr_by_country', { runAsync: true });
         const result = await queryOperation.fetchAll();
         await queryOperation.close();
         await session.close();
