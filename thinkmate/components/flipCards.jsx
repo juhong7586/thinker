@@ -75,6 +75,7 @@ export default function FlipCards() {
                         backfaceVisibility: 'hidden'
                       }}
                     >
+                    
                       <div style={{ textAlign: 'center' }}>
                         {card.front}
                         <br />
