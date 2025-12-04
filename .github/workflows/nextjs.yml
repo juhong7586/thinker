@@ -1,0 +1,78 @@
+name: Deploy Rational page to Pages
+
+on:
+  push:
+    branches: ["deploy/rational", "main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "deploy-rational"
+  cancel-in-progress: false
+
+jobs:
+  build-and-export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Prepare rational-only site
+        run: |
+          set -e
+          # Copy the thinkmate app and keep only the rational page as index
+          cp -R thinkmate thinkmate-rational
+          mkdir -p thinkmate-rational/tmp_pages
+          if [ -f thinkmate-rational/pages/_app.js ]; then mv thinkmate-rational/pages/_app.js thinkmate-rational/tmp_pages/; fi
+          if [ -f thinkmate-rational/pages/rational.js ]; then mv thinkmate-rational/pages/rational.js thinkmate-rational/tmp_pages/index.js; fi
+          # If no rational page found, fail early
+          if [ ! -f thinkmate-rational/tmp_pages/index.js ]; then echo "rational page not found"; ls -la thinkmate-rational/pages || true; exit 1; fi
+          rm -rf thinkmate-rational/pages/*
+          mv thinkmate-rational/tmp_pages/* thinkmate-rational/pages/
+          rmdir thinkmate-rational/tmp_pages || true
+          # Determine repo name for Pages basePath (so assets reference /REPO/...) and create next.config.js
+          REPO_NAME=${GITHUB_REPOSITORY##*/}
+          cat > thinkmate-rational/next.config.js <<EOT
+const path = require('path')
+module.exports = {
+  outputFileTracingRoot: path.join(__dirname, '.'),
+  basePath: '/${REPO_NAME}',
+  assetPrefix: '/${REPO_NAME}/',
+  images: { unoptimized: true },
+  eslint: { ignoreDuringBuilds: true }
+}
+EOT
+
+      - name: Install dependencies (thinkmate-rational)
+        run: npm ci
+        working-directory: thinkmate-rational
+
+      - name: Build and export (thinkmate-rational)
+        run: |
+          cd thinkmate
+          npm run dev
+        working-directory: thinkmate-rational
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: thinkmate-rational/out
+
+  deploy:
+    needs: build-and-export
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
