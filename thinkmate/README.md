@@ -12,6 +12,12 @@ yarn dev
 pnpm dev
 # or
 bun dev
+
+
+pyenv activate .venv  
+
+MODEL_ID="google/gemma-3-1b-it" uvicorn server.app:app --host 0.0.0.0 --port 8000 &> server.log &
+tail -f server.lo
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
