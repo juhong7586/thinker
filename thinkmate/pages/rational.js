@@ -5,7 +5,7 @@ import CreativityScatter from '../components/visualization/creativityScatterPlot
 import BeeSwarmPlot from '../components/visualization/beeSwarmPlot';
 import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
-import { useState, useMemo, useEffect, use } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 
 
@@ -13,7 +13,6 @@ import itemsList from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
 import CardGallery from '../components/cardGallery';
 import FlipCards from '../components/flipCards';
-import { line } from 'd3';
 
 
 
@@ -326,7 +325,7 @@ export default function RationalPage({ countries = []}) {
             <li>Kripal, S. J., & Reiter-Palmon, R. (2024). The role of empathy in problem construction and creative problem solving. Learning and Individual Differences, 114, 102501. https://doi.org/10.1016/j.lindif.2024.102501</li>
             <li>OECDa (2019), OECD Future of education and skills 2030: OECD Learning compass 20230 a series of concept notes, OECD Publishing, Paris.</li>
             <li>OECDb (2024), Social and emotional skills for better lives: Findings from the OECD survey on social and emotional Skills 2023, OECD Publishing, Paris, https://doi.org/10.1787/35ca7b7c-en.</li>
-            <li>Spinrad, T. L., Eisenberg, N., Cumberland, A., Fabes, R. A., Valiente, C., Shepard, S. A., Reiser, M., Losoya, S. H., & Guthrie, I. K. (2006). Relation of emotion-related regulation to children's social competence: a longitudinal study. Emotion (Washington, D.C.), 6(3), 498–510. https://doi.org/10.1037/1528-3542.6.3.498</li>
+            <li>Spinrad, T. L., Eisenberg, N., Cumberland, A., Fabes, R. A., Valiente, C., Shepard, S. A., Reiser, M., Losoya, S. H., & Guthrie, I. K. (2006). Relation of emotion-related regulation to children&apos;s social competence: a longitudinal study. Emotion (Washington, D.C.), 6(3), 498–510. https://doi.org/10.1037/1528-3542.6.3.498</li>
             <li>Steponavičius, M., C. Gress-Wright and A. Linzarini (2023), “Social and emotional skills: Latest evidence on teachability and impact on life outcomes”, OECD Education Working Papers, No. 304, OECD Publishing, Paris, https://doi.org/10.1787/ba34f086-en.</li>
             <li>Wray‐Lake, L. (2011), “The developmental roots of social responsibility in childhood and adolescence.”, New directions for child and adolescent development, Vol. 2011/134, pp. 11-25.</li>
            </ul>
@@ -345,9 +344,6 @@ export default function RationalPage({ countries = []}) {
 export async function getStaticProps() {
     // Use the SWR hook to fetch per-country student rows (client-safe)
   
-  // SQL used to build the country summary. Keep this local so it's easy to reuse.
-  const sql = 'SELECT * FROM workspace.students.emp_cr_by_country';
-
   try {
     
     let rows = [];
@@ -363,7 +359,7 @@ export async function getStaticProps() {
         const connectOptions = { token, host: serverHostName, path: httpPath };
         await client.connect(connectOptions);
         const session = await client.openSession();
-        const queryOperation = await session.executeStatement(sql, { runAsync: true });
+        const queryOperation = await session.executeStatement('SELECT * FROM workspace.students.emp_cr_by_country', { runAsync: true });
         const result = await queryOperation.fetchAll();
         await queryOperation.close();
         await session.close();
