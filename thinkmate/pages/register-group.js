@@ -8,14 +8,19 @@ export default function RegisterGroup() {
   const [groupName, setGroupName] = useState('')
   const [groupDesc, setGroupDesc] = useState('')
   const [inviteCode, setInviteCode] = useState('')
+  const [teacherId, setTeacherId] = useState('')
   const [created, setCreated] = useState(null)
   const [message, setMessage] = useState('')
 
   const handleCreate = async () => {
     setMessage('')
     if (!groupName.trim()) return setMessage('Group name required')
+    if (!inviteCode.trim()) return setMessage('Invite code required')
     try {
-      const res = await fetch('/api/groups/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: groupName.trim(), description: groupDesc.trim(), inviteCode: inviteCode.trim() }) })
+      const payload = { name: groupName.trim(), description: groupDesc.trim(), inviteCode: inviteCode.trim(), teacherId: teacherId.trim() }
+      // make the requested destructured object available locally
+      
+      const res = await fetch('/api/groups/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (!res.ok) throw new Error('create failed')
       const data = await res.json()
       setCreated(data.group)
@@ -63,8 +68,10 @@ export default function RegisterGroup() {
                   <input value={groupName} onChange={e => setGroupName(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
                   <label style={{ display: 'block', marginBottom: 6 }}>Description (optional)</label>
                   <textarea value={groupDesc} onChange={e => setGroupDesc(e.target.value)} style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
-                  <label style={{ display: 'block', marginBottom: 6 }}>Invite code (optional)</label>
+                  <label style={{ display: 'block', marginBottom: 6 }}>Invite code</label>
                   <input value={inviteCode} onChange={e => setInviteCode(e.target.value)} style={{ width: '40%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
+                  <label style={{ display: 'block', marginBottom: 6 }}>Teacher ID (optional)</label>
+                  <input value={teacherId} onChange={e => setTeacherId(e.target.value)} style={{ width: '40%', padding: 8, borderRadius: 8, border: '1px solid #ddd', marginBottom: 8 }} />
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={handleCreate} className={styles.pageButton}>Create group</button>
                     <Link href='/'><button style={{ border: '1px solid #ddd', borderRadius: 8, padding: '8px 12px' }}>Back</button></Link>
