@@ -5,7 +5,7 @@ import CreativityScatter from '../components/visualization/creativityScatterPlot
 import BeeSwarmPlot from '../components/visualization/beeSwarmPlot';
 import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
-import { useState, useMemo, useEffect, use } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 
 
@@ -13,7 +13,6 @@ import itemsList from './api/data/news';
 import useCountryStats from '../hooks/useCountryStats';
 import CardGallery from '../components/cardGallery';
 import FlipCards from '../components/flipCards';
-import { line } from 'd3';
 
 
 
