@@ -379,32 +379,6 @@ const InterestVisualization = ({ width: propWidth, height: propHeight, signedUse
         >
           {loading ? 'Adding...' : 'Add interest'}
         </button>
-{/* 
-        등록된 데이터 현황
-        {(students.length > 0 || interests.length > 0) && (
-          <div className={styles.studentList}>
-            <p className={styles.formTitle}>Board</p>
-            <p className={styles.label}>👥 Registered students: {students.length}</p>
-            <p className={styles.label}>💡 Added interests: {interests.length}</p>
-            
-            {students.map((student) => {
-              const studentInterests = interests.filter(
-                interest => interest.studentId === student.id
-              );
-              return (
-                <div key={student.id} className={styles.studentItem}>
-                  <div
-                    className={styles.colorDot}
-                    style={{ backgroundColor: student.studentColor || '#999' }}
-                  ></div>
-                  <span>
-                    {student.user.name} (interests: {studentInterests.length})
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )} */}
       </div>
 
   {/* Cluster Analysis Result */}

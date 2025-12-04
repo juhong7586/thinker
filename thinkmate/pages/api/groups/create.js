@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   const { name, description, inviteCode, teacherId } = req.body || {};
 
   if (!name) return res.status(400).json({ error: 'name required' });
-
+  
   try {
 
     const group = await prisma.group.create({ data: { name, description: description || '', inviteCode: inviteCode || null, teacherId: teacherId || null } });
