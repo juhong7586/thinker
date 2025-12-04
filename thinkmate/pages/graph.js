@@ -125,7 +125,7 @@ export default function Home() {
       if (saved) {
         try { setSignedUser(JSON.parse(saved)) } catch { setSignedUser(null) }
       }
-    } catch (e) {
+    } catch {
       setSignedIn(false)
     }
   }, [])
@@ -138,7 +138,7 @@ export default function Home() {
       localStorage.removeItem('thinkmate.ai.pending');
       localStorage.removeItem('thinkmate.ai.result');
       localStorage.removeItem('thinkmate.ai.payload');
-    } catch (e) {
+    } catch {
       // ignore
     }
     // clear client state for AI UI and user
@@ -147,7 +147,7 @@ export default function Home() {
     setSignedIn(false);
     setSignedUser(null);
     // soft reload so other pages refresh their state
-    try { router.reload(); } catch (e) { window.location.reload(); }
+    try { router.reload(); } catch { window.location.reload(); }
   };
 
   // when signedUser is present, fetch their groups
@@ -230,7 +230,7 @@ export default function Home() {
               <div style={{ width: '0%', height: '100%', background: '#6b46c1', transition: 'width 1s linear 2s' }} />
             </div>
             <div style={{ marginTop: 12 }}>
-              <button onClick={() => { try { localStorage.removeItem('thinkmate.ai.pending'); } catch(e){}; setAiPending(false); }} style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: '#eee', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => { try { localStorage.removeItem('thinkmate.ai.pending'); } catch {}; setAiPending(false); }} style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: '#eee', cursor: 'pointer' }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function Home() {
               )}
             </div>
             <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-              <button onClick={() => { try { localStorage.removeItem('thinkmate.ai.result'); setAiResult(null); } catch(e){} }} style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: '#eef2ff', cursor: 'pointer' }}>Dismiss</button>
+              <button onClick={() => { try { localStorage.removeItem('thinkmate.ai.result'); setAiResult(null); } catch{} }} style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: '#eef2ff', cursor: 'pointer' }}>Dismiss</button>
             </div>
           </div>
         </div>

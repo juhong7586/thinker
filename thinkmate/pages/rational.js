@@ -1,14 +1,12 @@
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import SlopeChart from '../components/visualization/slopeChart';
-import LollipopChart from '../components/visualization/lollipopChart';
 import CreativityScatter from '../components/visualization/creativityScatterPlot'; 
 import BeeSwarmPlot from '../components/visualization/beeSwarmPlot';
 import GravityScatterPlot from '../components/visualization/gravity';
 import GroupBarChart from '../components/visualization/groupBarChart';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, use } from 'react';
 import { motion } from 'motion/react';
-import ConvergingParticles from '../components/beforeGalaxy';
 
 
 import itemsList from './api/data/news';
@@ -51,19 +49,15 @@ export default function RationalPage({ countries = []}) {
   }, [country, countryList]);
 
   // // If `country` is falsy we pass through the original array (show all).
-  let filteredStudentData = [];
-  if (Array.isArray(studentData)) {
-    if (!country) {
-      filteredStudentData = studentData;
-    } else {
-      filteredStudentData = studentData.filter((r) => {
-        if (!r) return false;
-        // Support several possible key names for country in rows
-        const rowCountry = r.country ?? r.Country ?? r.country_name ?? r.countryName ?? null;
-        return rowCountry === country;
-      });
-    }
-  }
+  const filteredStudentData = useMemo(() => {
+    if (!Array.isArray(studentData)) return [];
+    if (!country)  return studentData;
+    return studentData.filter((r) => {
+      if (!r) return false;
+      const rowCountry = r.country ?? r.Country ?? r.country_name ?? r.countryName ?? null;
+      return rowCountry === country;
+    });
+  }, [studentData, country]);
 
   // If `country` is a string (name), find its full data object from `countries`.
   const selectedCountryData = country && Array.isArray(countries)
@@ -352,10 +346,7 @@ export async function getStaticProps() {
     // Use the SWR hook to fetch per-country student rows (client-safe)
   
   // SQL used to build the country summary. Keep this local so it's easy to reuse.
-  const sql = `
-    SELECT *
-    FROM workspace.students.emp_cr_by_country
-  `;
+  const sql = 'SELECT * FROM workspace.students.emp_cr_by_country';
 
   try {
     
